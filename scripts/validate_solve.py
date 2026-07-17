@@ -7,8 +7,9 @@ import math
 import subprocess
 import sys
 
-from formulation_bench import Dataset
 from tqdm import tqdm
+
+from formulation_bench import Dataset
 
 OBJECTIVE_REL_TOL = 1e-6
 

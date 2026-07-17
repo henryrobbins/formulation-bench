@@ -14,12 +14,12 @@ By convention, formulation names are single letter labels (e.g., `a`, `b`). Pick
 The `formulation.json` file is the core object defining the formulation. See {ref}`formulation-directory` for the full schema. In order for {meth}`Formulation.gen_solve_py() <formulation_bench.formulation.Formulation.gen_solve_py>` to generate a working solver script, all `assumptions` and `definitions` must contain `code.python` and all `constraints` and the `objective` must contain `code.gurobipy`.
 
 :::{tip}
-Reading raw LaTeX while editing the JSON file can be cumbersome. The {doc}`/problems/index` documentation is automatically generated from the dataset and provides a nice way to view a rendering of the formulation while editing. If you're working in the {github}`FLARE monorepo </>`, you can run `make docs-serve` from `packages/formulation_bench` to host the docs with live-reload on `http://127.0.0.1:8000`.
+Reading raw LaTeX while editing the JSON file can be cumbersome. The {doc}`/problems/index` documentation is automatically generated from the dataset and provides a nice way to view a rendering of the formulation while editing. If you're working in the {github}`source repository </>`, you can run `make docs-serve` from the repository root to host the docs with live-reload on `http://127.0.0.1:8000`.
 :::
 
 :::{dropdown} `problems/p12/formulations/a/formulation.json`
 :icon: code
-```{literalinclude} ../../../../dataset/problems/p12/formulations/a/formulation.json
+```{literalinclude} ../../dataset/problems/p12/formulations/a/formulation.json
 :language: json
 ```
 :::
@@ -30,7 +30,7 @@ The parameter generation script `gen_params.py` reads the problem data instance 
 
 :::{dropdown} `problems/p1/formulations/b/gen_params.py`
 :icon: code
-```{literalinclude} ../../../../dataset/problems/p1/formulations/b/gen_params.py
+```{literalinclude} ../../dataset/problems/p1/formulations/b/gen_params.py
 :language: python
 ```
 :::
@@ -43,7 +43,7 @@ The {github}`FLARE monorepo </>` ships with the `milp-formulator` agent which us
 
 :::{dropdown} `problems/p1/formulations/b/Formulation.lean`
 :icon: code
-```{literalinclude} ../../../../dataset/problems/p1/formulations/b/Formulation.lean
+```{literalinclude} ../../dataset/problems/p1/formulations/b/Formulation.lean
 :language: lean
 ```
 :::
@@ -75,7 +75,7 @@ The {github}`FLARE monorepo </>` ships with the `milp-reformulation-autoformaliz
 
 :::{dropdown} `reformulations/p1/a_b.lean`
 :icon: code
-```{literalinclude} ../../../../dataset/reformulations/p1/a_b.lean
+```{literalinclude} ../../dataset/reformulations/p1/a_b.lean
 :language: lean
 ```
 :::

@@ -6,7 +6,7 @@ import urllib.request
 from pathlib import Path
 
 #: GitHub repo containing the dataset releases.
-REPO = "henryrobbins/flare"
+REPO = "henryrobbins/formulation-bench"
 
 #: Name of the dataset tarball asset in the releases.
 ASSET_NAME = "dataset.tar.gz"

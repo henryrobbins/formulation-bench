@@ -45,7 +45,7 @@ from the release page:
 ```bash
 VERSION=dataset-v0.2.0
 curl -L -o dataset.tar.gz \
-    "https://github.com/henryrobbins/flare/releases/download/${VERSION}/dataset.tar.gz"
+    "https://github.com/henryrobbins/formulation-bench/releases/download/${VERSION}/dataset.tar.gz"
 
 mkdir -p formulation-bench && tar -xzf dataset.tar.gz -C formulation-bench
 ```
