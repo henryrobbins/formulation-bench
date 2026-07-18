@@ -6,7 +6,7 @@
 set -euo pipefail
 
 docs_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$docs_dir/../../.." && pwd)"
+repo_root="$(cd "$docs_dir/.." && pwd)"
 
 exec sphinx-autobuild \
     --watch "$repo_root/dataset" \

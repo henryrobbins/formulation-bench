@@ -270,7 +270,7 @@ def _index_page(problems: dict[int, object]) -> str:
 
 
 def _dataset_root(docs_dir: Path) -> Path:
-    return docs_dir.parents[2] / "dataset"
+    return docs_dir.parents[0] / "dataset"
 
 
 def _write_if_changed(path: Path, content: str) -> None:

@@ -4,18 +4,22 @@
 **FormulationBench** dataset: a collection of optimization problems, MILP
 formulations, and Lean 4 reformulation proofs.
 
-## Monorepo context
+## Repository
 
-This package currently lives inside the [FLARE
-monorepo](https://github.com/henryrobbins/flare) as a uv workspace member
-under `packages/formulation_bench/`. The dataset itself lives at the
-monorepo root under `dataset/`, and the docs build reads from it
-directly. The package owns its own `pyproject.toml`, `LICENSE.md`, and
-`docs/` tree, and is published independently to PyPI.
+This repository is the source of truth for the `formulation-bench` package
+(published to PyPI) and its documentation (published to Read the Docs). It
+was extracted from the [FLARE
+monorepo](https://github.com/henryrobbins/flare), where the package
+previously lived as a uv workspace member under
+`packages/formulation_bench/`.
+
+The dataset lives in this repository under `dataset/`, and the docs build
+reads from it directly. The dataset is also published as a GitHub release
+tarball; `download_dataset()` fetches it from the releases of this repo.
 
 ## Tooling
 
-- **uv** — environment and workspace management
+- **uv** — environment management
 - **ruff** — linting and formatting (`E`, `F`, `I`, `UP`; line length 88)
 - **mypy** — type-checking in `strict` mode
 - **pytest** — tests, including `--doctest-modules` on the source tree
@@ -23,13 +27,13 @@ directly. The package owns its own `pyproject.toml`, `LICENSE.md`, and
   `sphinx-autodoc-typehints`) — docs, hosted on Read the Docs
 - **Jinja2** — runtime templating (the package's only runtime dep)
 
-All common commands are wrapped in the package-local `Makefile`. Run
-`make help` from `packages/formulation_bench/` for the list.
+All common commands are wrapped in the `Makefile`. Run `make help` from
+the repository root for the list.
 
 ## File structure
 
 ```
-packages/formulation_bench/
+formulation-bench/
 ├── src/formulation_bench/   # the package
 │   ├── dataset.py           # top-level Dataset loader
 │   ├── problem.py           # Problem model
@@ -40,6 +44,8 @@ packages/formulation_bench/
 │   ├── _codegen.py          # Python code generation
 │   ├── _render.py           # Jinja rendering helpers
 │   └── templates/           # Jinja templates
+├── dataset/                 # the FormulationBench dataset
+├── scripts/                 # dataset validation utilities
 ├── tests/                   # pytest suite
 ├── docs/                    # Sphinx docs (published to Read the Docs)
 │   ├── conf.py
@@ -66,19 +72,9 @@ Pytest is configured to collect from both `tests/` and
 `src/formulation_bench/` (the latter for `--doctest-modules`), so
 docstring examples are part of the suite — keep them runnable.
 
-### Dataset symlink
-
-Some doctests instantiate `Dataset("dataset")` with a relative path,
-which only resolves when a `dataset/` directory exists in the package
-root. In the monorepo the canonical dataset lives at the repo root, so
-we symlink it in:
-
-```bash
-make dataset-link    # creates ./dataset -> ../../dataset if missing
-```
-
-`make test` runs this automatically. The symlink is gitignored; it's a
-dev-only convenience and is not shipped in the published wheel.
+Some doctests instantiate `Dataset("dataset")` with a relative path; this
+resolves against the `dataset/` directory at the repository root, so run
+the tests from there.
 
 ## Coverage
 
@@ -88,8 +84,8 @@ make cov-open   # open the HTML report in a browser
 make cov-clean  # remove coverage artifacts
 ```
 
-CI uploads `coverage.xml` to [Codecov](https://codecov.io/gh/henryrobbins/flare)
-under the `formulation_bench` flag.
+CI uploads `coverage.xml` to
+[Codecov](https://codecov.io/gh/henryrobbins/formulation-bench).
 
 ## Docs
 

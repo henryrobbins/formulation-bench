@@ -14,7 +14,7 @@ The dataset is structured as a Lean project; it includes a `lakefile.toml` (see 
 
 :::{dropdown} `lakefile.toml`
 :icon: code
-```{literalinclude} ../../../../dataset/lakefile.toml
+```{literalinclude} ../../dataset/lakefile.toml
 :language: lean
 ```
 :::
