@@ -1,1 +1,1 @@
-@../packages/formulation_bench/docs/schema.md
+@../docs/schema.md

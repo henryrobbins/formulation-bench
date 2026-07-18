@@ -81,7 +81,7 @@ exposed as the `description` attribute of {class}`Problem
 
 :::{dropdown} `problems/p1/description.md`
 :icon: code
-```{literalinclude} ../../../dataset/problems/p1/description.md
+```{literalinclude} ../dataset/problems/p1/description.md
 :language: markdown
 :class: wrap
 ```
@@ -103,7 +103,7 @@ Defines the problem `name`, its data `parameters`, and freeform `metadata`:
 
 :::{dropdown} `problems/p1/problem.json`
 :icon: code
-```{literalinclude} ../../../dataset/problems/p1/problem.json
+```{literalinclude} ../dataset/problems/p1/problem.json
 :language: json
 ```
 :::
@@ -118,7 +118,7 @@ into formulation-specific parameters). Exposed as the `data` attribute of
 
 :::{dropdown} `problems/p1/data.json`
 :icon: code
-```{literalinclude} ../../../dataset/problems/p1/data.json
+```{literalinclude} ../dataset/problems/p1/data.json
 :language: json
 ```
 :::
@@ -134,7 +134,7 @@ as the `solution` attribute of {class}`Problem
 
 :::{dropdown} `problems/p1/solution.json`
 :icon: code
-```{literalinclude} ../../../dataset/problems/p1/solution.json
+```{literalinclude} ../dataset/problems/p1/solution.json
 :language: json
 ```
 :::
@@ -190,7 +190,7 @@ runnable solver script.
 
 :::{dropdown} `problems/p12/formulations/a/formulation.json`
 :icon: code
-```{literalinclude} ../../../dataset/problems/p12/formulations/a/formulation.json
+```{literalinclude} ../dataset/problems/p12/formulations/a/formulation.json
 :language: json
 ```
 :::
@@ -207,7 +207,7 @@ its own parametrization. The script accepts the input `data.json` and output
 
 :::{dropdown} `problems/p1/formulations/b/gen_params.py`
 :icon: code
-```{literalinclude} ../../../dataset/problems/p1/formulations/b/gen_params.py
+```{literalinclude} ../dataset/problems/p1/formulations/b/gen_params.py
 :language: python
 ```
 :::
@@ -221,7 +221,7 @@ describes how a formulation is encoded in Lean; the path to this file is exposed
 
 :::{dropdown} `problems/p1/formulations/a/Formulation.lean`
 :icon: code
-```{literalinclude} ../../../dataset/problems/p1/formulations/a/Formulation.lean
+```{literalinclude} ../dataset/problems/p1/formulations/a/Formulation.lean
 :language: lean
 ```
 :::
@@ -248,7 +248,7 @@ Each entry loads into a {class}`Reformulation
 
 :::{dropdown} `reformulations/p1/a_b.lean`
 :icon: code
-```{literalinclude} ../../../dataset/reformulations/p1/a_b.lean
+```{literalinclude} ../dataset/reformulations/p1/a_b.lean
 :language: lean
 ```
 :::
