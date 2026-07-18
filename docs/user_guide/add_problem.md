@@ -12,7 +12,7 @@ The `description.md` file contains a natural-language description of the optimiz
 :::{dropdown} `problems/p1/description.md`
 :icon: code
 :open:
-```{literalinclude} ../../../../dataset/problems/p1/description.md
+```{literalinclude} ../../dataset/problems/p1/description.md
 :language: markdown
 :class: wrap
 ```
@@ -21,7 +21,7 @@ The `description.md` file contains a natural-language description of the optimiz
 :::{dropdown} `problems/p12/description.md`
 :icon: code
 :open:
-```{literalinclude} ../../../../dataset/problems/p12/description.md
+```{literalinclude} ../../dataset/problems/p12/description.md
 :language: markdown
 :class: wrap
 ```
@@ -35,14 +35,14 @@ The `problem.json` file defines the problem name, data parameters, and additiona
 
 :::{dropdown} `problems/p1/problem.json`
 :icon: code
-```{literalinclude} ../../../../dataset/problems/p1/problem.json
+```{literalinclude} ../../dataset/problems/p1/problem.json
 :language: json
 ```
 :::
 
 :::{dropdown} `problems/p12/problem.json`
 :icon: code
-```{literalinclude} ../../../../dataset/problems/p12/problem.json
+```{literalinclude} ../../dataset/problems/p12/problem.json
 :language: json
 ```
 :::
@@ -56,7 +56,7 @@ Provide its optimal solution in `solution.json`. This dictionary has `variables`
 :::{dropdown} `problems/p1/data.json`
 :icon: code
 :open:
-```{literalinclude} ../../../../dataset/problems/p1/data.json
+```{literalinclude} ../../dataset/problems/p1/data.json
 :language: json
 ```
 :::
@@ -64,7 +64,7 @@ Provide its optimal solution in `solution.json`. This dictionary has `variables`
 :::{dropdown} `problems/p1/solution.json`
 :icon: code
 :open:
-```{literalinclude} ../../../../dataset/problems/p1/solution.json
+```{literalinclude} ../../dataset/problems/p1/solution.json
 :language: json
 ```
 :::

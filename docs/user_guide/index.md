@@ -14,5 +14,5 @@ build_lean
 Also see the {mf}`FLARE user guide </user_guide/run_flare.html>` for running `FLARE` on FormulationBench.
 
 :::{note}
-For general development information, see the {github}`AGENTS.md </blob/main/packages/formulation_bench/AGENTS.md>`.
+For general development information, see the {github}`AGENTS.md </blob/main/AGENTS.md>`.
 :::

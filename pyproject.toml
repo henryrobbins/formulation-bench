@@ -26,8 +26,8 @@ dependencies = ["jinja2>=3"]
 [project.urls]
 Homepage = "https://formulation-bench.henryrobbins.com"
 Documentation = "https://formulation-bench.henryrobbins.com"
-Repository = "https://github.com/henryrobbins/flare"
-Issues = "https://github.com/henryrobbins/flare/issues"
+Repository = "https://github.com/henryrobbins/formulation-bench"
+Issues = "https://github.com/henryrobbins/formulation-bench/issues"
 
 [project.optional-dependencies]
 docs = [
@@ -46,6 +46,10 @@ dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
     "ruff>=0.4",
+    "lefthook",
+    # Used by the codegen solve tests and the dataset validation scripts.
+    "gurobipy",
+    "tqdm",
 ]
 
 [tool.setuptools.packages.find]
@@ -59,6 +63,11 @@ line-length = 88
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# single letter names for math notation
+"dataset/**/gen_params.py" = ["E741"]
+"dataset/**/gen_data.py" = ["E741"]
 
 [tool.mypy]
 strict = true

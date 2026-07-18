@@ -1,12 +1,11 @@
 # Common dev commands for the formulation-bench package.
-# Run from this directory (packages/formulation_bench/).
+# Run from the repository root.
 
-.PHONY: help install dataset-link test cov cov-open cov-clean lint format typecheck check docs docs-serve docs-clean clean
+.PHONY: help install test cov cov-open cov-clean lint format typecheck check docs docs-serve docs-clean clean
 
 help:
 	@echo "Targets:"
-	@echo "  install      Sync workspace deps with uv"
-	@echo "  dataset-link Symlink ./dataset -> ../../dataset (needed for doctests)"
+	@echo "  install      Sync deps with uv"
 	@echo "  test         Run pytest"
 	@echo "  cov          Run pytest with coverage; writes HTML to htmlcov/ and XML to coverage.xml"
 	@echo "  cov-open     Open the HTML coverage report"
@@ -23,14 +22,11 @@ help:
 install:
 	uv sync
 
-dataset-link:
-	@test -e dataset || ln -s ../../dataset dataset
+test:
+	uv run pytest
 
-test: dataset-link
-	uv run --package formulation-bench pytest
-
-cov: dataset-link
-	uv run --package formulation-bench pytest \
+cov:
+	uv run pytest \
 		--cov=formulation_bench \
 		--cov-report=term-missing \
 		--cov-report=html \
@@ -43,22 +39,22 @@ cov-clean:
 	rm -rf htmlcov coverage.xml .coverage
 
 lint:
-	uv run --package formulation-bench ruff check src tests
+	uv run ruff check src tests scripts
 
 format:
-	uv run --package formulation-bench ruff format src tests
-	uv run --package formulation-bench ruff check --fix src tests
+	uv run ruff format src tests scripts
+	uv run ruff check --fix src tests scripts
 
 typecheck:
-	uv run --package formulation-bench mypy
+	uv run mypy
 
 check: lint typecheck test
 
 docs:
-	uv run --package formulation-bench --extra docs sphinx-build -W -b html docs docs/_build/html
+	uv run --extra docs sphinx-build -W -b html docs docs/_build/html
 
 docs-serve:
-	uv run --package formulation-bench --extra docs bash docs/serve.sh
+	uv run --extra docs bash docs/serve.sh
 
 docs-clean:
 	rm -rf docs/_build
