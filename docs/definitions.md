@@ -40,7 +40,7 @@ above. `Params` is the parameter space $\mathcal{P}$, `Vars p` is the
 variable space for instance $p$, `feasible p x` is the
 indicator of $x \in \mathcal{F}(p)$, and `obj p x` is $f_0(x; p)$.
 
-```{literalinclude} ../../../dataset/Common.lean
+```{literalinclude} ../dataset/Common.lean
 :language: lean
 :start-at: structure MILPFormulation
 :end-before: structure MILPReformulation
@@ -105,7 +105,7 @@ are the forward and backward mappings, `objMap` is $\Phi_{\text{obj}}$
 with monotonicity witnessed by `objMap_mono`. Lastly, `fwd_feas`,
 `bwd_feas`, `fwd_obj`, and `bwd_obj` discharge the four conditions.
 
-```{literalinclude} ../../../dataset/Common.lean
+```{literalinclude} ../dataset/Common.lean
 :language: lean
 :start-at: structure MILPReformulation
 ```

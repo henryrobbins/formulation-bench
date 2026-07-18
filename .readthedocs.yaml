@@ -6,7 +6,7 @@ build:
     python: "3.12"
 
 sphinx:
-  configuration: packages/formulation_bench/docs/conf.py
+  configuration: docs/conf.py
   fail_on_warning: true
 
 formats:
@@ -15,6 +15,6 @@ formats:
 python:
   install:
     - method: pip
-      path: packages/formulation_bench
+      path: .
       extra_requirements:
         - docs

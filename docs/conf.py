@@ -22,7 +22,7 @@ extensions = [
 
 extlinks = {
     "github": (
-        "https://github.com/henryrobbins/flare%s",
+        "https://github.com/henryrobbins/formulation-bench%s",
         "GitHub%.0s",
     ),
     "paper": ("https://flare.henryrobbins.com%s", "FLARE Paper%.0s"),
@@ -42,7 +42,7 @@ myst_enable_extensions = [
 ]
 
 myst_substitutions = {
-    "GitHub": "[GitHub](https://github.com/henryrobbins/flare)",
+    "GitHub": "[GitHub](https://github.com/henryrobbins/formulation-bench)",
     "FLARE Paper": "[FLARE Paper](https://flare.henryrobbins.com)",
     "milp-flare": "[milp-flare](https://milp-flare.henryrobbins.com/en/latest)",
 }

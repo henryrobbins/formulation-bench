@@ -40,7 +40,7 @@ CODEGEN_PROBLEMS = (8, 9, 11, 20)
 #: Relative tolerance when comparing solved objectives to recorded ones.
 OBJECTIVE_REL_TOL = 1e-6
 
-DATASET_ROOT = Path(__file__).resolve().parents[3] / "dataset"
+DATASET_ROOT = Path(__file__).resolve().parents[1] / "dataset"
 
 # A module-level Dataset is needed so formulations can be enumerated at
 # collection time for parametrization.

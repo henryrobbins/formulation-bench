@@ -15,7 +15,7 @@ from formulation_bench import (
 )
 from formulation_bench.formulation import Formulation
 
-DATASET_ROOT = Path(__file__).parent.parent.parent / "dataset"
+DATASET_ROOT = Path(__file__).parent.parent / "dataset"
 
 
 @pytest.fixture
