@@ -258,7 +258,7 @@
         },
         {
             "description": "Flow conservation at transshipment nodes for each commodity: total inflow equals total outflow (no storage).",
-            "formulation": "\\sum_{i \\in N} E_{ij} F_{ijk} = \\sum_{i \\in N} E_{ji} F_{jik} \\quad \\forall j \\in N_T, k \\in K",
+            "formulation": "\\sum_{i \\in N} E_{i, T_j} F_{i, T_j, k} = \\sum_{i \\in N} E_{T_j, i} F_{T_j, i, k} \\quad \\forall j \\in N_T, k \\in K",
             "explicit": true,
             "code": {
                 "gurobipy": "model.addConstrs(\n    gp.quicksum(E[i][T[j]] * F[i, T[j], k] for i in range(nN)) ==\n    gp.quicksum(E[T[j]][i] * F[T[j], i, k] for i in range(nN))\n    for j in range(nT) for k in range(nK)\n)"

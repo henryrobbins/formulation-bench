@@ -23,6 +23,38 @@ def enumerate_paths(nN: int, E: list[list[int]], S: list[int], B: list[int]):
     return paths
 
 
+def enumerate_simple_cycles(nN: int, E: list[list[int]]) -> list[list[tuple[int, int]]]:
+    """Enumerate every simple directed cycle of the graph (N, E).
+
+    Each cycle is returned as its list of ``(i, j)`` edges. Cycles are
+    canonicalized to begin at their minimum node index, so rotations of the
+    same directed cycle are enumerated exactly once.
+    """
+    adj = [[j for j in range(nN) if E[i][j] == 1] for i in range(nN)]
+    cycles: list[list[tuple[int, int]]] = []
+
+    for start in range(nN):
+        path = [start]
+        on_path = {start}
+
+        def dfs(v: int) -> None:
+            for w in adj[v]:
+                if w == start:
+                    edges = [(path[idx], path[idx + 1]) for idx in range(len(path) - 1)]
+                    edges.append((v, start))
+                    cycles.append(edges)
+                elif w > start and w not in on_path:
+                    path.append(w)
+                    on_path.add(w)
+                    dfs(w)
+                    path.pop()
+                    on_path.discard(w)
+
+        dfs(start)
+
+    return cycles
+
+
 def main(data_path: str, output_path: str) -> None:
     with open(data_path) as f:
         data = json.load(f)
@@ -52,9 +84,24 @@ def main(data_path: str, output_path: str) -> None:
             pE[p][i][j] = 1
 
     # Shipping cost along a path is the sum of its edge costs.
-    c = [
+    pCost = [
         [sum(tc[i][j][k] for i, j in zip(path, path[1:])) for k in range(nK)]
         for path in paths
+    ]
+
+    cycles = enumerate_simple_cycles(nN, E)
+    nC = len(cycles)
+
+    # cE[c][i][j] = 1 if edge (i -> j) is on cycle c.
+    cE = [[[0] * nN for _ in range(nN)] for _ in range(nC)]
+    for c, cycle_edges in enumerate(cycles):
+        for i, j in cycle_edges:
+            cE[c][i][j] = 1
+
+    # Shipping cost around a cycle is the sum of its edge costs.
+    cCost = [
+        [sum(tc[i][j][k] for i, j in cycle_edges) for k in range(nK)]
+        for cycle_edges in cycles
     ]
 
     params = {
@@ -63,6 +110,7 @@ def main(data_path: str, output_path: str) -> None:
         "nT": len(T),
         "nB": len(B),
         "nP": nP,
+        "nC": nC,
         "nK": nK,
         "nL": data["nL"],
         "S": S,
@@ -71,7 +119,9 @@ def main(data_path: str, output_path: str) -> None:
         "E": E,
         "pE": pE,
         "pRank": pRank,
-        "c": c,
+        "pCost": pCost,
+        "cE": cE,
+        "cCost": cCost,
         "q": data["pc"],
         "nutval": data["nutval"],
         "nutreq": data["nutreq"],
