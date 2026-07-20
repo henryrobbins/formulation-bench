@@ -2,6 +2,38 @@ import argparse
 import json
 
 
+def enumerate_simple_cycles(nN: int, E: list[list[int]]) -> list[list[tuple[int, int]]]:
+    """Enumerate every simple directed cycle of the graph (N, E).
+
+    Each cycle is returned as its list of ``(i, j)`` edges. Cycles are
+    canonicalized to begin at their minimum node index, so rotations of the
+    same directed cycle are enumerated exactly once.
+    """
+    adj = [[j for j in range(nN) if E[i][j] == 1] for i in range(nN)]
+    cycles: list[list[tuple[int, int]]] = []
+
+    for start in range(nN):
+        path = [start]
+        on_path = {start}
+
+        def dfs(v: int) -> None:
+            for w in adj[v]:
+                if w == start:
+                    edges = [(path[idx], path[idx + 1]) for idx in range(len(path) - 1)]
+                    edges.append((v, start))
+                    cycles.append(edges)
+                elif w > start and w not in on_path:
+                    path.append(w)
+                    on_path.add(w)
+                    dfs(w)
+                    path.pop()
+                    on_path.discard(w)
+
+        dfs(start)
+
+    return cycles
+
+
 def main(data_path: str, output_path: str) -> None:
     with open(data_path) as f:
         data = json.load(f)
@@ -52,9 +84,33 @@ def main(data_path: str, output_path: str) -> None:
             j = path_node_indices[idx + 1]
             pE[p][i][j] = 1
 
-    # c[p][k] = shipping cost per kg of commodity k along path p
+    # pCost[p][k] = shipping cost per kg of commodity k along path p
     path_costs = data["path_costs"]
-    c = [[path_costs[paths[p]][foods[k]] for k in range(nK)] for p in range(nP)]
+    pCost = [[path_costs[paths[p]][foods[k]] for k in range(nK)] for p in range(nP)]
+
+    # Enumerate every simple directed cycle of the supply network.
+    cycles = enumerate_simple_cycles(nN, E)
+    nC = len(cycles)
+
+    # cE[c][i][j] = 1 if edge (i -> j) is part of cycle c
+    cE = [[[0 for _ in range(nN)] for _ in range(nN)] for _ in range(nC)]
+    for c, cycle_edges in enumerate(cycles):
+        for i, j in cycle_edges:
+            cE[c][i][j] = 1
+
+    # cCost[c][k] = shipping cost per kg of commodity k along cycle c
+    # (sum of the transportation cost of each edge on the cycle)
+    edge_costs = data["edge_costs"]
+    cCost = [
+        [
+            sum(
+                edge_costs[all_nodes[i]][all_nodes[j]][foods[k]]
+                for i, j in cycle_edges
+            )
+            for k in range(nK)
+        ]
+        for cycle_edges in cycles
+    ]
 
     # q[k] = procurement cost per kg of commodity k
     procurement_costs = data["procurement_costs"]
@@ -88,6 +144,7 @@ def main(data_path: str, output_path: str) -> None:
         "nT": nT,
         "nB": nB,
         "nP": nP,
+        "nC": nC,
         "nK": nK,
         "nL": nL,
         "S": S,
@@ -96,7 +153,9 @@ def main(data_path: str, output_path: str) -> None:
         "E": E,
         "pE": pE,
         "pRank": pRank,
-        "c": c,
+        "pCost": pCost,
+        "cE": cE,
+        "cCost": cCost,
         "q": q,
         "nutval": nutval,
         "nutreq": nutreq,

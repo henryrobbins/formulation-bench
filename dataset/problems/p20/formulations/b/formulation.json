@@ -26,6 +26,11 @@
             "type": "integer",
             "shape": []
         },
+        "nC": {
+            "description": "Number of cycles in the supply network",
+            "type": "integer",
+            "shape": []
+        },
         "nK": {
             "description": "Number of food commodities",
             "type": "integer",
@@ -82,11 +87,28 @@
                 "nN"
             ]
         },
-        "c": {
+        "pCost": {
             "description": "Shipping cost per kg of commodity k along path p",
             "type": "continuous",
             "shape": [
                 "nP",
+                "nK"
+            ]
+        },
+        "cE": {
+            "description": "Cycle-edge indicator: 1 if edge (i, j) is part of cycle c, 0 otherwise",
+            "type": "binary",
+            "shape": [
+                "nC",
+                "nN",
+                "nN"
+            ]
+        },
+        "cCost": {
+            "description": "Shipping cost per kg of commodity k along cycle c",
+            "type": "continuous",
+            "shape": [
+                "nC",
                 "nK"
             ]
         },
@@ -203,7 +225,7 @@
         },
         {
             "description": "The supplier, transshipment, and beneficiary node-class maps partition N (every node belongs to exactly one class).",
-            "formulation": "N = N_S \\sqcup N_T \\sqcup N_B",
+            "formulation": "N = \\{S_s : s \\in N_S\\} \\sqcup \\{T_t : t \\in N_T\\} \\sqcup \\{B_j : j \\in N_B\\}",
             "explicit": true,
             "code": {
                 "python": "assert set(S) | set(T) | set(B) == set(range(nN)) and set(S).isdisjoint(T) and set(S).isdisjoint(B) and set(T).isdisjoint(B)"
@@ -291,10 +313,74 @@
         },
         {
             "description": "Shipping cost along each path for each commodity is non-negative.",
-            "formulation": "c_{pk} \\geq 0 \\quad \\forall p \\in P, k \\in K",
+            "formulation": "pCost_{pk} \\geq 0 \\quad \\forall p \\in P, k \\in K",
             "explicit": false,
             "code": {
-                "python": "assert all(c[p][k] >= 0 for p in range(nP) for k in range(nK))"
+                "python": "assert all(pCost[p][k] >= 0 for p in range(nP) for k in range(nK))"
+            }
+        },
+        {
+            "description": "Each cycle edge must be a graph edge.",
+            "formulation": "cE_{c,i,j} \\leq E_{ij} \\quad \\forall c \\in C, i, j \\in N",
+            "explicit": false,
+            "code": {
+                "python": "assert all(cE[c][i][j] <= E[i][j] for c in range(nC) for i in range(nN) for j in range(nN))"
+            }
+        },
+        {
+            "description": "Within each cycle, every node has in-degree at most 1.",
+            "formulation": "\\sum_{i \\in N} cE_{c,i,v} \\leq 1 \\quad \\forall c \\in C, v \\in N",
+            "explicit": false,
+            "code": {
+                "python": "assert all(sum(cE[c][i][v] for i in range(nN)) <= 1 for c in range(nC) for v in range(nN))"
+            }
+        },
+        {
+            "description": "Within each cycle, every node has out-degree at most 1.",
+            "formulation": "\\sum_{j \\in N} cE_{c,v,j} \\leq 1 \\quad \\forall c \\in C, v \\in N",
+            "explicit": false,
+            "code": {
+                "python": "assert all(sum(cE[c][v][j] for j in range(nN)) <= 1 for c in range(nC) for v in range(nN))"
+            }
+        },
+        {
+            "description": "Within each cycle, each node's in-degree equals its out-degree (flow conservation), so every node is either skipped or visited with exactly one incoming and one outgoing edge. Together with the degree bounds this makes the active edges a node-disjoint union of simple cycles.",
+            "formulation": "\\sum_{i \\in N} cE_{c,i,v} = \\sum_{j \\in N} cE_{c,v,j} \\quad \\forall c \\in C, v \\in N",
+            "explicit": false,
+            "code": {
+                "python": "assert all(sum(cE[c][i][v] for i in range(nN)) == sum(cE[c][v][j] for j in range(nN)) for c in range(nC) for v in range(nN))"
+            }
+        },
+        {
+            "description": "Each cycle is connected: the active edges of every cycle form a single simple directed cycle rather than a union of two or more node-disjoint cycles. Equivalently, starting from any active node and following successors returns to the start only after visiting every active node.",
+            "formulation": "\\{(i, j) : cE_{c,i,j} = 1\\} \\text{ forms a single directed cycle} \\quad \\forall c \\in C",
+            "explicit": false,
+            "code": {
+                "python": "for c in range(nC):\n    succ = {i: j for i in range(nN) for j in range(nN) if cE[c][i][j] == 1}\n    active = set(succ)\n    assert active, \"each cycle must contain at least one edge\"\n    start = min(active)\n    visited, node = [], start\n    while node not in visited:\n        visited.append(node)\n        node = succ[node]\n    assert node == start and set(visited) == active"
+            }
+        },
+        {
+            "description": "Cycle indexing is complete: every valid cycle is indexed by some c in C.",
+            "formulation": "\\forall \\text{ valid cycle } \\pi, \\exists c \\in C : cE_c = \\pi",
+            "explicit": false,
+            "code": {
+                "python": "# Completeness must be verified by external cycle enumeration; not asserted here."
+            }
+        },
+        {
+            "description": "Cycle indexing is injective: distinct cycle indices give distinct edge sets.",
+            "formulation": "c_1 \\neq c_2 \\implies \\exists i, j \\in N : cE_{c_1,i,j} \\neq cE_{c_2,i,j}",
+            "explicit": false,
+            "code": {
+                "python": "assert len({tuple(tuple(row) for row in cE[c]) for c in range(nC)}) == nC"
+            }
+        },
+        {
+            "description": "Shipping cost along each cycle for each commodity is non-negative.",
+            "formulation": "cCost_{ck} \\geq 0 \\quad \\forall c \\in C, k \\in K",
+            "explicit": false,
+            "code": {
+                "python": "assert all(cCost[c][k] >= 0 for c in range(nC) for k in range(nK))"
             }
         },
         {
@@ -339,6 +425,14 @@
                 "nK"
             ]
         },
+        "y": {
+            "description": "Amount of commodity k shipped along cycle c (kg)",
+            "type": "continuous",
+            "shape": [
+                "nC",
+                "nK"
+            ]
+        },
         "R": {
             "description": "Ration size per person of each commodity (kg)",
             "type": "continuous",
@@ -373,6 +467,14 @@
             }
         },
         {
+            "description": "Amount shipped along each cycle for each commodity is non-negative.",
+            "formulation": "y_{ck} \\geq 0 \\quad \\forall c \\in C, k \\in K",
+            "explicit": false,
+            "code": {
+                "gurobipy": "model.addConstrs(y[c, k] >= 0 for c in range(nC) for k in range(nK))"
+            }
+        },
+        {
             "description": "Ration size per person of each commodity is non-negative.",
             "formulation": "R_k \\geq 0 \\quad \\forall k \\in K",
             "explicit": false,
@@ -383,18 +485,18 @@
     ],
     "objective": {
         "description": "Minimize total shipping cost plus total procurement cost.",
-        "formulation": "\\min \\sum_{p \\in P} \\sum_{k \\in K} c_{pk} x_{pk} + \\sum_{k \\in K} q_k \\left( \\sum_{p \\in P} x_{pk} \\right)",
+        "formulation": "\\min \\sum_{p \\in P} \\sum_{k \\in K} pCost_{pk} x_{pk} + \\sum_{c \\in C} \\sum_{k \\in K} cCost_{ck} y_{ck} + \\sum_{k \\in K} q_k \\sum_{p \\in P} x_{pk}",
         "code": {
-            "gurobipy": "model.setObjective(\n    gp.quicksum(c[p][k] * x[p, k] for p in range(nP) for k in range(nK))\n    + gp.quicksum(q[k] * gp.quicksum(x[p, k] for p in range(nP)) for k in range(nK)),\n    GRB.MINIMIZE\n)"
+            "gurobipy": "model.setObjective(\n    gp.quicksum(pCost[p][k] * x[p, k] for p in range(nP) for k in range(nK))\n    + gp.quicksum(cCost[c][k] * y[c, k] for c in range(nC) for k in range(nK))\n    + gp.quicksum(q[k] * gp.quicksum(x[p, k] for p in range(nP)) for k in range(nK)),\n    GRB.MINIMIZE\n)"
         }
     },
     "metadata": {
         "source": {
             "dataset": "Ferchtandiker2025",
-            "variation_id": "inefficient"
+            "formulation_id": "inefficient"
         },
         "notes": [
-            "The inefficient formulation is path-based.",
+            "The inefficient formulation is path- and cycle-based.",
             "Proving this is a valid reformulation requires introducing many assumptions that relate the path-based parameters to the underlying supply network structure of the efficient formulation. These assumptions ensure the set of paths is well-formed and allows for a flow-decomposition argument."
         ]
     }
