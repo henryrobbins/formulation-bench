@@ -280,6 +280,14 @@
             }
         },
         {
+            "description": "Every interior node of a path (in-degree 1 and out-degree 1) is a transshipment node.",
+            "formulation": "\\left( \\sum_{i \\in N} pE_{p,i,v} = 1 \\;\\land\\; \\sum_{j \\in N} pE_{p,v,j} = 1 \\right) \\implies v \\in \\{T_t : t \\in N_T\\} \\quad \\forall p \\in P, v \\in N",
+            "explicit": false,
+            "code": {
+                "python": "assert all(v in T for p in range(nP) for v in range(nN) if sum(pE[p][i][v] for i in range(nN)) == 1 and sum(pE[p][v][j] for j in range(nN)) == 1)"
+            }
+        },
+        {
             "description": "End indicator e is consistent with pE: e_{j,p} = 1 iff path p ends at beneficiary camp j.",
             "formulation": "e_{j,p} = \\sum_{i \\in N} pE_{p,i,B_j} - \\sum_{k \\in N} pE_{p,B_j,k} \\quad \\forall j \\in N_B, p \\in P",
             "explicit": false,
@@ -357,6 +365,14 @@
             "explicit": false,
             "code": {
                 "python": "for c in range(nC):\n    succ = {i: j for i in range(nN) for j in range(nN) if cE[c][i][j] == 1}\n    active = set(succ)\n    assert active, \"each cycle must contain at least one edge\"\n    start = min(active)\n    visited, node = [], start\n    while node not in visited:\n        visited.append(node)\n        node = succ[node]\n    assert node == start and set(visited) == active"
+            }
+        },
+        {
+            "description": "Every node of a cycle (out-degree 1) is a transshipment node.",
+            "formulation": "\\sum_{j \\in N} cE_{c,v,j} = 1 \\implies v \\in \\{T_t : t \\in N_T\\} \\quad \\forall c \\in C, v \\in N",
+            "explicit": false,
+            "code": {
+                "python": "assert all(v in T for c in range(nC) for v in range(nN) if sum(cE[c][v][j] for j in range(nN)) == 1)"
             }
         },
         {
