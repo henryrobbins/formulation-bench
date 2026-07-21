@@ -511,7 +511,7 @@ class Constraint:
         >>> c.explicit
         True
         >>> c.formulation
-        'u_i - u_j + n \\cdot x_{ij} \\leq n - 1 ...'
+        'u_i - u_j + n \\times x_{ij} \\leq n - 1 ...'
         >>> c.code["gurobipy"]
         'model.addConstrs(u[i] - u[j] + n * x[i, j] <= n - 1...)'
     """
@@ -558,7 +558,7 @@ class Objective:
         >>> a.objective.description
         'Minimize the total travel cost of the Hamiltonian cycle.'
         >>> a.objective.formulation
-        '\\min \\sum_{i \\in V} \\sum_{j \\in V,\\, j \\neq i} c_{ij} \\cdot x_{ij}'
+        '\\min \\sum_{i \\in V} \\sum_{j \\in V,\\, j \\neq i} c_{ij} \\times x_{ij}'
         >>> a.objective.code["gurobipy"]
         'model.setObjective(gp.quicksum(c[i][j] * x[i, j] ...), GRB.MINIMIZE)'
     """

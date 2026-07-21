@@ -270,7 +270,7 @@ class Formulation:
             - Each city has exactly one incoming arc in the tour.
             $$\sum_{i \in V,\, i \neq j} x_{ij} = 1 \quad \forall j \in V$$
             - MTZ subtour elimination constraint.
-            $$u_i - u_j + n \cdot x_{ij} \leq n - 1 \quad \forall i, j \in V \setminus \{0\},\; i \neq j$$
+            $$u_i - u_j + n \times x_{ij} \leq n - 1 \quad \forall i, j \in V \setminus \{0\},\; i \neq j$$
             - Depot position is fixed to 1 to anchor the tour ordering.
             $$u_0 = 1$$
             - Lower bound on MTZ position: each non-depot city's position is at least 2.
@@ -281,7 +281,7 @@ class Formulation:
             ### Objective
             <BLANKLINE>
             Minimize the total travel cost of the Hamiltonian cycle.
-            $$\min \sum_{i \in V} \sum_{j \in V,\, j \neq i} c_{ij} \cdot x_{ij}$$
+            $$\min \sum_{i \in V} \sum_{j \in V,\, j \neq i} c_{ij} \times x_{ij}$$
             <BLANKLINE>
 
         """  # noqa: E501
