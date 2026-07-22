@@ -630,6 +630,42 @@ theorem fwd_feas (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) 
     intro pl a a' t
     rw [hz]; split_ifs <;> simp
 
+/-- Aggregating the per-plane expansion recovers the aggregate solution it
+was built from. -/
+theorem bwd_fwd (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
+    bwd p (fwd p v) = v := by
+  classical
+  set D := Classical.choice (build_layers p v h) with hD
+  have hy : ∀ pl a t, (fwd p v).y pl a t = if D.loc pl t = a then (1 : ℤ) else 0 := by
+    intro pl a t; simp only [fwd, dif_pos h, ← hD]
+  have hz : ∀ pl a a' t, (fwd p v).z pl a a' t
+      = if D.arcCh pl t = some a' ∧ D.loc pl t = a then (1 : ℤ) else 0 := by
+    intro pl a a' t; simp only [fwd, dif_pos h, ← hD]
+  have hn : ∀ a t, (∑ pl, (fwd p v).y pl a t) = v.n a t := by
+    intro a t
+    simp only [hy]
+    have hcnt : (univ.filter (fun pl : Fin (paramMap p).nP => D.loc pl t = a)).card
+        = (v.n a t).toNat := D.hcount a t
+    rw [Finset.sum_boole, hcnt]
+    exact Int.toNat_of_nonneg (h.hn_nn a t)
+  have hf : ∀ a a' t, (∑ pl, (fwd p v).z pl a a' t) = v.f a a' t := by
+    intro a a' t
+    simp only [hz]
+    have hcnt : (univ.filter (fun pl : Fin (paramMap p).nP =>
+        D.arcCh pl t = some a' ∧ D.loc pl t = a)).card = (v.f a a' t).toNat := by
+      rw [show (univ.filter (fun pl : Fin (paramMap p).nP =>
+            D.arcCh pl t = some a' ∧ D.loc pl t = a))
+          = univ.filter (fun pl : Fin (paramMap p).nP =>
+            D.loc pl t = a ∧ D.arcCh pl t = some a') from by
+        apply Finset.filter_congr; intro pl _; tauto]
+      exact D.harc a a' t
+    rw [Finset.sum_boole, hcnt]
+    exact Int.toNat_of_nonneg (h.hf_nn a a' t)
+  cases v
+  simp only [bwd, P13.a.Vars.mk.injEq]
+  exact ⟨funext fun a => funext fun t => hn a t,
+         funext fun a => funext fun a' => funext fun t => hf a a' t⟩
+
 /-- The forward map preserves the objective. -/
 theorem fwd_obj (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
     P13.b.obj (paramMap p) (fwd p v) = P13.a.obj p v := by
@@ -665,6 +701,7 @@ noncomputable def p13_a_b_reformulation :
   bwd := bwd
   fwd_feas := fwd_feas
   bwd_feas := bwd_feas
+  bwd_fwd := bwd_fwd
   objMap := id
   objMap_mono := strictMono_id
   fwd_obj := fun p x hx => fwd_obj p x hx
