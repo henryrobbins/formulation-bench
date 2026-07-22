@@ -1680,7 +1680,7 @@ noncomputable def aBReformulation :
     have hyy : (varCast' p (fwd (paramMap' p) (bwd (paramMap' p) (varCast p x)))).y = x.y :=
       funext fun i => funext fun j => funext fun h' =>
         agg_y (paramMap' p) (varCast p x) hf i j h'
-    exact P15.a.Vars.ext hxx hyy
+    exact congrArg₂ P15.a.Vars.mk hxx hyy
   objMap      := id
   objMap_mono := strictMono_id
   fwd_obj     := fun p x hx =>
