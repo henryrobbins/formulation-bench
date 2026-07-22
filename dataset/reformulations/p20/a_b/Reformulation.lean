@@ -731,6 +731,23 @@ lemma fwd_obj (v : P20.a.Vars pa) (ha : P20.a.Feasible pa v) :
   funext i j k
   exact (hrec i j k).symm
 
+/-- **Inverse consistency.** On feasible points `bwd` undoes `fwd`: the ration is
+carried through untouched, and re-aggregating the path/cycle amounts produced by
+the decomposition rebuilds the original arc flow. -/
+lemma bwd_fwd (v : P20.a.Vars pa) (ha : P20.a.Feasible pa v) :
+    bwd pa (fwd pa v) = v := by
+  obtain ⟨-, -, hrec⟩ := fwd_spec pa v ha
+  have hF : (bwd pa (fwd pa v)).F = v.F := by
+    funext i j k
+    exact (hrec i j k).symm
+  have hR : (bwd pa (fwd pa v)).R = v.R := by
+    show (fwd pa v).R = v.R
+    simp only [fwd, dif_pos ha]
+  calc bwd pa (fwd pa v)
+      = ⟨(bwd pa (fwd pa v)).F, (bwd pa (fwd pa v)).R⟩ := rfl
+    _ = ⟨v.F, v.R⟩ := by rw [hF, hR]
+    _ = v := rfl
+
 /-- **The reformulation.** `P20.a` (arc flow) ⇄ `P20.b` (path + cycle), with the
 identity objective map. `sorry`-free apart from `flow_decomposition`. -/
 noncomputable def reformulation :
@@ -740,6 +757,7 @@ noncomputable def reformulation :
   bwd := bwd
   fwd_feas := fwd_feas
   bwd_feas := bwd_feas
+  bwd_fwd := bwd_fwd
   objMap := id
   objMap_mono := strictMono_id
   fwd_obj := fwd_obj
