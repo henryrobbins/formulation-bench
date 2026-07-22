@@ -1671,6 +1671,16 @@ noncomputable def aBReformulation :
   fwd_feas    := fun p x hx => bwd_feas (paramMap' p) (varCast p x) (feas_to p x hx)
   bwd_feas    := fun p y hy => feas_from p (fwd (paramMap' p) y)
                     (fwd_feas (paramMap' p) y hy)
+  bwd_fwd p x hx := by
+    have hf := feas_to p x hx
+    show varCast' p (fwd (paramMap' p) (bwd (paramMap' p) (varCast p x))) = x
+    have hxx : (varCast' p (fwd (paramMap' p) (bwd (paramMap' p) (varCast p x)))).x = x.x :=
+      funext fun cfg => funext fun h' =>
+        agg_x (paramMap' p) (varCast p x) hf cfg h'
+    have hyy : (varCast' p (fwd (paramMap' p) (bwd (paramMap' p) (varCast p x)))).y = x.y :=
+      funext fun i => funext fun j => funext fun h' =>
+        agg_y (paramMap' p) (varCast p x) hf i j h'
+    exact P15.a.Vars.ext hxx hyy
   objMap      := id
   objMap_mono := strictMono_id
   fwd_obj     := fun p x hx =>
