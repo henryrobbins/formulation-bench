@@ -34,6 +34,9 @@ the repository root for the list.
 
 ```
 formulation-bench/
+├── .claude/
+│   ├── agents/              # MILP formulator / autoformalizer / reviewer
+│   └── skills/              # Lean MILP formulation + reformulation standards
 ├── src/formulation_bench/   # the package
 │   ├── dataset.py           # top-level Dataset loader
 │   ├── problem.py           # Problem model
@@ -118,3 +121,44 @@ make check       # all of the above plus tests
 mypy is strict and scoped to `src/formulation_bench` — new code needs
 full annotations. Ruff's selected rule groups are `E`, `F`, `I`, `UP`;
 let `make format` handle import ordering and modern-syntax rewrites.
+
+## Common Workflows
+
+The repo provides a set of skills and agents for working with the dataset.
+The agents live in `.claude/agents/`; the standards they follow are the
+skills in `.claude/skills/`. All three agents also use the `lean4:lean4`
+skill and the `lean-lsp` MCP server configured in `.mcp.json`.
+
+**Generate a Lean MILP formulation**
+
+1. Identify the relevant source file(s) to read. E.g., the relevant source
+   files for problem 1, formulation e (p1.e) are the problem files in
+   `dataset/problems/p1` and the formulation files in
+   `dataset/problems/p1/formulations/e`. If the user requests generating
+   formulations for a problem, generate all of the problem's formulations.
+2. The output file(s) will be `Formulation.lean` in each formulation's
+   subdirectory. E.g., the formulation for p1.e goes in
+   `dataset/problems/p1/formulations/e/Formulation.lean`.
+3. Invoke the `milp-formulator` agent with the identified source/output. If
+   generating multiple formulations, invoke multiple agents in parallel.
+
+**Generate Lean MILP reformulation proof**
+
+1. Identify the relevant source file(s) to read. At minimum, read each
+   MILP's `Formulation.lean` file. E.g., for proving p1.b is a reformulation
+   of p1.a, read the problem files in `dataset/problems/p1` and the
+   formulation files in `dataset/problems/p1/formulations/a|b`. If a
+   formulation subdirectory does not yet contain `Formulation.lean`, follow
+   the steps above to generate it.
+2. The output file for proving formulation b is a reformulation of
+   formulation a (for problem X) is `dataset/reformulations/pX/a_b.lean`.
+3. Invoke the `milp-reformulation-autoformalizer` agent with the identified
+   source/output. If generating multiple proofs, invoke multiple agents in
+   parallel.
+
+**Review existing Lean MILP formulations or reformulation proofs**
+
+1. Identify the relevant file(s) to read: problem files, formulation files,
+   `Formulation.lean`, and `dataset/reformulations/pX/a_b.lean`.
+2. Invoke the `milp-reviewer` agent pointing to the relevant file locations.
+   If reviewing multiple files, invoke multiple agents in parallel.
