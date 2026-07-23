@@ -12,21 +12,6 @@ open P15.b (apts)
 
 namespace P15
 
-/-!
-# P15: Apartment-tower reformulation `A → B`
-
-Formulation `P15.a` keeps only aggregate integer counts, while formulation
-`P15.b` indexes floors `k ∈ [0, nK)` and apartments `a ∈ A_v` explicitly
-with binary decision variables.
-
-This file constructs the constructive `A → B` reformulation. It synthesizes
-a `P15.b`-instance from a `P15.a`-instance (`paramMap'`) by choosing, for
-each configuration, an explicit apartment-to-area labelling realizing the
-aggregate counts `R`. The variable maps and feasibility/objective transports
-reuse the aggregate/disaggregate machinery (`fwd`, `bwd`, `fwd_feas`,
-`bwd_feas`, `fwd_obj_eq`, `bwd_obj_eq`) developed for the `B → A` direction.
--/
-
 -- ============================================================================
 -- § Block-assignment corollary (degree-1 Gale–Ryser)
 -- ============================================================================
