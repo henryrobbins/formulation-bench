@@ -34,11 +34,11 @@ induction over the time layers. The key ingredients are:
   (expand-via-decomposition) maps, with their feasibility and objective
   preservation proofs.
 
-The final `MILPReformulation` instance is `p13_a_b_reformulation`.
+The final `MILPReformulation` instance is `aBReformulation`.
 -/
 
 -- ============================================================================
--- § Lemma A: prescribed-size partition of a finite set
+-- § Helper Lemmas
 -- ============================================================================
 
 /-- **Single-location routing (prescribed-size partition).**
@@ -48,7 +48,7 @@ function `pick` assigning each element an optional target, so that exactly
 `sz k` elements are assigned to each target `k` and unassigned elements lie
 outside `s`. This is the heart of "route the flights at one location into
 the outgoing arcs (the leftover takes no arc)." -/
-lemma exists_pick_on {ι : Type*} [DecidableEq ι] :
+private lemma exists_pick_on {ι : Type*} [DecidableEq ι] :
     ∀ (m : ℕ) (sz : Fin m → ℕ) (s : Finset ι),
       (∑ k, sz k) ≤ s.card →
       ∃ pick : ι → Option (Fin m),
@@ -131,10 +131,6 @@ lemma exists_pick_on {ι : Type*} [DecidableEq ι] :
             simp only [hi, if_false, hcond, Option.map_some]
         rw [hfilt, hpick'card k']
 
--- ============================================================================
--- § Cast helper: sum of `Int.toNat` over nonnegative integers
--- ============================================================================
-
 /-- For nonnegative integers, the `ℕ`-sum of `Int.toNat`s casts back to the
 `ℤ`-sum. Used to translate the aggregate flow-conservation identity between
 `ℤ` (formulation `b`) and `ℕ` (cardinalities of plane sets). -/
@@ -143,14 +139,10 @@ private lemma cast_sum_toNat {n : ℕ} (g : Fin n → ℤ) (hg : ∀ i, 0 ≤ g 
   push_cast
   exact Finset.sum_congr rfl (fun i _ => Int.toNat_of_nonneg (hg i))
 
--- ============================================================================
--- § Base layer: placement of planes at the initial time
--- ============================================================================
-
 /-- **Base layer.** Given nonnegative per-location counts summing to `nP`,
 there is a placement `loc : Fin nP → Fin nA` of the `nP` planes realizing
 exactly `(n a).toNat` planes at each location `a`. -/
-lemma layer_base {nP nA : ℕ} [NeZero nA] (n : Fin nA → ℤ)
+private lemma layer_base {nP nA : ℕ} [NeZero nA] (n : Fin nA → ℤ)
     (hn_nn : ∀ a, 0 ≤ n a) (hsum : (∑ a, n a) = (nP : ℤ)) :
     ∃ loc : Fin nP → Fin nA,
       ∀ a, (univ.filter (fun pl => loc pl = a)).card = (n a).toNat := by
@@ -184,10 +176,6 @@ lemma layer_base {nP nA : ℕ} [NeZero nA] (n : Fin nA → ℤ)
     · simp
   rw [hset, hcard a]
 
--- ============================================================================
--- § Single-layer step: route planes among outgoing arcs
--- ============================================================================
-
 /-- **Single-layer inductive step.** Given a placement `curLoc` of planes
 realizing per-location counts `(n a).toNat`, nonnegative arc counts `f`
 with `∑_{a'} f a a' ≤ n a` (no more departures than presence), route the
@@ -199,7 +187,7 @@ planes at each location among the outgoing arcs. This produces:
   `a'`; a plane with no arc stays put), and
 * next-layer counts equal to `n a' + ∑_a f a a' - ∑_{a''} f a' a''` (in
   `Int.toNat`) — exactly the aggregate flow-conservation right-hand side. -/
-lemma layer_step {nP nA : ℕ} [NeZero nA]
+private lemma layer_step {nP nA : ℕ} [NeZero nA]
     (curLoc : Fin nP → Fin nA)
     (n : Fin nA → ℤ) (f : Fin nA → Fin nA → ℤ)
     (hn_nn : ∀ a, 0 ≤ n a)
@@ -304,11 +292,11 @@ lemma layer_step {nP nA : ℕ} [NeZero nA]
     omega
 
 -- ============================================================================
--- § Parameter map and backward variable map
+-- § Parameter Mapping
 -- ============================================================================
 
 /-- Parameter map `b.Params → a.Params` (identical data, distinct types). -/
-def paramMap (p : P13.a.Params) : P13.b.Params where
+private def paramMap (p : P13.a.Params) : P13.b.Params where
   nP := p.nP
   nA := p.nA
   nT := p.nT
@@ -322,79 +310,15 @@ def paramMap (p : P13.a.Params) : P13.b.Params where
   hadj_self := p.hadj_self
   hcap_nn := p.hcap_nn
 
-/-- Backward variable map: aggregate the per-plane variables. -/
-def bwd (p : P13.a.Params) (v : P13.b.Vars (paramMap p)) : P13.a.Vars p where
-  n := fun a t => ∑ pl, v.y pl a t
-  f := fun a a' t => ∑ pl, v.z pl a a' t
-
-/-- The backward map sends feasible per-plane solutions to feasible
-aggregate solutions. -/
-theorem bwd_feas (p : P13.a.Params) (v : P13.b.Vars (paramMap p))
-    (hv : P13.b.Feasible (paramMap p) v) : P13.a.Feasible p (bwd p v) where
-  hcount := by
-    intro t
-    show (∑ a, ∑ pl, v.y pl a t) = (p.nP : ℤ)
-    rw [Finset.sum_comm]
-    calc ∑ pl, ∑ a, v.y pl a t
-        = ∑ _pl : Fin p.nP, (1 : ℤ) := Finset.sum_congr rfl (fun pl _ => hv.hassign pl t)
-      _ = (p.nP : ℤ) := by simp
-  hcap := by
-    intro a t
-    simp only [bwd]
-    push_cast
-    exact hv.hcap a t
-  hflow := by
-    intro a t ht
-    simp only [bwd]
-    rw [Finset.sum_comm (s := (univ : Finset (Fin p.nA)))
-        (f := fun a' pl => v.z pl a' a ⟨t.val - 1, by show t.val - 1 < p.nT; omega⟩)]
-    rw [Finset.sum_comm (s := (univ : Finset (Fin p.nA)))
-        (f := fun a' pl => v.z pl a a' ⟨t.val - 1, by show t.val - 1 < p.nT; omega⟩)]
-    rw [← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]
-    exact Finset.sum_congr rfl (fun pl _ => hv.hflow pl a t ht)
-  hadj := by
-    intro a a' t
-    simp only [bwd]
-    calc ∑ pl, v.z pl a a' t
-        ≤ ∑ _pl : Fin p.nP, p.adj a a' := Finset.sum_le_sum (fun pl _ => hv.hadj pl a a' t)
-      _ = (p.nP : ℤ) * p.adj a a' := by
-            rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-  hno_depart_last := by
-    intro a a' t ht
-    simp only [bwd]
-    rw [Finset.sum_congr rfl (fun pl _ => hv.hno_depart_last pl a a' t ht)]
-    simp
-  hstay_nn := by
-    intro a t
-    simp only [bwd]
-    rw [Finset.sum_comm]
-    exact Finset.sum_le_sum (fun pl _ => hv.hstay_nn pl a t)
-  hn_nn := by
-    intro a t
-    simp only [bwd]
-    exact Finset.sum_nonneg (fun pl _ => by rcases hv.hy_bin pl a t with h | h <;> omega)
-  hf_nn := by
-    intro a a' t
-    simp only [bwd]
-    exact Finset.sum_nonneg (fun pl _ => by rcases hv.hz_bin pl a a' t with h | h <;> omega)
-
-/-- The backward map preserves the objective. -/
-theorem bwd_obj (p : P13.a.Params) (v : P13.b.Vars (paramMap p)) :
-    P13.a.obj p (bwd p v) = P13.b.obj (paramMap p) v := by
-  simp only [P13.a.obj, P13.b.obj, bwd]
-  push_cast
-  simp_rw [Finset.mul_sum]
-  conv_lhs => enter [2, x]; rw [Finset.sum_comm]
-  rw [Finset.sum_comm]
-  rfl
-
 -- ============================================================================
--- § Layered decomposition: constructing the per-plane solution
+-- § Forward Mapping and Feasibility
 -- ============================================================================
+
+section ForwardHelpers
 
 /-- Single-layer data extracted from `layer_step` at time `k`, with the
 next-layer count invariant rewritten via aggregate flow conservation. -/
-noncomputable def layerData (p : P13.a.Params) (v : P13.a.Vars p)
+private noncomputable def layerData (p : P13.a.Params) (v : P13.a.Vars p)
     (h : P13.a.Feasible p v) (k : ℕ) (hk1 : k + 1 < p.nT)
     (curLoc : Fin p.nP → Fin p.nA)
     (hinv : ∀ a, (univ.filter (fun pl => curLoc pl = a)).card
@@ -423,7 +347,7 @@ noncomputable def layerData (p : P13.a.Params) (v : P13.a.Vars p)
 
 /-- The layer placement at time `k`, built by recursion over the layers,
 carrying the per-location count invariant. -/
-noncomputable def buildAux (p : P13.a.Params) (v : P13.a.Vars p)
+private noncomputable def buildAux (p : P13.a.Params) (v : P13.a.Vars p)
     (h : P13.a.Feasible p v) :
     (k : ℕ) → (hk : k < p.nT) →
     {lc : Fin p.nP → Fin p.nA //
@@ -440,12 +364,12 @@ noncomputable def buildAux (p : P13.a.Params) (v : P13.a.Vars p)
              (layerData p v h k hk prev.val prev.property).property.2.2.2⟩
 
 /-- Per-plane placement at each time layer. -/
-noncomputable def locF (p : P13.a.Params) (v : P13.a.Vars p)
+private noncomputable def locF (p : P13.a.Params) (v : P13.a.Vars p)
     (h : P13.a.Feasible p v) (pl : Fin p.nP) (t : Fin p.nT) : Fin p.nA :=
   (buildAux p v h t.val t.isLt).val pl
 
 /-- Per-plane arc choice at each time layer (none on the last layer). -/
-noncomputable def arcF (p : P13.a.Params) (v : P13.a.Vars p)
+private noncomputable def arcF (p : P13.a.Params) (v : P13.a.Vars p)
     (h : P13.a.Feasible p v) (pl : Fin p.nP) (t : Fin p.nT) : Option (Fin p.nA) :=
   if ht : t.val + 1 < p.nT then
     (layerData p v h t.val ht (buildAux p v h t.val t.isLt).val
@@ -454,7 +378,7 @@ noncomputable def arcF (p : P13.a.Params) (v : P13.a.Vars p)
 
 /-- Bundled layered decomposition of an aggregate solution into a per-plane
 routing over the time layers. -/
-structure LayerDecomp (p : P13.a.Params) (v : P13.a.Vars p) where
+private structure LayerDecomp (p : P13.a.Params) (v : P13.a.Vars p) where
   loc   : Fin p.nP → Fin p.nT → Fin p.nA
   arcCh : Fin p.nP → Fin p.nT → Option (Fin p.nA)
   hcount : ∀ a t, (univ.filter (fun pl => loc pl t = a)).card = (v.n a t).toNat
@@ -468,7 +392,7 @@ structure LayerDecomp (p : P13.a.Params) (v : P13.a.Vars p) where
 
 /-- Every feasible aggregate solution admits a layered per-plane
 decomposition. -/
-theorem build_layers (p : P13.a.Params) (v : P13.a.Vars p)
+private lemma build_layers (p : P13.a.Params) (v : P13.a.Vars p)
     (h : P13.a.Feasible p v) : Nonempty (LayerDecomp p v) := by
   refine ⟨{
     loc := locF p v h
@@ -515,13 +439,11 @@ theorem build_layers (p : P13.a.Params) (v : P13.a.Vars p)
     intro pl t hlt
     simp only [arcF, dif_neg (by omega : ¬ t.val + 1 < p.nT)]
 
--- ============================================================================
--- § Forward map
--- ============================================================================
+end ForwardHelpers
 
 /-- Forward map: expand an aggregate solution into a per-plane solution using
 the layered decomposition (identically zero on infeasible inputs). -/
-noncomputable def fwd (p : P13.a.Params) (v : P13.a.Vars p) :
+private noncomputable def fwd (p : P13.a.Params) (v : P13.a.Vars p) :
     P13.b.Vars (paramMap p) := by
   classical
   exact
@@ -536,7 +458,7 @@ noncomputable def fwd (p : P13.a.Params) (v : P13.a.Vars p) :
 
 /-- The forward map sends feasible aggregate solutions to feasible per-plane
 solutions. -/
-theorem fwd_feas (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
+private lemma fwd_feas (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
     P13.b.Feasible (paramMap p) (fwd p v) := by
   classical
   set D := Classical.choice (build_layers p v h) with hD
@@ -630,9 +552,104 @@ theorem fwd_feas (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) 
     intro pl a a' t
     rw [hz]; split_ifs <;> simp
 
+/-- The forward map preserves the objective. -/
+private lemma fwd_obj (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
+    P13.b.obj (paramMap p) (fwd p v) = P13.a.obj p v := by
+  classical
+  set D := Classical.choice (build_layers p v h) with hD
+  have hy : ∀ pl a t, (fwd p v).y pl a t = if D.loc pl t = a then (1 : ℤ) else 0 := by
+    intro pl a t; simp only [fwd, dif_pos h, ← hD]
+  simp only [P13.b.obj, P13.a.obj, hy]
+  rw [Finset.sum_comm]
+  conv_lhs => enter [2, a]; rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl; intro a _
+  apply Finset.sum_congr rfl; intro t _
+  have hcnt : (univ.filter (fun pl : Fin (paramMap p).nP => D.loc pl t = a)).card
+      = (v.n a t).toNat := D.hcount a t
+  rw [← Finset.mul_sum]
+  congr 1
+  push_cast
+  rw [Finset.sum_boole, hcnt]
+  exact_mod_cast Int.toNat_of_nonneg (h.hn_nn a t)
+
+-- ============================================================================
+-- § Backward Mapping and Feasibility
+-- ============================================================================
+
+/-- Backward variable map: aggregate the per-plane variables. -/
+private def bwd (p : P13.a.Params) (v : P13.b.Vars (paramMap p)) : P13.a.Vars p where
+  n := fun a t => ∑ pl, v.y pl a t
+  f := fun a a' t => ∑ pl, v.z pl a a' t
+
+/-- The backward map sends feasible per-plane solutions to feasible
+aggregate solutions. -/
+private lemma bwd_feas (p : P13.a.Params) (v : P13.b.Vars (paramMap p))
+    (hv : P13.b.Feasible (paramMap p) v) : P13.a.Feasible p (bwd p v) where
+  hcount := by
+    intro t
+    show (∑ a, ∑ pl, v.y pl a t) = (p.nP : ℤ)
+    rw [Finset.sum_comm]
+    calc ∑ pl, ∑ a, v.y pl a t
+        = ∑ _pl : Fin p.nP, (1 : ℤ) := Finset.sum_congr rfl (fun pl _ => hv.hassign pl t)
+      _ = (p.nP : ℤ) := by simp
+  hcap := by
+    intro a t
+    simp only [bwd]
+    push_cast
+    exact hv.hcap a t
+  hflow := by
+    intro a t ht
+    simp only [bwd]
+    rw [Finset.sum_comm (s := (univ : Finset (Fin p.nA)))
+        (f := fun a' pl => v.z pl a' a ⟨t.val - 1, by show t.val - 1 < p.nT; omega⟩)]
+    rw [Finset.sum_comm (s := (univ : Finset (Fin p.nA)))
+        (f := fun a' pl => v.z pl a a' ⟨t.val - 1, by show t.val - 1 < p.nT; omega⟩)]
+    rw [← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]
+    exact Finset.sum_congr rfl (fun pl _ => hv.hflow pl a t ht)
+  hadj := by
+    intro a a' t
+    simp only [bwd]
+    calc ∑ pl, v.z pl a a' t
+        ≤ ∑ _pl : Fin p.nP, p.adj a a' := Finset.sum_le_sum (fun pl _ => hv.hadj pl a a' t)
+      _ = (p.nP : ℤ) * p.adj a a' := by
+            rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+  hno_depart_last := by
+    intro a a' t ht
+    simp only [bwd]
+    rw [Finset.sum_congr rfl (fun pl _ => hv.hno_depart_last pl a a' t ht)]
+    simp
+  hstay_nn := by
+    intro a t
+    simp only [bwd]
+    rw [Finset.sum_comm]
+    exact Finset.sum_le_sum (fun pl _ => hv.hstay_nn pl a t)
+  hn_nn := by
+    intro a t
+    simp only [bwd]
+    exact Finset.sum_nonneg (fun pl _ => by rcases hv.hy_bin pl a t with h | h <;> omega)
+  hf_nn := by
+    intro a a' t
+    simp only [bwd]
+    exact Finset.sum_nonneg (fun pl _ => by rcases hv.hz_bin pl a a' t with h | h <;> omega)
+
+/-- The backward map preserves the objective. -/
+private lemma bwd_obj (p : P13.a.Params) (v : P13.b.Vars (paramMap p)) :
+    P13.b.obj (paramMap p) v = P13.a.obj p (bwd p v) := by
+  symm
+  simp only [P13.a.obj, P13.b.obj, bwd]
+  push_cast
+  simp_rw [Finset.mul_sum]
+  conv_lhs => enter [2, x]; rw [Finset.sum_comm]
+  rw [Finset.sum_comm]
+  rfl
+
+-- ============================================================================
+-- § Round-Trip Identity
+-- ============================================================================
+
 /-- Aggregating the per-plane expansion recovers the aggregate solution it
 was built from. -/
-theorem bwd_fwd (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
+private lemma bwd_fwd (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
     bwd p (fwd p v) = v := by
   classical
   set D := Classical.choice (build_layers p v h) with hD
@@ -666,35 +683,15 @@ theorem bwd_fwd (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
   exact ⟨funext fun a => funext fun t => hn a t,
          funext fun a => funext fun a' => funext fun t => hf a a' t⟩
 
-/-- The forward map preserves the objective. -/
-theorem fwd_obj (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
-    P13.b.obj (paramMap p) (fwd p v) = P13.a.obj p v := by
-  classical
-  set D := Classical.choice (build_layers p v h) with hD
-  have hy : ∀ pl a t, (fwd p v).y pl a t = if D.loc pl t = a then (1 : ℤ) else 0 := by
-    intro pl a t; simp only [fwd, dif_pos h, ← hD]
-  simp only [P13.b.obj, P13.a.obj, hy]
-  rw [Finset.sum_comm]
-  conv_lhs => enter [2, a]; rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl; intro a _
-  apply Finset.sum_congr rfl; intro t _
-  have hcnt : (univ.filter (fun pl : Fin (paramMap p).nP => D.loc pl t = a)).card
-      = (v.n a t).toNat := D.hcount a t
-  rw [← Finset.mul_sum]
-  congr 1
-  push_cast
-  rw [Finset.sum_boole, hcnt]
-  exact_mod_cast Int.toNat_of_nonneg (h.hn_nn a t)
-
 -- ============================================================================
--- § The reformulation
+-- § Reformulation Structure
 -- ============================================================================
 
 /-- The per-plane formulation `P13.b` is a reformulation of the aggregate
 formulation `P13.a`: the forward map expands an aggregate solution into a
 per-plane routing via the layered flow decomposition, and the backward map
 aggregates a per-plane solution by summing over planes. -/
-noncomputable def p13_a_b_reformulation :
+noncomputable def aBReformulation :
     MILPReformulation P13.a.formulation P13.b.formulation where
   paramMap := paramMap
   fwd := fwd
@@ -704,7 +701,7 @@ noncomputable def p13_a_b_reformulation :
   bwd_fwd := bwd_fwd
   objMap := id
   objMap_mono := strictMono_id
-  fwd_obj := fun p x hx => fwd_obj p x hx
-  bwd_obj := fun p x' _ => (bwd_obj p x').symm
+  fwd_obj := fwd_obj
+  bwd_obj := fun p x' _ => bwd_obj p x'
 
 end P13
