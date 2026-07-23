@@ -174,7 +174,7 @@
         },
         {
             "description": "The supplier, transshipment, and beneficiary node-class maps partition N (every node belongs to exactly one class).",
-            "formulation": "N = N_S \\sqcup N_T \\sqcup N_B",
+            "formulation": "N = \\{S_s : s \\in N_S\\} \\sqcup \\{T_t : t \\in N_T\\} \\sqcup \\{B_j : j \\in N_B\\}",
             "explicit": true,
             "code": {
                 "python": "assert set(S) | set(T) | set(B) == set(range(nN)) and set(S).isdisjoint(T) and set(S).isdisjoint(B) and set(T).isdisjoint(B)"
@@ -258,7 +258,7 @@
         },
         {
             "description": "Flow conservation at transshipment nodes for each commodity: total inflow equals total outflow (no storage).",
-            "formulation": "\\sum_{i \\in N} E_{ij} F_{ijk} = \\sum_{i \\in N} E_{ji} F_{jik} \\quad \\forall j \\in N_T, k \\in K",
+            "formulation": "\\sum_{i \\in N} E_{i, T_j} F_{i, T_j, k} = \\sum_{i \\in N} E_{T_j, i} F_{T_j, i, k} \\quad \\forall j \\in N_T, k \\in K",
             "explicit": true,
             "code": {
                 "gurobipy": "model.addConstrs(\n    gp.quicksum(E[i][T[j]] * F[i, T[j], k] for i in range(nN)) ==\n    gp.quicksum(E[T[j]][i] * F[T[j], i, k] for i in range(nN))\n    for j in range(nT) for k in range(nK)\n)"
@@ -286,14 +286,6 @@
             "explicit": true,
             "code": {
                 "gurobipy": "model.addConstrs(\n    gp.quicksum(nutval[k][l] * R[k] for k in range(nK)) >= nutreq[l]\n    for l in range(nL)\n)"
-            }
-        },
-        {
-            "description": "Flow support is acyclic per commodity: there exists a rank labeling that strictly increases along positive-flow edges.",
-            "formulation": "\\forall k \\in K, \\exists r : N \\to \\mathbb{N}, \\forall i, j \\in N : E_{ij} = 1 \\land F_{ijk} > 0 \\implies r_i < r_j",
-            "explicit": false,
-            "code": {
-                "python": "# Acyclicity is verified post-solve via topological sort on the positive-flow support."
             }
         },
         {

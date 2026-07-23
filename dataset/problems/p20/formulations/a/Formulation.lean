@@ -69,10 +69,6 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   -- Rations satisfy all nutritional requirements
   hnutrition : ∀ l : Fin p.nL,
     p.nutreq l ≤ ∑ k : Fin p.nK, p.nutval k l * v.R k
-  -- Flow support is acyclic per commodity: a rank labeling exists that
-  -- strictly increases along positive-flow edges
-  hF_acyclic : ∀ k : Fin p.nK, ∃ rank : Fin p.nN → ℕ,
-    ∀ i j : Fin p.nN, p.E i j = 1 → 0 < v.F i j k → rank i < rank j
   -- Flow is supported on graph edges (no flow on non-edges)
   hF_offedge : ∀ i j : Fin p.nN, ∀ k : Fin p.nK,
     p.E i j = 0 → v.F i j k = 0
