@@ -561,6 +561,38 @@
                 "gurobipy": "for g in range(n_G):\n    for l in range(n_L[g]):\n        for t in range(T):\n            model.addConstr(lam[g, l, t] <= 1)"
             },
             "explicit": true
+        },
+        {
+            "description": "Piecewise convex combination weights are non-negative.",
+            "formulation": "\\lambda_{g,l,t} \\ge 0 \\quad \\forall g, l, t",
+            "code": {
+                "gurobipy": "for g in range(n_G):\n    for l in range(n_L[g]):\n        for t in range(T):\n            model.addConstr(lam[g, l, t] >= 0)"
+            },
+            "explicit": false
+        },
+        {
+            "description": "Thermal output above the minimum is non-negative.",
+            "formulation": "p_{g,t} \\ge 0 \\quad \\forall g, t",
+            "code": {
+                "gurobipy": "model.addConstrs(p[g, t] >= 0 for g in range(n_G) for t in range(T))"
+            },
+            "explicit": false
+        },
+        {
+            "description": "Spinning reserve is non-negative.",
+            "formulation": "r_{g,t} \\ge 0 \\quad \\forall g, t",
+            "code": {
+                "gurobipy": "model.addConstrs(r[g, t] >= 0 for g in range(n_G) for t in range(T))"
+            },
+            "explicit": false
+        },
+        {
+            "description": "Variable production cost above the fixed cost is non-negative.",
+            "formulation": "c_{g,t} \\ge 0 \\quad \\forall g, t",
+            "code": {
+                "gurobipy": "model.addConstrs(c_var[g, t] >= 0 for g in range(n_G) for t in range(T))"
+            },
+            "explicit": false
         }
     ],
     "objective": {

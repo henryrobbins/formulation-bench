@@ -171,7 +171,10 @@ The structured description of the MILP. Each field maps onto an attribute of
   {class}`Variable <formulation_bench.models.Variable>` with a
   `description`, `type` (`"integer"`, `"continuous"`, or `"binary"`), and a
   `shape` — optionally accompanied by `indices` (see
-  {ref}`variable-shape-notation`).
+  {ref}`variable-shape-notation`). A continuous variable is *free* unless
+  the formulation bounds it: nothing may rely on the solver's default lower
+  bound of zero, so a variable that must be non-negative states `>= 0` as a
+  constraint (typically with `explicit` set to `false`).
 - **`constraints`** — list of {class}`Constraint
   <formulation_bench.models.Constraint>` records, each with a `description`,
   a LaTeX `formulation`, an `explicit` flag, and `code.gurobipy`. The
