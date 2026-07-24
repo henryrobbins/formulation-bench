@@ -5,6 +5,7 @@ import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Int.Basic
+import Mathlib.Logic.Equiv.Fin.Rotate
 import Mathlib.Tactic
 
 open BigOperators Finset
@@ -28,9 +29,9 @@ lemma** below: any commodity-`k` flow satisfying `a`'s structural constraints
 decomposes, edge by edge, into a nonnegative combination of valid
 supplier→beneficiary paths and valid transshipment cycles.
 
-Per the user's instruction this lemma is stated and admitted with `sorry` for
-now; the rest of the reformulation is meant to consume it as a black box.
-Everything else in this file must remain `sorry`-free.
+The proof below formalizes the classical finite-support argument: extract a
+simple positive path or cycle, subtract its bottleneck flow, and recurse on the
+strictly smaller positive support.
 -/
 
 -- ============================================================================
@@ -49,6 +50,99 @@ private lemma finite_binary_indicators
   refine ⟨fun i j => decide (f i j = 1), ?_⟩
   funext i j
   rcases hbin f hf i j with h | h <;> simp [h]
+
+/-- A finite-support subtraction argument: if every nonzero member of `Good`
+contains a nonempty binary atom in its positive support, and subtracting an
+atom preserves `Good`, then every nonnegative member of `Good` is a
+nonnegative conic combination of the atoms. -/
+private lemma finite_conic_decomposition
+    {ι α : Type*} [Fintype ι] [DecidableEq ι] [Fintype α] [DecidableEq α]
+    (atom : α → ι → ℝ) (Good : (ι → ℝ) → Prop)
+    (hextract : ∀ f : ι → ℝ, Good f → (∀ i, 0 ≤ f i) →
+      (∃ i, 0 < f i) →
+      ∃ a : α,
+        (∀ i, atom a i = 0 ∨ atom a i = 1) ∧
+        (∃ i, atom a i = 1) ∧
+        (∀ i, atom a i = 1 → 0 < f i))
+    (hsub : ∀ (f : ι → ℝ) (a : α) (d : ℝ), Good f →
+      Good (fun i => f i - d * atom a i)) :
+    ∀ f : ι → ℝ, Good f → (∀ i, 0 ≤ f i) →
+      ∃ z : α → ℝ, (∀ a, 0 ≤ z a) ∧
+        ∀ i, f i = ∑ a, atom a i * z a := by
+  classical
+  intro f
+  let suppCard (g : ι → ℝ) : ℕ := (Finset.univ.filter fun i => 0 < g i).card
+  induction hs : suppCard f using Nat.strong_induction_on generalizing f with
+  | h n ih =>
+      intro hf hnn
+      by_cases hpos : ∃ i, 0 < f i
+      · obtain ⟨a, habin, ha_ne, ha_support⟩ := hextract f hf hnn hpos
+        let active : Finset ι := Finset.univ.filter fun i => atom a i = 1
+        have hactive : active.Nonempty := by
+          rcases ha_ne with ⟨i, hi⟩
+          exact ⟨i, by simp [active, hi]⟩
+        let values : Finset ℝ := active.image f
+        have hvalues : values.Nonempty := hactive.image f
+        let d : ℝ := values.min' hvalues
+        have hd_pos : 0 < d := by
+          have hdmem : d ∈ values := values.min'_mem hvalues
+          obtain ⟨i, hi, hid⟩ := Finset.mem_image.mp hdmem
+          rw [← hid]
+          exact ha_support i (by simpa [active] using hi)
+        have hd_le (i : ι) (hi : atom a i = 1) : d ≤ f i := by
+          apply values.min'_le
+          exact Finset.mem_image.mpr ⟨i, by simp [active, hi], rfl⟩
+        let g : ι → ℝ := fun i => f i - d * atom a i
+        have hgnn : ∀ i, 0 ≤ g i := by
+          intro i
+          rcases habin i with hi | hi
+          · simp [g, hi, hnn i]
+          · simp [g, hi, hd_le i hi]
+        have hg : Good g := hsub f a d hf
+        have hsupp_subset :
+            (Finset.univ.filter fun i => 0 < g i) ⊆
+              (Finset.univ.filter fun i => 0 < f i) := by
+          intro i hi
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi ⊢
+          rcases habin i with hai | hai
+          · simpa [g, hai] using hi
+          · have := hi
+            simp only [g, hai, mul_one] at this
+            linarith
+        have hsupp_ssubset :
+            (Finset.univ.filter fun i => 0 < g i) ⊂
+              (Finset.univ.filter fun i => 0 < f i) := by
+          refine Finset.ssubset_iff_subset_ne.mpr ⟨hsupp_subset, ?_⟩
+          have hdmem : d ∈ values := values.min'_mem hvalues
+          obtain ⟨i, hi, hfi⟩ := Finset.mem_image.mp hdmem
+          have hai : atom a i = 1 := by simpa [active] using hi
+          have hfi : f i = d := hfi
+          intro heq
+          have himem_f : i ∈ Finset.univ.filter fun i => 0 < f i := by
+            simp [hfi, hd_pos]
+          have himem_g : i ∈ Finset.univ.filter fun i => 0 < g i := heq ▸ himem_f
+          simp [g, hai, hfi] at himem_g
+        have hcard_lt : suppCard g < n := by
+          rw [← hs]
+          exact Finset.card_lt_card hsupp_ssubset
+        obtain ⟨z, hz_nn, hz⟩ := ih (suppCard g) hcard_lt g rfl hg hgnn
+        refine ⟨fun b => z b + if b = a then d else 0, ?_, ?_⟩
+        · intro b
+          by_cases hba : b = a
+          · subst b
+            simpa using add_nonneg (hz_nn a) (le_of_lt hd_pos)
+          · simp [hba, hz_nn b]
+        · intro i
+          rw [show f i = g i + d * atom a i by simp [g]]
+          rw [hz i]
+          simp_rw [mul_add]
+          rw [Finset.sum_add_distrib]
+          simp
+          ring
+      · refine ⟨fun _ => 0, fun _ => le_rfl, ?_⟩
+        intro i
+        have hfi : f i = 0 := le_antisymm (not_lt.mp fun hi => hpos ⟨i, hi⟩) (hnn i)
+        simp [hfi]
 
 variable (pa : P20.a.Params)
 
@@ -239,12 +333,1307 @@ noncomputable def paramMap (pa : P20.a.Params) : P20.b.Params where
   hcE_inj := fun _ _ h => cycleEnum_injective pa (funext fun i => funext fun j => h i j)
 
 -- ============================================================================
--- § Flow decomposition (ADMITTED — the one `sorry`) and the fwd / bwd maps
+-- § Simple-list indicators
+-- ============================================================================
+
+/-- `(u,w)` occurs as a consecutive pair in `L`. -/
+private def Consec {α : Type*} (L : List α) (u w : α) : Prop :=
+  ∃ pre suf : List α, L = pre ++ u :: w :: suf
+
+private lemma consec_left_mem {α : Type*} {L : List α} {u w : α}
+    (h : Consec L u w) : u ∈ L := by
+  obtain ⟨pre, suf, rfl⟩ := h
+  simp
+
+private lemma consec_right_mem {α : Type*} {L : List α} {u w : α}
+    (h : Consec L u w) : w ∈ L := by
+  obtain ⟨pre, suf, rfl⟩ := h
+  simp
+
+private lemma consec_chain {α : Type*} {R : α → α → Prop} {L : List α} {u w : α}
+    (hch : L.IsChain R) (h : Consec L u w) : R u w := by
+  obtain ⟨pre, suf, rfl⟩ := h
+  rw [List.isChain_append] at hch
+  rcases hch with ⟨_, hch2, _⟩
+  rw [List.isChain_cons_cons] at hch2
+  exact hch2.1
+
+private lemma getElem?_consec_left {α : Type*} (pre suf : List α) (u w : α) :
+    (pre ++ u :: w :: suf)[pre.length]? = some u := by
+  have hL : pre ++ u :: w :: suf = pre ++ [u] ++ (w :: suf) := by simp
+  rw [hL, List.getElem?_append_left (by simp), List.getElem?_append_right (by simp)]
+  simp
+
+private lemma getElem?_consec_right {α : Type*} (pre suf : List α) (u w : α) :
+    (pre ++ u :: w :: suf)[pre.length + 1]? = some w := by
+  have hL : pre ++ u :: w :: suf = (pre ++ [u]) ++ (w :: suf) := by simp
+  rw [hL, List.getElem?_append_right (by simp)]
+  simp
+
+private lemma getElem?_eq_some_iff_unique_of_nodup {α : Type*} {L : List α}
+    (hnd : L.Nodup) {u : α} {n : ℕ}
+    (hn : L[n]? = some u) {m : ℕ} (hm : L[m]? = some u) : n = m := by
+  by_contra hne
+  rw [List.getElem?_eq_some_iff] at hn hm
+  obtain ⟨hnL, h1⟩ := hn
+  obtain ⟨hmL, h2⟩ := hm
+  exact hne (List.Nodup.getElem_inj_iff hnd |>.mp (h1.trans h2.symm))
+
+private lemma consec_pred_unique {α : Type*} {L : List α} (hnd : L.Nodup)
+    {u₁ u₂ w : α} (h₁ : Consec L u₁ w) (h₂ : Consec L u₂ w) : u₁ = u₂ := by
+  obtain ⟨p₁, s₁, hL₁⟩ := h₁
+  obtain ⟨p₂, s₂, hL₂⟩ := h₂
+  have hw1 : L[p₁.length + 1]? = some w := by
+    rw [hL₁]
+    exact getElem?_consec_right _ _ _ _
+  have hw2 : L[p₂.length + 1]? = some w := by
+    rw [hL₂]
+    exact getElem?_consec_right _ _ _ _
+  have heq : p₁.length + 1 = p₂.length + 1 :=
+    getElem?_eq_some_iff_unique_of_nodup hnd hw1 hw2
+  have hpeq : p₁.length = p₂.length := by omega
+  have hu1 : L[p₁.length]? = some u₁ := by
+    rw [hL₁]
+    exact getElem?_consec_left _ _ _ _
+  have hu2 : L[p₂.length]? = some u₂ := by
+    rw [hL₂]
+    exact getElem?_consec_left _ _ _ _
+  rw [hpeq] at hu1
+  rw [hu1] at hu2
+  exact Option.some.inj hu2
+
+private lemma consec_succ_unique {α : Type*} {L : List α} (hnd : L.Nodup)
+    {u w₁ w₂ : α} (h₁ : Consec L u w₁) (h₂ : Consec L u w₂) : w₁ = w₂ := by
+  obtain ⟨p₁, s₁, hL₁⟩ := h₁
+  obtain ⟨p₂, s₂, hL₂⟩ := h₂
+  have hu1 : L[p₁.length]? = some u := by
+    rw [hL₁]
+    exact getElem?_consec_left _ _ _ _
+  have hu2 : L[p₂.length]? = some u := by
+    rw [hL₂]
+    exact getElem?_consec_left _ _ _ _
+  have hpeq : p₁.length = p₂.length :=
+    getElem?_eq_some_iff_unique_of_nodup hnd hu1 hu2
+  have hw1 : L[p₁.length + 1]? = some w₁ := by
+    rw [hL₁]
+    exact getElem?_consec_right _ _ _ _
+  have hw2 : L[p₂.length + 1]? = some w₂ := by
+    rw [hL₂]
+    exact getElem?_consec_right _ _ _ _
+  rw [hpeq] at hw1
+  rw [hw1] at hw2
+  exact Option.some.inj hw2
+
+private lemma consec_no_pred_head {α : Type*} {a : α} {as : List α}
+    (hnd : (a :: as).Nodup) : ∀ u, ¬ Consec (a :: as) u a := by
+  intro u ⟨pre, suf, hL⟩
+  have h0 : (a :: as)[0]? = some a := by simp
+  have h1 : (a :: as)[pre.length + 1]? = some a := by
+    rw [hL]
+    exact getElem?_consec_right _ _ _ _
+  have heq : 0 = pre.length + 1 :=
+    getElem?_eq_some_iff_unique_of_nodup hnd h0 h1
+  omega
+
+private lemma consec_no_succ_last {α : Type*} {L : List α} (hne : L ≠ [])
+    (hnd : L.Nodup) : ∀ w, ¬ Consec L (L.getLast hne) w := by
+  intro w ⟨pre, suf, hL⟩
+  set u := L.getLast hne with hu_def
+  have h_last : L[L.length - 1]? = some u := by
+    rw [hu_def]
+    have h := List.getLast?_eq_getElem? (l := L)
+    rw [List.getLast?_eq_some_getLast hne] at h
+    exact h.symm
+  have h_pre : L[pre.length]? = some u := by
+    rw [hL]
+    exact getElem?_consec_left _ _ _ _
+  have heq : L.length - 1 = pre.length :=
+    getElem?_eq_some_iff_unique_of_nodup hnd h_last h_pre
+  have hlen : L.length = pre.length + 2 + suf.length := by
+    rw [hL]
+    simp
+    ring
+  omega
+
+private lemma consec_at_pos {α : Type*} {L : List α} {a b : α} {n : ℕ}
+    (hn : L[n]? = some a) (hsn : L[n + 1]? = some b) : Consec L a b := by
+  rw [List.getElem?_eq_some_iff] at hn hsn
+  obtain ⟨hnL, ha⟩ := hn
+  obtain ⟨hsnL, hb⟩ := hsn
+  refine ⟨L.take n, L.drop (n + 2), ?_⟩
+  have h1 : L = L.take n ++ L.drop n := (List.take_append_drop n L).symm
+  have h2 : L.drop n = a :: L.drop (n + 1) := by
+    rw [← List.getElem_cons_drop hnL, ha]
+  have h3 : L.drop (n + 1) = b :: L.drop (n + 2) := by
+    rw [← List.getElem_cons_drop hsnL, hb]
+  calc
+    L = L.take n ++ L.drop n := h1
+    _ = L.take n ++ a :: L.drop (n + 1) := by rw [h2]
+    _ = L.take n ++ a :: b :: L.drop (n + 2) := by rw [h3]
+
+private lemma exists_consec_pred {α : Type*} {L : List α} (hne : L ≠ [])
+    {v : α} (hv : v ∈ L) (hvhead : v ≠ L.head hne) :
+    ∃ u, Consec L u v := by
+  obtain ⟨n, hnL, hn⟩ := List.mem_iff_getElem.mp hv
+  rcases n with _ | n
+  · exfalso
+    apply hvhead
+    rw [← hn]
+    rcases L with _ | ⟨a, as⟩
+    · exact absurd rfl hne
+    · simp
+  · have hnL' : n < L.length := Nat.lt_of_succ_lt hnL
+    refine ⟨L[n], ?_⟩
+    apply consec_at_pos (n := n)
+    · rw [List.getElem?_eq_some_iff]
+      exact ⟨hnL', rfl⟩
+    · rw [List.getElem?_eq_some_iff]
+      exact ⟨hnL, hn⟩
+
+private lemma exists_consec_succ {α : Type*} {L : List α} (hne : L ≠ [])
+    {v : α} (hv : v ∈ L) (hvlast : v ≠ L.getLast hne) :
+    ∃ w, Consec L v w := by
+  obtain ⟨n, hnL, hn⟩ := List.mem_iff_getElem.mp hv
+  by_cases hnlast : n + 1 < L.length
+  · refine ⟨L[n + 1], ?_⟩
+    apply consec_at_pos (n := n)
+    · rw [List.getElem?_eq_some_iff]
+      exact ⟨hnL, hn⟩
+    · rw [List.getElem?_eq_some_iff]
+      exact ⟨hnlast, rfl⟩
+  · push_neg at hnlast
+    exfalso
+    apply hvlast
+    have hneq : n = L.length - 1 := by omega
+    have hgl : L.getLast hne = L[L.length - 1]'(by
+        have : 0 < L.length := List.length_pos_iff.mpr hne
+        omega) := by
+      have hL := List.getLast?_eq_some_getLast hne
+      rw [List.getLast?_eq_getElem?] at hL
+      rw [List.getElem?_eq_some_iff] at hL
+      obtain ⟨_, hg⟩ := hL
+      exact hg.symm
+    rw [hgl, ← hn]
+    congr
+
+open scoped Classical in
+/-- Edge indicator of the consecutive pairs in a list. -/
+private noncomputable def pathIndicator {n : ℕ}
+    (L : List (Fin n)) (u w : Fin n) : ℤ :=
+  if Consec L u w then 1 else 0
+
+private noncomputable def pathRank {n : ℕ}
+    (L : List (Fin n)) (v : Fin n) : ℕ :=
+  L.idxOf v
+
+private lemma pathIndicator_eq_one_iff {n : ℕ}
+    (L : List (Fin n)) (u w : Fin n) :
+    pathIndicator L u w = 1 ↔ Consec L u w := by
+  classical
+  unfold pathIndicator
+  by_cases h : Consec L u w <;> simp [h]
+
+private lemma pathIndicator_eq_zero_iff {n : ℕ}
+    (L : List (Fin n)) (u w : Fin n) :
+    pathIndicator L u w = 0 ↔ ¬ Consec L u w := by
+  classical
+  unfold pathIndicator
+  by_cases h : Consec L u w <;> simp [h]
+
+private lemma pathIndicator_binary {n : ℕ}
+    (L : List (Fin n)) (u w : Fin n) :
+    pathIndicator L u w = 0 ∨ pathIndicator L u w = 1 := by
+  classical
+  unfold pathIndicator
+  by_cases h : Consec L u w
+  · right
+    simp [h]
+  · left
+    simp [h]
+
+private lemma sum_pathIndicator_in_eq {n : ℕ}
+    (L : List (Fin n)) (hnd : L.Nodup) (v : Fin n) :
+    ∑ i : Fin n, pathIndicator L i v =
+      (@ite ℤ (∃ u, Consec L u v) (Classical.dec _) 1 0) := by
+  classical
+  by_cases h : ∃ u, Consec L u v
+  · obtain ⟨u, hu⟩ := h
+    rw [if_pos (⟨u, hu⟩ : ∃ u, Consec L u v)]
+    have hfilter : (Finset.univ : Finset (Fin n)).filter
+        (fun i => Consec L i v) = {u} := by
+      ext x
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+      exact ⟨fun hx => consec_pred_unique hnd hx hu, fun hx => hx ▸ hu⟩
+    have heq : ∑ i : Fin n, pathIndicator L i v
+        = ∑ i ∈ (Finset.univ : Finset (Fin n)).filter (fun i => Consec L i v),
+            (1 : ℤ) := by
+      unfold pathIndicator
+      rw [← Finset.sum_filter]
+    rw [heq, hfilter]
+    simp
+  · rw [if_neg h]
+    push_neg at h
+    have hzero : ∀ i : Fin n, pathIndicator L i v = 0 := fun i => by
+      unfold pathIndicator
+      simp [h i]
+    simp [hzero]
+
+private lemma sum_pathIndicator_out_eq {n : ℕ}
+    (L : List (Fin n)) (hnd : L.Nodup) (v : Fin n) :
+    ∑ j : Fin n, pathIndicator L v j =
+      (@ite ℤ (∃ w, Consec L v w) (Classical.dec _) 1 0) := by
+  classical
+  by_cases h : ∃ w, Consec L v w
+  · obtain ⟨w, hw⟩ := h
+    rw [if_pos (⟨w, hw⟩ : ∃ w, Consec L v w)]
+    have hfilter : (Finset.univ : Finset (Fin n)).filter
+        (fun j => Consec L v j) = {w} := by
+      ext x
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+      exact ⟨fun hx => consec_succ_unique hnd hx hw, fun hx => hx ▸ hw⟩
+    have heq : ∑ j : Fin n, pathIndicator L v j
+        = ∑ j ∈ (Finset.univ : Finset (Fin n)).filter (fun j => Consec L v j),
+            (1 : ℤ) := by
+      unfold pathIndicator
+      rw [← Finset.sum_filter]
+    rw [heq, hfilter]
+    simp
+  · rw [if_neg h]
+    push_neg at h
+    have hzero : ∀ j : Fin n, pathIndicator L v j = 0 := fun j => by
+      unfold pathIndicator
+      simp [h j]
+    simp [hzero]
+
+private lemma sum_pathIndicator_in_le_one {n : ℕ}
+    (L : List (Fin n)) (hnd : L.Nodup) (v : Fin n) :
+    ∑ i : Fin n, pathIndicator L i v ≤ 1 := by
+  rw [sum_pathIndicator_in_eq L hnd v]
+  by_cases h : ∃ u, Consec L u v <;> simp [h]
+
+private lemma sum_pathIndicator_out_le_one {n : ℕ}
+    (L : List (Fin n)) (hnd : L.Nodup) (v : Fin n) :
+    ∑ j : Fin n, pathIndicator L v j ≤ 1 := by
+  rw [sum_pathIndicator_out_eq L hnd v]
+  by_cases h : ∃ w, Consec L v w <;> simp [h]
+
+private lemma pathRank_consec {n : ℕ}
+    (L : List (Fin n)) (hnd : L.Nodup)
+    {u w : Fin n} (hc : Consec L u w) :
+    pathRank L w = pathRank L u + 1 := by
+  obtain ⟨pre, suf, hL⟩ := hc
+  unfold pathRank
+  have hu_pos : L[pre.length]? = some u := by
+    rw [hL]
+    exact getElem?_consec_left _ _ _ _
+  have hw_pos : L[pre.length + 1]? = some w := by
+    rw [hL]
+    exact getElem?_consec_right _ _ _ _
+  rw [List.getElem?_eq_some_iff] at hu_pos hw_pos
+  obtain ⟨huL, hu⟩ := hu_pos
+  obtain ⟨hwL, hw⟩ := hw_pos
+  have hidx_u : L.idxOf u = pre.length := by
+    rw [← hu]
+    exact List.Nodup.idxOf_getElem hnd _ huL
+  have hidx_w : L.idxOf w = pre.length + 1 := by
+    rw [← hw]
+    exact List.Nodup.idxOf_getElem hnd _ hwL
+  omega
+
+/-- A nonempty nodup graph walk from a supplier to a beneficiary, whose
+strictly interior vertices are transshipment nodes, induces a valid path. -/
+private lemma exists_valid_path_of_walk
+    {nN nS nT nB : ℕ}
+    (S : Fin nS → Fin nN) (T : Fin nT → Fin nN) (B : Fin nB → Fin nN)
+    (E : Fin nN → Fin nN → ℤ)
+    (hE_bin : ∀ i j : Fin nN, E i j = 0 ∨ E i j = 1)
+    (hSTB_disj_SB : ∀ (s : Fin nS) (b : Fin nB), S s ≠ B b)
+    (L : List (Fin nN))
+    (hne : L ≠ [])
+    (hnd : L.Nodup)
+    (hchain : L.IsChain (fun u w => E u w = 1))
+    (s : Fin nS) (hs : L.head hne = S s)
+    (b : Fin nB) (hb : L.getLast hne = B b)
+    (hinterior : ∀ v, v ∈ L → v ≠ L.head hne → v ≠ L.getLast hne →
+      ∃ t : Fin nT, T t = v) :
+    P20.b.IsValidPath S T B E (pathIndicator L) (pathRank L) := by
+  classical
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · exact pathIndicator_binary L
+  · intro i j
+    by_cases hc : Consec L i j
+    · have h1 : pathIndicator L i j = 1 :=
+        (pathIndicator_eq_one_iff L i j).mpr hc
+      have hE1 : E i j = 1 :=
+        consec_chain (R := fun u w => E u w = 1) hchain hc
+      rw [h1, hE1]
+    · have h0 : pathIndicator L i j = 0 :=
+        (pathIndicator_eq_zero_iff L i j).mpr hc
+      rw [h0]
+      rcases hE_bin i j with hE0 | hE1
+      · rw [hE0]
+      · rw [hE1]
+        norm_num
+  · exact sum_pathIndicator_in_le_one L hnd
+  · exact sum_pathIndicator_out_le_one L hnd
+  · refine ⟨s, ?_, ?_, ?_⟩
+    · rw [sum_pathIndicator_out_eq L hnd]
+      have hsucc : ∃ w, Consec L (S s) w := by
+        apply exists_consec_succ hne
+        · rw [← hs]
+          exact List.head_mem hne
+        · rw [hb]
+          exact hSTB_disj_SB s b
+      rw [if_pos hsucc]
+    · rw [sum_pathIndicator_in_eq L hnd]
+      have hno : ¬∃ u, Consec L u (S s) := by
+        rintro ⟨u, hu⟩
+        rcases L with _ | ⟨a, as⟩
+        · exact hne rfl
+        · have ha : a = S s := by simpa using hs
+          subst a
+          exact consec_no_pred_head hnd u hu
+      rw [if_neg hno]
+    · intro v hv
+      have hsucc : ∃ w, Consec L v w := by
+        rw [sum_pathIndicator_out_eq L hnd] at hv
+        by_cases he : ∃ w, Consec L v w
+        · exact he
+        · rw [if_neg he] at hv
+          norm_num at hv
+      have hnopred : ¬∃ u, Consec L u v := by
+        intro he
+        have hin := hv.2
+        rw [sum_pathIndicator_in_eq L hnd, if_pos he] at hin
+        norm_num at hin
+      have hvmem : v ∈ L := by
+        obtain ⟨w, hw⟩ := hsucc
+        exact consec_left_mem hw
+      by_contra hvs
+      have hvhead : v ≠ L.head hne := by
+        rw [hs]
+        exact hvs
+      exact hnopred (exists_consec_pred hne hvmem hvhead)
+  · refine ⟨b, ?_, ?_, ?_⟩
+    · rw [sum_pathIndicator_in_eq L hnd]
+      have hpred : ∃ u, Consec L u (B b) := by
+        apply exists_consec_pred hne
+        · rw [← hb]
+          exact List.getLast_mem hne
+        · rw [hs]
+          exact (hSTB_disj_SB s b).symm
+      rw [if_pos hpred]
+    · rw [sum_pathIndicator_out_eq L hnd]
+      have hno : ¬∃ w, Consec L (B b) w := by
+        rintro ⟨w, hw⟩
+        rw [← hb] at hw
+        exact consec_no_succ_last hne hnd w hw
+      rw [if_neg hno]
+    · intro v hv
+      have hpred : ∃ u, Consec L u v := by
+        rw [sum_pathIndicator_in_eq L hnd] at hv
+        by_cases he : ∃ u, Consec L u v
+        · exact he
+        · rw [if_neg he] at hv
+          norm_num at hv
+      have hnosucc : ¬∃ w, Consec L v w := by
+        intro he
+        have hout := hv.2
+        rw [sum_pathIndicator_out_eq L hnd, if_pos he] at hout
+        norm_num at hout
+      have hvmem : v ∈ L := by
+        obtain ⟨u, hu⟩ := hpred
+        exact consec_right_mem hu
+      by_contra hvb
+      have hvlast : v ≠ L.getLast hne := by
+        rw [hb]
+        exact hvb
+      exact hnosucc (exists_consec_succ hne hvmem hvlast)
+  · intro v hin hout
+    have hpred : ∃ u, Consec L u v := by
+      rw [sum_pathIndicator_in_eq L hnd] at hin
+      by_cases he : ∃ u, Consec L u v
+      · exact he
+      · rw [if_neg he] at hin
+        norm_num at hin
+    have hsucc : ∃ w, Consec L v w := by
+      rw [sum_pathIndicator_out_eq L hnd] at hout
+      by_cases he : ∃ w, Consec L v w
+      · exact he
+      · rw [if_neg he] at hout
+        norm_num at hout
+    have hvmem : v ∈ L := by
+      obtain ⟨u, hu⟩ := hpred
+      exact consec_right_mem hu
+    have hvhead : v ≠ L.head hne := by
+      intro hv
+      rcases L with _ | ⟨a, as⟩
+      · exact hne rfl
+      · have ha : a = v := by simpa using hv.symm
+        subst a
+        obtain ⟨u, hu⟩ := hpred
+        exact consec_no_pred_head hnd u hu
+    have hvlast : v ≠ L.getLast hne := by
+      intro hv
+      obtain ⟨w, hw⟩ := hsucc
+      rw [hv] at hw
+      exact consec_no_succ_last hne hnd w hw
+    exact hinterior v hvmem hvhead hvlast
+  · intro i j hij
+    exact pathRank_consec L hnd ((pathIndicator_eq_one_iff L i j).mp hij)
+
+open scoped Classical in
+private noncomputable def cycleIndicator {n m : ℕ}
+    (verts : Fin m → Fin n) (u w : Fin n) : ℤ :=
+  if ∃ i : Fin m, verts i = u ∧ verts (finRotate m i) = w then 1 else 0
+
+private lemma cycleIndicator_eq_one_iff {n m : ℕ}
+    (verts : Fin m → Fin n) (u w : Fin n) :
+    cycleIndicator verts u w = 1 ↔
+      ∃ i : Fin m, verts i = u ∧ verts (finRotate m i) = w := by
+  classical
+  unfold cycleIndicator
+  by_cases h : ∃ i : Fin m, verts i = u ∧ verts (finRotate m i) = w <;> simp [h]
+
+private lemma cycleIndicator_binary {n m : ℕ}
+    (verts : Fin m → Fin n) (u w : Fin n) :
+    cycleIndicator verts u w = 0 ∨ cycleIndicator verts u w = 1 := by
+  classical
+  unfold cycleIndicator
+  by_cases h : ∃ i : Fin m, verts i = u ∧ verts (finRotate m i) = w <;> simp [h]
+
+private lemma sum_cycleIndicator_out_eq {n m : ℕ}
+    (verts : Fin m → Fin n) (hinj : Function.Injective verts) (v : Fin n) :
+    ∑ w : Fin n, cycleIndicator verts v w =
+      if ∃ i : Fin m, verts i = v then 1 else 0 := by
+  classical
+  by_cases h : ∃ i : Fin m, verts i = v
+  · obtain ⟨i, hi⟩ := h
+    rw [if_pos ⟨i, hi⟩]
+    have hfilter : (Finset.univ : Finset (Fin n)).filter
+        (fun w => ∃ j : Fin m, verts j = v ∧ verts (finRotate m j) = w) =
+        {verts (finRotate m i)} := by
+      ext w
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+      constructor
+      · rintro ⟨j, hjv, rfl⟩
+        have hji : j = i := hinj (hjv.trans hi.symm)
+        subst j
+        rfl
+      · intro hw
+        exact ⟨i, hi, hw.symm⟩
+    have heq :
+        ∑ w : Fin n, cycleIndicator verts v w =
+          ∑ w ∈ (Finset.univ : Finset (Fin n)).filter
+              (fun w => ∃ j : Fin m, verts j = v ∧ verts (finRotate m j) = w),
+            (1 : ℤ) := by
+      unfold cycleIndicator
+      rw [← Finset.sum_filter]
+    rw [heq, hfilter]
+    simp
+  · rw [if_neg h]
+    push_neg at h
+    have hz : ∀ w : Fin n, cycleIndicator verts v w = 0 := by
+      intro w
+      unfold cycleIndicator
+      simp [h]
+    simp [hz]
+
+private lemma sum_cycleIndicator_in_eq {n m : ℕ}
+    (verts : Fin m → Fin n) (hinj : Function.Injective verts) (v : Fin n) :
+    ∑ u : Fin n, cycleIndicator verts u v =
+      if ∃ i : Fin m, verts i = v then 1 else 0 := by
+  classical
+  by_cases h : ∃ i : Fin m, verts i = v
+  · obtain ⟨i, hi⟩ := h
+    let j : Fin m := (finRotate m).symm i
+    have hj : finRotate m j = i := (finRotate m).apply_symm_apply i
+    rw [if_pos ⟨i, hi⟩]
+    have hfilter : (Finset.univ : Finset (Fin n)).filter
+        (fun u => ∃ k : Fin m, verts k = u ∧ verts (finRotate m k) = v) =
+        {verts j} := by
+      ext u
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+      constructor
+      · rintro ⟨k, rfl, hkv⟩
+        have hrot : finRotate m k = i := hinj (hkv.trans hi.symm)
+        have hkj : k = j := (finRotate m).injective (hrot.trans hj.symm)
+        subst k
+        rfl
+      · intro hu
+        refine ⟨j, hu.symm, ?_⟩
+        rw [hj, hi]
+    have heq :
+        ∑ u : Fin n, cycleIndicator verts u v =
+          ∑ u ∈ (Finset.univ : Finset (Fin n)).filter
+              (fun u => ∃ k : Fin m, verts k = u ∧ verts (finRotate m k) = v),
+            (1 : ℤ) := by
+      unfold cycleIndicator
+      rw [← Finset.sum_filter]
+    rw [heq, hfilter]
+    simp
+  · rw [if_neg h]
+    push_neg at h
+    have hz : ∀ u : Fin n, cycleIndicator verts u v = 0 := by
+      intro u
+      unfold cycleIndicator
+      apply if_neg
+      rintro ⟨k, -, hkv⟩
+      exact h (finRotate m k) hkv
+    simp [hz]
+
+private lemma snoc_succ_eq_rotate {n m : ℕ} (hm : 0 < m)
+    (verts : Fin m → Fin n) (i : Fin m) :
+    @Fin.snoc m (fun _ => Fin n) verts (verts ⟨0, hm⟩) i.succ =
+      verts (finRotate m i) := by
+  obtain ⟨q, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt hm)
+  by_cases hi : i = Fin.last q
+  · subst i
+    simp
+  · have hlt : (i : ℕ) < q := Fin.val_lt_last hi
+    have heq : i.succ = (finRotate (q + 1) i).castSucc := by
+      ext
+      rw [Fin.val_succ, Fin.val_castSucc, coe_finRotate_of_ne_last hi]
+    rw [heq, Fin.snoc_castSucc]
+
+private lemma valid_cycle_of_rotate
+    {n nT m : ℕ}
+    (T : Fin nT → Fin n)
+    (E : Fin n → Fin n → ℤ)
+    (hEbin : ∀ u w, E u w = 0 ∨ E u w = 1)
+    (hm : 0 < m)
+    (verts : Fin m → Fin n)
+    (hinj : Function.Injective verts)
+    (hedge : ∀ i, E (verts i) (verts (finRotate m i)) = 1)
+    (hT : ∀ i, ∃ t, T t = verts i) :
+    P20.b.IsValidCycle T E (cycleIndicator verts) := by
+  classical
+  refine ⟨cycleIndicator_binary verts, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · intro u w
+    by_cases hc : ∃ i, verts i = u ∧ verts (finRotate m i) = w
+    · obtain ⟨i, rfl, rfl⟩ := hc
+      rw [(cycleIndicator_eq_one_iff verts _ _).mpr ⟨i, rfl, rfl⟩, hedge]
+    · have hzero : cycleIndicator verts u w = 0 := by
+        unfold cycleIndicator
+        simp [hc]
+      rw [hzero]
+      rcases hEbin u w with h | h <;> omega
+  · intro v
+    rw [sum_cycleIndicator_in_eq verts hinj v]
+    split <;> omega
+  · intro v
+    rw [sum_cycleIndicator_out_eq verts hinj v]
+    split <;> omega
+  · intro v
+    rw [sum_cycleIndicator_in_eq verts hinj v,
+      sum_cycleIndicator_out_eq verts hinj v]
+  · intro v hv
+    rw [sum_cycleIndicator_out_eq verts hinj v] at hv
+    split at hv
+    next h => exact h.choose_spec ▸ hT h.choose
+    next => omega
+  · let z : Fin m := ⟨0, hm⟩
+    let closed : Fin (m + 1) → Fin n := Fin.snoc verts (verts z)
+    refine ⟨m, closed, hm, ?_, ?_, ?_⟩
+    · have hzero : closed 0 = verts z := by
+        change @Fin.snoc m (fun _ => Fin n) verts (verts z) 0 = verts z
+        have hz : (0 : Fin (m + 1)) = z.castSucc := Fin.ext rfl
+        rw [hz, Fin.snoc_castSucc]
+      have hlast : closed (Fin.last m) = verts z := by
+        change @Fin.snoc m (fun _ => Fin n) verts (verts z) (Fin.last m) = verts z
+        rw [Fin.snoc_last]
+      exact hzero.trans hlast.symm
+    · intro i j hi hj hij
+      have hilast : i ≠ Fin.last m := ne_of_lt hi
+      have hjlast : j ≠ Fin.last m := ne_of_lt hj
+      obtain ⟨i', rfl⟩ := Fin.eq_castSucc_of_ne_last hilast
+      obtain ⟨j', rfl⟩ := Fin.eq_castSucc_of_ne_last hjlast
+      simp only [closed, Fin.snoc_castSucc] at hij
+      exact congrArg Fin.castSucc (hinj hij)
+    · intro u w
+      rw [cycleIndicator_eq_one_iff]
+      constructor
+      · rintro ⟨i, rfl, rfl⟩
+        refine ⟨i, ?_, ?_⟩
+        · simp [closed]
+        · simp only [closed]
+          exact snoc_succ_eq_rotate hm verts i
+      · rintro ⟨i, hi, hw⟩
+        refine ⟨i, ?_, ?_⟩
+        · simpa [closed] using hi
+        · rw [← snoc_succ_eq_rotate hm verts i]
+          exact hw
+
+private lemma valid_cycle_of_list
+    {n nT : ℕ}
+    (T : Fin nT → Fin n)
+    (E : Fin n → Fin n → ℤ)
+    (hEbin : ∀ u w, E u w = 0 ∨ E u w = 1)
+    (L : List (Fin n)) (hne : L ≠ []) (hnd : L.Nodup)
+    (hchain : L.IsChain (fun u w => E u w = 1))
+    (hclose : E (L.getLast hne) (L.head hne) = 1)
+    (hT : ∀ v ∈ L, ∃ t, T t = v) :
+    P20.b.IsValidCycle T E (cycleIndicator L.get) := by
+  classical
+  rcases L with _ | ⟨a, as⟩
+  · exact absurd rfl hne
+  · apply valid_cycle_of_rotate T E hEbin (by simp) (a :: as).get hnd.injective_get
+    · intro i
+      by_cases hi : i = Fin.last as.length
+      · subst i
+        simpa [List.getLast_eq_getElem, finRotate_last] using hclose
+      · have hlt : (i : ℕ) < as.length := Fin.val_lt_last hi
+        have hedge := hchain.getElem i (by simp only [List.length_cons]; omega)
+        have hrot : (finRotate (as.length + 1) i : ℕ) = i + 1 :=
+          coe_finRotate_of_ne_last hi
+        change E ((a :: as).get i) ((a :: as).get (finRotate (as.length + 1) i)) = 1
+        have hrotfin :
+            finRotate (as.length + 1) i =
+              ⟨i + 1, by simp only [List.length_cons] at hedge; omega⟩ :=
+          Fin.ext hrot
+        rw [hrotfin]
+        exact hedge
+    · intro i
+      apply hT ((a :: as).get i)
+      exact List.get_mem _ _
+
+-- ============================================================================
+-- § Per-commodity structural flows
+-- ============================================================================
+
+/-- The homogeneous network constraints used by the decomposition induction.
+Demand and nutrition are deliberately absent: subtracting a path need not
+preserve them. -/
+private structure StructuralFlow (f : Fin pa.nN → Fin pa.nN → ℝ) : Prop where
+  supplier_in : ∀ s : Fin pa.nS, ∑ i, f i (pa.S s) = 0
+  transshipment : ∀ t : Fin pa.nT,
+    ∑ i, f i (pa.T t) = ∑ j, f (pa.T t) j
+  beneficiary_out : ∀ b : Fin pa.nB, ∑ j, f (pa.B b) j = 0
+  offedge : ∀ i j, pa.E i j = 0 → f i j = 0
+
+private lemma edge_mul_flow_eq (v : P20.a.Vars pa) (h : P20.a.Feasible pa v)
+    (i j : Fin pa.nN) (k : Fin pa.nK) :
+    (pa.E i j : ℝ) * v.F i j k = v.F i j k := by
+  rcases pa.hE_bin i j with hE | hE
+  · rw [hE, Int.cast_zero, zero_mul, h.hF_offedge i j k hE]
+  · simp [hE]
+
+private lemma feasible_structural (v : P20.a.Vars pa) (h : P20.a.Feasible pa v)
+    (k : Fin pa.nK) :
+    StructuralFlow pa (fun i j => v.F i j k) := by
+  refine ⟨?_, ?_, ?_, h.hF_offedge (k := k)⟩
+  · intro s
+    simpa only [edge_mul_flow_eq pa v h] using h.hS_noinflow s k
+  · intro t
+    simpa only [edge_mul_flow_eq pa v h] using h.hflow t k
+  · intro b
+    simpa only [edge_mul_flow_eq pa v h] using h.hB_nooutflow b k
+
+private lemma sum_eq_zero_term_eq_zero {ι : Type*} [Fintype ι]
+    (g : ι → ℝ) (hnn : ∀ i, 0 ≤ g i) (hsum : ∑ i, g i = 0) (i : ι) :
+    g i = 0 := by
+  have hle : g i ≤ ∑ j, g j := Finset.single_le_sum (fun j _ => hnn j) (Finset.mem_univ i)
+  rw [hsum] at hle
+  exact le_antisymm hle (hnn i)
+
+private lemma structural_no_supplier_in
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (hnn : ∀ i j, 0 ≤ f i j) (s : Fin pa.nS) (i : Fin pa.nN) :
+    f i (pa.S s) = 0 :=
+  sum_eq_zero_term_eq_zero _ (fun j => hnn j (pa.S s)) (hf.supplier_in s) i
+
+private lemma structural_no_beneficiary_out
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (hnn : ∀ i j, 0 ≤ f i j) (b : Fin pa.nB) (j : Fin pa.nN) :
+    f (pa.B b) j = 0 :=
+  sum_eq_zero_term_eq_zero _ (hnn (pa.B b)) (hf.beneficiary_out b) j
+
+private lemma exists_pos_of_sum_pos {ι : Type*} [Fintype ι]
+    (g : ι → ℝ) (hnn : ∀ i, 0 ≤ g i) (hpos : 0 < ∑ i, g i) :
+    ∃ i, 0 < g i := by
+  by_contra h
+  push_neg at h
+  have hz : ∀ i, g i = 0 := fun i => le_antisymm (h i) (hnn i)
+  simp [hz] at hpos
+
+private lemma structural_pos_out_of_pos_in
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (hnn : ∀ i j, 0 ≤ f i j) (t : Fin pa.nT) {i : Fin pa.nN}
+    (hi : 0 < f i (pa.T t)) :
+    ∃ j, 0 < f (pa.T t) j := by
+  have hin : 0 < ∑ q, f q (pa.T t) := by
+    have hle : f i (pa.T t) ≤ ∑ q, f q (pa.T t) :=
+      Finset.single_le_sum (fun q _ => hnn q (pa.T t)) (Finset.mem_univ i)
+    linarith
+  rw [hf.transshipment t] at hin
+  exact exists_pos_of_sum_pos _ (hnn (pa.T t)) hin
+
+private lemma structural_pos_in_of_pos_out
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (hnn : ∀ i j, 0 ≤ f i j) (t : Fin pa.nT) {j : Fin pa.nN}
+    (hj : 0 < f (pa.T t) j) :
+    ∃ i, 0 < f i (pa.T t) := by
+  have hout : 0 < ∑ q, f (pa.T t) q := by
+    have hle : f (pa.T t) j ≤ ∑ q, f (pa.T t) q :=
+      Finset.single_le_sum (fun q _ => hnn (pa.T t) q) (Finset.mem_univ j)
+    linarith
+  rw [← hf.transshipment t] at hout
+  exact exists_pos_of_sum_pos _ (fun i => hnn i (pa.T t)) hout
+
+private lemma structural_positive_edge_is_edge
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    {i j : Fin pa.nN} (hpos : 0 < f i j) :
+    pa.E i j = 1 := by
+  rcases pa.hE_bin i j with hE | hE
+  · exact absurd (hf.offedge i j hE) (ne_of_gt hpos)
+  · exact hE
+
+private lemma structural_node_is_transshipment
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (hnn : ∀ i j, 0 ≤ f i j) (v : Fin pa.nN)
+    (hin : ∃ i, 0 < f i v) (hout : ∃ j, 0 < f v j) :
+    ∃ t : Fin pa.nT, pa.T t = v := by
+  rcases pa.hSTB_partition v with ⟨s, hs⟩ | ⟨t, ht⟩ | ⟨b, hb⟩
+  · obtain ⟨i, hi⟩ := hin
+    rw [← hs, structural_no_supplier_in pa f hf hnn s i] at hi
+    norm_num at hi
+  · exact ⟨t, ht⟩
+  · obtain ⟨j, hj⟩ := hout
+    rw [← hb, structural_no_beneficiary_out pa f hf hnn b j] at hj
+    norm_num at hj
+
+private def PosWalk
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (L : List (Fin pa.nN)) : Prop :=
+  L.Nodup ∧ 2 ≤ L.length ∧ L.IsChain (fun u w => 0 < f u w)
+
+private lemma exists_maximal_pos_walk
+    (f : Fin pa.nN → Fin pa.nN → ℝ)
+    {i j : Fin pa.nN} (hij : i ≠ j) (hpos : 0 < f i j) :
+    ∃ L : List (Fin pa.nN),
+      PosWalk pa f L ∧
+      ∀ L' : List (Fin pa.nN), PosWalk pa f L' → L'.length ≤ L.length := by
+  classical
+  let W : ℕ → Prop := fun r =>
+    ∃ L : List (Fin pa.nN), PosWalk pa f L ∧ L.length = r
+  have hbase : W 2 := by
+    refine ⟨[i, j], ?_, rfl⟩
+    refine ⟨by simp [hij], by simp, ?_⟩
+    simpa using hpos
+  have htwo_le : 2 ≤ pa.nN := by
+    have hnd : ([i, j] : List (Fin pa.nN)).Nodup := by simp [hij]
+    simpa using hnd.length_le_card
+  let r := Nat.findGreatest W pa.nN
+  have hr : W r := Nat.findGreatest_spec htwo_le hbase
+  obtain ⟨L, hL, hlen⟩ := hr
+  refine ⟨L, hL, ?_⟩
+  intro L' hL'
+  have hbound : L'.length ≤ pa.nN := by
+    simpa using hL'.1.length_le_card
+  have hle : L'.length ≤ r :=
+    Nat.le_findGreatest hbound ⟨L', hL', rfl⟩
+  rwa [← hlen] at hle
+
+private lemma pred_mem_of_maximal_pos_walk
+    (f : Fin pa.nN → Fin pa.nN → ℝ)
+    (L : List (Fin pa.nN)) (hL : PosWalk pa f L)
+    (hmax : ∀ L', PosWalk pa f L' → L'.length ≤ L.length)
+    (hne : L ≠ []) (u : Fin pa.nN) (hu : 0 < f u (L.head hne)) :
+    u ∈ L := by
+  classical
+  change L.Nodup ∧ 2 ≤ L.length ∧ L.IsChain (fun u w => 0 < f u w) at hL
+  obtain ⟨hnd, hlen, hchain⟩ := hL
+  by_contra humem
+  have hnew : PosWalk pa f (u :: L) := by
+    refine ⟨by simpa using ⟨humem, hnd⟩, by simp; omega, ?_⟩
+    exact hchain.cons_of_ne_nil hne hu
+  have := hmax (u :: L) hnew
+  simp at this
+
+private lemma succ_mem_of_maximal_pos_walk
+    (f : Fin pa.nN → Fin pa.nN → ℝ)
+    (L : List (Fin pa.nN)) (hL : PosWalk pa f L)
+    (hmax : ∀ L', PosWalk pa f L' → L'.length ≤ L.length)
+    (hne : L ≠ []) (w : Fin pa.nN) (hw : 0 < f (L.getLast hne) w) :
+    w ∈ L := by
+  classical
+  change L.Nodup ∧ 2 ≤ L.length ∧ L.IsChain (fun u w => 0 < f u w) at hL
+  obtain ⟨hnd, hlen, hchain⟩ := hL
+  by_contra hwmem
+  have hnew : PosWalk pa f (L ++ [w]) := by
+    refine ⟨?_, by simp; omega, ?_⟩
+    · rw [List.nodup_append]
+      refine ⟨hnd, by simp, ?_⟩
+      intro a ha b hb
+      simp only [List.mem_singleton] at hb
+      subst b
+      intro hab
+      apply hwmem
+      rw [← hab]
+      exact ha
+    · apply hchain.append (List.isChain_singleton w)
+      intro x hx y hy
+      have hx' : x = L.getLast hne := by
+        rw [List.getLast?_eq_some_getLast hne] at hx
+        exact (Option.some.inj hx).symm
+      have hy' : y = w := by simpa using hy.symm
+      simpa [hx', hy'] using hw
+  have := hmax (L ++ [w]) hnew
+  simp at this
+
+private lemma cycle_list_nodes_transshipment
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (hnn : ∀ i j, 0 ≤ f i j)
+    (C : List (Fin pa.nN)) (hne : C ≠ [])
+    (hchain : C.IsChain (fun u w => 0 < f u w))
+    (hclose : 0 < f (C.getLast hne) (C.head hne)) :
+    ∀ v ∈ C, ∃ t : Fin pa.nT, pa.T t = v := by
+  intro v hv
+  apply structural_node_is_transshipment pa f hf hnn v
+  · by_cases hvh : v = C.head hne
+    · exact ⟨C.getLast hne, by simpa [hvh] using hclose⟩
+    · obtain ⟨u, hu⟩ := exists_consec_pred hne hv hvh
+      exact ⟨u, consec_chain (R := fun u w => 0 < f u w) hchain hu⟩
+  · by_cases hvl : v = C.getLast hne
+    · exact ⟨C.head hne, by simpa [hvl] using hclose⟩
+    · obtain ⟨w, hw⟩ := exists_consec_succ hne hv hvl
+      exact ⟨w, consec_chain (R := fun u w => 0 < f u w) hchain hw⟩
+
+private lemma head_ne_getLast_of_nodup_two
+    {α : Type*} {L : List α} (hne : L ≠ []) (hnd : L.Nodup)
+    (hlen : 2 ≤ L.length) :
+    L.head hne ≠ L.getLast hne := by
+  rcases L with _ | ⟨a, as⟩
+  · exact absurd rfl hne
+  · rcases as with _ | ⟨b, bs⟩
+    · simp at hlen
+    · intro heq
+      rw [List.nodup_cons] at hnd
+      apply hnd.1
+      have halast : a = (a :: b :: bs).getLast hne := by simpa using heq
+      rw [halast]
+      exact List.getLast_mem (by simp)
+
+private lemma closed_prefix_of_mem
+    {α : Type*} {R : α → α → Prop} {L : List α}
+    (hne : L ≠ []) (hnd : L.Nodup) (hchain : L.IsChain R)
+    {u : α} (hu : u ∈ L) (hclose : R u (L.head hne)) :
+    ∃ C : List α, ∃ hCne : C ≠ [], C.Nodup ∧ C.IsChain R ∧
+      R (C.getLast hCne) (C.head hCne) := by
+  obtain ⟨pre, suf, hEq⟩ := List.mem_iff_append.mp hu
+  subst L
+  let C := pre ++ [u]
+  have hCne : C ≠ [] := by simp [C]
+  have hCnd : C.Nodup := by
+    have ht := hnd.take (i := pre.length + 1)
+    have heq : (pre ++ u :: suf).take (pre.length + 1) = C := by
+      simp [C, List.take_append]
+    rwa [heq] at ht
+  have hCchain : C.IsChain R := by
+    have ht := hchain.take (pre.length + 1)
+    have heq : (pre ++ u :: suf).take (pre.length + 1) = C := by
+      simp [C, List.take_append]
+    rwa [heq] at ht
+  have hheadL : (pre ++ u :: suf).head hne = C.head hCne := by
+    rcases pre with _ | ⟨a, as⟩ <;> simp [C]
+  have hlastC : C.getLast hCne = u := by simp [C]
+  refine ⟨C, hCne, hCnd, hCchain, ?_⟩
+  rwa [hlastC, ← hheadL]
+
+private lemma closed_suffix_of_mem
+    {α : Type*} {R : α → α → Prop} {L : List α}
+    (hne : L ≠ []) (hnd : L.Nodup) (hchain : L.IsChain R)
+    {u : α} (hu : u ∈ L) (hclose : R (L.getLast hne) u) :
+    ∃ C : List α, ∃ hCne : C ≠ [], C.Nodup ∧ C.IsChain R ∧
+      R (C.getLast hCne) (C.head hCne) := by
+  obtain ⟨pre, suf, hEq⟩ := List.mem_iff_append.mp hu
+  subst L
+  let C := u :: suf
+  have hCne : C ≠ [] := by simp [C]
+  have hCnd : C.Nodup := by
+    have hd := hnd.drop (i := pre.length)
+    have heq : (pre ++ u :: suf).drop pre.length = C := by simp [C]
+    rwa [heq] at hd
+  have hCchain : C.IsChain R := by
+    have := hchain.drop pre.length
+    have heq : (pre ++ u :: suf).drop pre.length = C := by simp [C]
+    rwa [heq] at this
+  have hlastL : (pre ++ u :: suf).getLast hne = C.getLast hCne := by
+    change (pre ++ C).getLast hne = C.getLast hCne
+    exact List.getLast_append_of_right_ne_nil pre C hCne
+  have hheadC : C.head hCne = u := by simp [C]
+  refine ⟨C, hCne, hCnd, hCchain, ?_⟩
+  rwa [← hlastL, hheadC]
+
+private lemma exists_positive_path_or_cycle_list
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (hnn : ∀ i j, 0 ≤ f i j) (i j : Fin pa.nN) (hpos : 0 < f i j) :
+    (∃ L : List (Fin pa.nN), ∃ hne : L ≠ [],
+      L.Nodup ∧ L.IsChain (fun u w => 0 < f u w) ∧
+      (∃ s, L.head hne = pa.S s) ∧ (∃ b, L.getLast hne = pa.B b)) ∨
+    (∃ C : List (Fin pa.nN), ∃ hne : C ≠ [],
+      C.Nodup ∧ C.IsChain (fun u w => 0 < f u w) ∧
+      0 < f (C.getLast hne) (C.head hne)) := by
+  classical
+  by_cases hij : i = j
+  · subst j
+    right
+    refine ⟨[i], by simp, by simp, by simp, ?_⟩
+    simpa using hpos
+  · obtain ⟨L, hL, hmax⟩ := exists_maximal_pos_walk pa f hij hpos
+    change L.Nodup ∧ 2 ≤ L.length ∧ L.IsChain (fun u w => 0 < f u w) at hL
+    obtain ⟨hnd, hlen, hchain⟩ := hL
+    have hne : L ≠ [] := by
+      apply List.ne_nil_of_length_pos
+      omega
+    have hhl : L.head hne ≠ L.getLast hne :=
+      head_ne_getLast_of_nodup_two hne hnd hlen
+    obtain ⟨w₀, hw₀⟩ := exists_consec_succ hne (List.head_mem hne) hhl
+    have hout_head : 0 < f (L.head hne) w₀ :=
+      consec_chain (R := fun u w => 0 < f u w) hchain hw₀
+    obtain ⟨u₀, hu₀⟩ :=
+      exists_consec_pred hne (List.getLast_mem hne) hhl.symm
+    have hin_last : 0 < f u₀ (L.getLast hne) :=
+      consec_chain (R := fun u w => 0 < f u w) hchain hu₀
+    rcases pa.hSTB_partition (L.head hne) with
+      ⟨s, hs⟩ | ⟨t, ht⟩ | ⟨b, hb⟩
+    · rcases pa.hSTB_partition (L.getLast hne) with
+        ⟨s', hs'⟩ | ⟨t', ht'⟩ | ⟨b, hb'⟩
+      · rw [← hs', structural_no_supplier_in pa f hf hnn s' u₀] at hin_last
+        norm_num at hin_last
+      · have hinT : 0 < f u₀ (pa.T t') := by simpa [ht'] using hin_last
+        obtain ⟨w, hw⟩ := structural_pos_out_of_pos_in pa f hf hnn t' hinT
+        have hw' : 0 < f (L.getLast hne) w := by simpa [ht'] using hw
+        have hwmem := succ_mem_of_maximal_pos_walk pa f L
+          ⟨hnd, hlen, hchain⟩ hmax hne w hw'
+        obtain ⟨C, hCne, hCnd, hCchain, hCclose⟩ :=
+          closed_suffix_of_mem hne hnd hchain hwmem hw'
+        exact Or.inr ⟨C, hCne, hCnd, hCchain, hCclose⟩
+      · exact Or.inl ⟨L, hne, hnd, hchain, ⟨s, hs.symm⟩, ⟨b, hb'.symm⟩⟩
+    · have houtT : 0 < f (pa.T t) w₀ := by simpa [ht] using hout_head
+      obtain ⟨u, hu⟩ := structural_pos_in_of_pos_out pa f hf hnn t houtT
+      have hu' : 0 < f u (L.head hne) := by simpa [ht] using hu
+      have humem := pred_mem_of_maximal_pos_walk pa f L
+        ⟨hnd, hlen, hchain⟩ hmax hne u hu'
+      obtain ⟨C, hCne, hCnd, hCchain, hCclose⟩ :=
+        closed_prefix_of_mem hne hnd hchain humem hu'
+      exact Or.inr ⟨C, hCne, hCnd, hCchain, hCclose⟩
+    · rw [← hb, structural_no_beneficiary_out pa f hf hnn b w₀] at hout_head
+      norm_num at hout_head
+
+private lemma cycleIndicator_list_positive
+    {n : ℕ} (f : Fin n → Fin n → ℝ)
+    (C : List (Fin n)) (hne : C ≠ [])
+    (hchain : C.IsChain (fun u w => 0 < f u w))
+    (hclose : 0 < f (C.getLast hne) (C.head hne))
+    {u w : Fin n} (hc : cycleIndicator C.get u w = 1) :
+    0 < f u w := by
+  classical
+  obtain ⟨i, hiu, hiw⟩ := (cycleIndicator_eq_one_iff C.get u w).mp hc
+  rcases C with _ | ⟨a, as⟩
+  · exact absurd rfl hne
+  · by_cases hi : i = Fin.last as.length
+    · subst i
+      have hu : u = (a :: as).getLast hne := by
+        rw [← hiu, List.getLast_eq_getElem]
+        rfl
+      have hw : w = (a :: as).head hne := by
+        rw [← hiw]
+        simp
+      simpa [hu, hw] using hclose
+    · have hlt : (i : ℕ) < as.length := Fin.val_lt_last hi
+      have hedge := hchain.getElem i (by simp only [List.length_cons]; omega)
+      have hrot : (finRotate (as.length + 1) i : ℕ) = i + 1 :=
+        coe_finRotate_of_ne_last hi
+      have hrotfin :
+          finRotate (as.length + 1) i =
+            ⟨i + 1, by simp only [List.length_cons] at hedge; omega⟩ :=
+        Fin.ext hrot
+      change (a :: as).get (finRotate (as.length + 1) i) = w at hiw
+      rw [hrotfin] at hiw
+      simpa [← hiu, ← hiw] using hedge
+
+private lemma exists_positive_enumerated_atom
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (hnn : ∀ i j, 0 ≤ f i j) (i j : Fin pa.nN) (hpos : 0 < f i j) :
+    (∃ p : Fin (numPaths pa),
+      ∀ u w, pathEnum pa p u w = 1 → 0 < f u w) ∨
+    (∃ c : Fin (numCycles pa),
+      ∀ u w, cycleEnum pa c u w = 1 → 0 < f u w) := by
+  classical
+  rcases exists_positive_path_or_cycle_list pa f hf hnn i j hpos with hpath | hcycle
+  · obtain ⟨L, hne, hnd, hchain, ⟨s, hs⟩, ⟨b, hb⟩⟩ := hpath
+    have hEchain : L.IsChain (fun u w => pa.E u w = 1) := by
+      exact hchain.imp fun _ _ h => structural_positive_edge_is_edge pa f hf h
+    have hinterior : ∀ v, v ∈ L → v ≠ L.head hne → v ≠ L.getLast hne →
+        ∃ t : Fin pa.nT, pa.T t = v := by
+      intro v hv hvh hvl
+      obtain ⟨u, hu⟩ := exists_consec_pred hne hv hvh
+      obtain ⟨w, hw⟩ := exists_consec_succ hne hv hvl
+      exact structural_node_is_transshipment pa f hf hnn v
+        ⟨u, consec_chain (R := fun u w => 0 < f u w) hchain hu⟩
+        ⟨w, consec_chain (R := fun u w => 0 < f u w) hchain hw⟩
+    have hvp := exists_valid_path_of_walk pa.S pa.T pa.B pa.E pa.hE_bin
+      pa.hSTB_disj_SB L hne hnd hEchain s hs b hb hinterior
+    obtain ⟨p, hp⟩ := pathEnum_complete pa (pathIndicator L) (pathRank L) hvp
+    left
+    refine ⟨p, ?_⟩
+    intro u w huw
+    have hi : pathIndicator L u w = 1 := by rw [← hp u w]; exact huw
+    exact consec_chain (R := fun u w => 0 < f u w) hchain
+      ((pathIndicator_eq_one_iff L u w).mp hi)
+  · obtain ⟨C, hne, hnd, hchain, hclose⟩ := hcycle
+    have hT := cycle_list_nodes_transshipment pa f hf hnn C hne hchain hclose
+    have hEchain : C.IsChain (fun u w => pa.E u w = 1) :=
+      hchain.imp fun _ _ h => structural_positive_edge_is_edge pa f hf h
+    have hEclose : pa.E (C.getLast hne) (C.head hne) = 1 :=
+      structural_positive_edge_is_edge pa f hf hclose
+    have hvc := valid_cycle_of_list pa.T pa.E pa.hE_bin C hne hnd hEchain hEclose hT
+    obtain ⟨c, hc⟩ := cycleEnum_complete pa (cycleIndicator C.get) hvc
+    right
+    refine ⟨c, ?_⟩
+    intro u w huw
+    have hi : cycleIndicator C.get u w = 1 := by rw [← hc u w]; exact huw
+    exact cycleIndicator_list_positive f C hne hchain hclose hi
+
+private lemma path_supplier_deg_zero_aux
+    (p : Fin (numPaths pa)) (s : Fin pa.nS) :
+    ∑ i, pathEnum pa p i (pa.S s) = 0 := by
+  obtain ⟨hbin, -, hin1, hout1, -, hsink, hinterior, -⟩ := pathEnum_isValidPath pa p
+  set IN := ∑ i, pathEnum pa p i (pa.S s)
+  set OUT := ∑ j, pathEnum pa p (pa.S s) j
+  have hIN_nn : 0 ≤ IN := Finset.sum_nonneg fun i _ => by
+    rcases hbin i (pa.S s) with h | h <;> omega
+  have hIN_le := hin1 (pa.S s)
+  have hOUT_nn : 0 ≤ OUT := Finset.sum_nonneg fun j _ => by
+    rcases hbin (pa.S s) j with h | h <;> omega
+  have hOUT_le := hout1 (pa.S s)
+  by_contra hne
+  have hIN1 : IN = 1 := by omega
+  rcases (show OUT = 0 ∨ OUT = 1 by omega) with hO | hO
+  · obtain ⟨b, -, -, hbuniq⟩ := hsink
+    exact pa.hSTB_disj_SB s b (hbuniq (pa.S s) ⟨hIN1, hO⟩)
+  · obtain ⟨t, ht⟩ := hinterior (pa.S s) hIN1 hO
+    exact pa.hSTB_disj_ST s t ht.symm
+
+private lemma path_beneficiary_deg_zero_aux
+    (p : Fin (numPaths pa)) (b : Fin pa.nB) :
+    ∑ j, pathEnum pa p (pa.B b) j = 0 := by
+  obtain ⟨hbin, -, hin1, hout1, hsrc, -, hinterior, -⟩ := pathEnum_isValidPath pa p
+  set IN := ∑ i, pathEnum pa p i (pa.B b)
+  set OUT := ∑ j, pathEnum pa p (pa.B b) j
+  have hIN_nn : 0 ≤ IN := Finset.sum_nonneg fun i _ => by
+    rcases hbin i (pa.B b) with h | h <;> omega
+  have hIN_le := hin1 (pa.B b)
+  have hOUT_nn : 0 ≤ OUT := Finset.sum_nonneg fun j _ => by
+    rcases hbin (pa.B b) j with h | h <;> omega
+  have hOUT_le := hout1 (pa.B b)
+  by_contra hne
+  have hOUT1 : OUT = 1 := by omega
+  rcases (show IN = 0 ∨ IN = 1 by omega) with hI | hI
+  · obtain ⟨s, -, -, hsuniq⟩ := hsrc
+    exact pa.hSTB_disj_SB s b (hsuniq (pa.B b) ⟨hOUT1, hI⟩).symm
+  · obtain ⟨t, ht⟩ := hinterior (pa.B b) hI hOUT1
+    exact pa.hSTB_disj_TB t b ht
+
+private lemma path_transshipment_deg_aux
+    (p : Fin (numPaths pa)) (t : Fin pa.nT) :
+    ∑ i, pathEnum pa p i (pa.T t) = ∑ j, pathEnum pa p (pa.T t) j := by
+  obtain ⟨hbin, -, hin1, hout1, hsrc, hsink, -, -⟩ := pathEnum_isValidPath pa p
+  set IN := ∑ i, pathEnum pa p i (pa.T t)
+  set OUT := ∑ j, pathEnum pa p (pa.T t) j
+  have hIN_nn : 0 ≤ IN := Finset.sum_nonneg fun i _ => by
+    rcases hbin i (pa.T t) with h | h <;> omega
+  have hIN_le := hin1 (pa.T t)
+  have hOUT_nn : 0 ≤ OUT := Finset.sum_nonneg fun j _ => by
+    rcases hbin (pa.T t) j with h | h <;> omega
+  have hOUT_le := hout1 (pa.T t)
+  by_contra hne
+  rcases (show (IN = 0 ∧ OUT = 1) ∨ (IN = 1 ∧ OUT = 0) by omega) with
+    ⟨hI, hO⟩ | ⟨hI, hO⟩
+  · obtain ⟨s, -, -, hsuniq⟩ := hsrc
+    exact pa.hSTB_disj_ST s t (hsuniq (pa.T t) ⟨hO, hI⟩).symm
+  · obtain ⟨b, -, -, hbuniq⟩ := hsink
+    exact pa.hSTB_disj_TB t b (hbuniq (pa.T t) ⟨hI, hO⟩)
+
+private lemma cycle_supplier_deg_zero_aux
+    (c : Fin (numCycles pa)) (s : Fin pa.nS) :
+    ∑ i, cycleEnum pa c i (pa.S s) = 0 := by
+  obtain ⟨hbin, -, -, hout1, hcons, htrans, -⟩ := cycleEnum_isValid pa c
+  have hnn : 0 ≤ ∑ j, cycleEnum pa c (pa.S s) j := Finset.sum_nonneg fun j _ => by
+    rcases hbin (pa.S s) j with h | h <;> omega
+  have hle := hout1 (pa.S s)
+  have hout0 : ∑ j, cycleEnum pa c (pa.S s) j = 0 := by
+    by_contra hne
+    have h1 : ∑ j, cycleEnum pa c (pa.S s) j = 1 := by omega
+    obtain ⟨t, ht⟩ := htrans (pa.S s) h1
+    exact pa.hSTB_disj_ST s t ht.symm
+  rw [hcons (pa.S s)]
+  exact hout0
+
+private lemma cycle_beneficiary_deg_zero_aux
+    (c : Fin (numCycles pa)) (b : Fin pa.nB) :
+    ∑ j, cycleEnum pa c (pa.B b) j = 0 := by
+  obtain ⟨hbin, -, -, hout1, -, htrans, -⟩ := cycleEnum_isValid pa c
+  have hnn : 0 ≤ ∑ j, cycleEnum pa c (pa.B b) j := Finset.sum_nonneg fun j _ => by
+    rcases hbin (pa.B b) j with h | h <;> omega
+  have hle := hout1 (pa.B b)
+  by_contra hne
+  have h1 : ∑ j, cycleEnum pa c (pa.B b) j = 1 := by omega
+  obtain ⟨t, ht⟩ := htrans (pa.B b) h1
+  exact pa.hSTB_disj_TB t b ht
+
+private noncomputable def decompAtom
+    (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa)))
+    (e : Fin pa.nN × Fin pa.nN) : ℝ :=
+  match a with
+  | .inl p => pathEnum pa p e.1 e.2
+  | .inr c => cycleEnum pa c e.1 e.2
+
+private lemma decompAtom_binary
+    (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa))) (e : Fin pa.nN × Fin pa.nN) :
+    decompAtom pa a e = 0 ∨ decompAtom pa a e = 1 := by
+  rcases a with p | c
+  · rcases pathEnum_binary pa p e.1 e.2 with h | h <;> simp [decompAtom, h]
+  · rcases cycleEnum_binary pa c e.1 e.2 with h | h <;> simp [decompAtom, h]
+
+private lemma path_atom_structural (p : Fin (numPaths pa)) :
+    StructuralFlow pa (fun i j => (pathEnum pa p i j : ℝ)) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro s
+    exact_mod_cast path_supplier_deg_zero_aux pa p s
+  · intro t
+    exact_mod_cast path_transshipment_deg_aux pa p t
+  · intro b
+    exact_mod_cast path_beneficiary_deg_zero_aux pa p b
+  · intro i j hE
+    have hle := (pathEnum_isValidPath pa p).2.1 i j
+    rcases pathEnum_binary pa p i j with h | h
+    · simp [h]
+    · omega
+
+private lemma cycle_atom_structural (c : Fin (numCycles pa)) :
+    StructuralFlow pa (fun i j => (cycleEnum pa c i j : ℝ)) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro s
+    exact_mod_cast cycle_supplier_deg_zero_aux pa c s
+  · intro t
+    exact_mod_cast (cycleEnum_isValid pa c).2.2.2.2.1 (pa.T t)
+  · intro b
+    exact_mod_cast cycle_beneficiary_deg_zero_aux pa c b
+  · intro i j hE
+    have hle := (cycleEnum_isValid pa c).2.1 i j
+    rcases cycleEnum_binary pa c i j with h | h
+    · simp [h]
+    · omega
+
+private lemma decompAtom_structural
+    (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa))) :
+    StructuralFlow pa (fun i j => decompAtom pa a (i, j)) := by
+  rcases a with p | c
+  · exact path_atom_structural pa p
+  · exact cycle_atom_structural pa c
+
+private lemma structural_sub_atom
+    (f : Fin pa.nN × Fin pa.nN → ℝ)
+    (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa))) (d : ℝ)
+    (hf : StructuralFlow pa (fun i j => f (i, j))) :
+    StructuralFlow pa (fun i j => f (i, j) - d * decompAtom pa a (i, j)) := by
+  have ha := decompAtom_structural pa a
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro s
+    rw [Finset.sum_sub_distrib, ← Finset.mul_sum]
+    rw [hf.supplier_in s, ha.supplier_in s]
+    ring
+  · intro t
+    rw [Finset.sum_sub_distrib, Finset.sum_sub_distrib,
+      ← Finset.mul_sum, ← Finset.mul_sum]
+    rw [hf.transshipment t, ha.transshipment t]
+  · intro b
+    rw [Finset.sum_sub_distrib, ← Finset.mul_sum]
+    rw [hf.beneficiary_out b, ha.beneficiary_out b]
+    ring
+  · intro i j hE
+    rw [hf.offedge i j hE, ha.offedge i j hE]
+    ring
+
+private lemma pathEnum_has_edge (p : Fin (numPaths pa)) :
+    ∃ e : Fin pa.nN × Fin pa.nN, pathEnum pa p e.1 e.2 = 1 := by
+  obtain ⟨-, -, -, -, ⟨s, hout, -, -⟩, -⟩ := pathEnum_isValidPath pa p
+  by_contra h
+  push_neg at h
+  have hz : ∀ j, pathEnum pa p (pa.S s) j = 0 := by
+    intro j
+    rcases pathEnum_binary pa p (pa.S s) j with h0 | h1
+    · exact h0
+    · exact absurd h1 (h (pa.S s, j))
+  simp [hz] at hout
+
+private lemma cycleEnum_has_edge (c : Fin (numCycles pa)) :
+    ∃ e : Fin pa.nN × Fin pa.nN, cycleEnum pa c e.1 e.2 = 1 := by
+  obtain ⟨-, -, -, -, -, -, m, verts, hm, -, -, hedge⟩ := cycleEnum_isValid pa c
+  let i : Fin m := ⟨0, hm⟩
+  exact ⟨(verts i.castSucc, verts i.succ), hedge _ _ |>.2 ⟨i, rfl, rfl⟩⟩
+
+private lemma decompAtom_has_edge
+    (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa))) :
+    ∃ e : Fin pa.nN × Fin pa.nN, decompAtom pa a e = 1 := by
+  rcases a with p | c
+  · simpa [decompAtom] using pathEnum_has_edge pa p
+  · simpa [decompAtom] using cycleEnum_has_edge pa c
+
+private lemma extract_decompAtom
+    (f : Fin pa.nN × Fin pa.nN → ℝ)
+    (hf : StructuralFlow pa (fun i j => f (i, j)))
+    (hnn : ∀ e, 0 ≤ f e) (hpos : ∃ e, 0 < f e) :
+    ∃ a : Sum (Fin (numPaths pa)) (Fin (numCycles pa)),
+      (∀ e, decompAtom pa a e = 0 ∨ decompAtom pa a e = 1) ∧
+      (∃ e, decompAtom pa a e = 1) ∧
+      (∀ e, decompAtom pa a e = 1 → 0 < f e) := by
+  obtain ⟨⟨i, j⟩, hij⟩ := hpos
+  rcases exists_positive_enumerated_atom pa (fun i j => f (i, j)) hf
+      (fun i j => hnn (i, j)) i j hij with ⟨p, hp⟩ | ⟨c, hc⟩
+  · refine ⟨Sum.inl p, decompAtom_binary pa _, decompAtom_has_edge pa _, ?_⟩
+    rintro ⟨u, w⟩ huw
+    exact hp u w (by simpa [decompAtom] using huw)
+  · refine ⟨Sum.inr c, decompAtom_binary pa _, decompAtom_has_edge pa _, ?_⟩
+    rintro ⟨u, w⟩ huw
+    exact hc u w (by simpa [decompAtom] using huw)
+
+private lemma single_commodity_decomposition
+    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (hnn : ∀ i j, 0 ≤ f i j) :
+    ∃ (x : Fin (numPaths pa) → ℝ) (y : Fin (numCycles pa) → ℝ),
+      (∀ p, 0 ≤ x p) ∧ (∀ c, 0 ≤ y c) ∧
+      ∀ i j, f i j =
+        (∑ p, (pathEnum pa p i j : ℝ) * x p) +
+        (∑ c, (cycleEnum pa c i j : ℝ) * y c) := by
+  classical
+  let F : Fin pa.nN × Fin pa.nN → ℝ := fun e => f e.1 e.2
+  obtain ⟨z, hz, hrec⟩ := finite_conic_decomposition
+    (decompAtom pa)
+    (fun g => StructuralFlow pa (fun i j => g (i, j)))
+    (extract_decompAtom pa)
+    (structural_sub_atom pa)
+    F hf (fun e => hnn e.1 e.2)
+  refine ⟨fun p => z (.inl p), fun c => z (.inr c), ?_, ?_, ?_⟩
+  · exact fun p => hz (.inl p)
+  · exact fun c => hz (.inr c)
+  · intro i j
+    have hr := hrec (i, j)
+    rw [show (∑ a, decompAtom pa a (i, j) * z a) =
+        (∑ p, (pathEnum pa p i j : ℝ) * z (.inl p)) +
+        (∑ c, (cycleEnum pa c i j : ℝ) * z (.inr c)) by
+      rw [Fintype.sum_sum_type]
+      rfl] at hr
+    exact hr
+
+-- ============================================================================
+-- § Flow decomposition and the fwd / bwd maps
 -- ============================================================================
 
 /-- **Flow decomposition (fixed-index form).** Any `a`-feasible flow decomposes,
 edge by edge and for every commodity, into a nonnegative combination of the
-enumerated paths and cycles. Admitted for now. -/
+enumerated paths and cycles. -/
 lemma flow_decomposition (v : P20.a.Vars pa) (h : P20.a.Feasible pa v) :
     ∃ (x : Fin (numPaths pa) → Fin pa.nK → ℝ) (y : Fin (numCycles pa) → Fin pa.nK → ℝ),
       (∀ p k, 0 ≤ x p k) ∧ (∀ c k, 0 ≤ y c k) ∧
@@ -252,7 +1641,20 @@ lemma flow_decomposition (v : P20.a.Vars pa) (h : P20.a.Feasible pa v) :
         v.F i j k
           = (∑ p, (pathEnum pa p i j : ℝ) * x p k)
             + (∑ c, (cycleEnum pa c i j : ℝ) * y c k)) := by
-  sorry
+  classical
+  let D (k : Fin pa.nK) :=
+    single_commodity_decomposition pa
+      (fun i j => v.F i j k)
+      (feasible_structural pa v h k)
+      (fun i j => h.hF_nn i j k)
+  refine ⟨fun p k => (D k).choose p,
+    fun c k => (D k).choose_spec.choose c, ?_, ?_, ?_⟩
+  · intro p k
+    exact (D k).choose_spec.choose_spec.1 p
+  · intro c k
+    exact (D k).choose_spec.choose_spec.2.1 c
+  · intro i j k
+    exact (D k).choose_spec.choose_spec.2.2 i j
 
 /-- Forward map (a → b): decompose the flow into path/cycle amounts, keep `R`. -/
 noncomputable def fwd (v : P20.a.Vars pa) : P20.b.Vars (paramMap pa) := by
@@ -749,7 +2151,7 @@ lemma bwd_fwd (v : P20.a.Vars pa) (ha : P20.a.Feasible pa v) :
     _ = v := rfl
 
 /-- **The reformulation.** `P20.a` (arc flow) ⇄ `P20.b` (path + cycle), with the
-identity objective map. `sorry`-free apart from `flow_decomposition`. -/
+identity objective map. -/
 noncomputable def reformulation :
     MILPReformulation P20.a.formulation P20.b.formulation where
   paramMap := paramMap
