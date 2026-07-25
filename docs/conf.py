@@ -17,8 +17,12 @@ extensions = [
     "sphinx.ext.intersphinx",
     "numpydoc",
     "sphinx_design",
+    "sphinxcontrib.bibtex",
     "gen_problem_pages",
 ]
+
+bibtex_bibfiles = ["ref.bib"]
+bibtex_default_style = "plain"
 
 extlinks = {
     "github": (

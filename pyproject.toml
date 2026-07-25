@@ -37,6 +37,7 @@ docs = [
     "sphinx-autodoc-typehints",
     "sphinx-autobuild",
     "sphinx-design",
+    "sphinxcontrib-bibtex",
     "numpydoc",
 ]
 
