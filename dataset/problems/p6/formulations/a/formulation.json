@@ -119,7 +119,8 @@
     },
     "metadata": {
         "source": {
-            "dataset": "EvoCut"
+            "dataset": "EvoCut",
+            "citekey": "yazdani2025"
         },
         "notes": [
             "This is the MILP formulation given in Appendix F.3 of EvoCut arXiv submission `v1`."

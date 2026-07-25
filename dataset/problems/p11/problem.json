@@ -163,7 +163,8 @@
     },
     "metadata": {
         "source": {
-            "dataset": "EvoCut"
+            "dataset": "EvoCut",
+            "citekey": "yazdani2025"
         },
         "notes": [
             "We add implicit assumptions for non-empty sets, non-negativity of all parameters, and the ordering constraints $P^{\\max}_g \\ge P^{\\min}_g$ and $P^{w,\\max}_{w,t} \\ge P^{w,\\min}_{w,t}$.",

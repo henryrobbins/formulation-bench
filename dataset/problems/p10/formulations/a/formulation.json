@@ -200,7 +200,8 @@
     },
     "metadata": {
         "source": {
-            "dataset": "EvoCut"
+            "dataset": "EvoCut",
+            "citekey": "yazdani2025"
         },
         "notes": [
             "This is the MILP formulation given in Section F.5 of the [v2 arXiv paper](https://arxiv.org/abs/2508.11850v2)."
