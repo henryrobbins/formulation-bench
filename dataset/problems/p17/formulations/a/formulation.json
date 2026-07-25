@@ -231,7 +231,7 @@
             "code": {
                 "gurobipy": "model.addConstrs(x[i, tau] >= 0 for i in I1 for tau in range(t))"
             },
-            "explicit": false
+            "explicit": true
         },
         {
             "description": "Extraction fractions for pure-ore blocks are at most one.",
@@ -239,7 +239,7 @@
             "code": {
                 "gurobipy": "model.addConstrs(x[i, tau] <= 1 for i in I1 for tau in range(t))"
             },
-            "explicit": false
+            "explicit": true
         }
     ],
     "objective": {
