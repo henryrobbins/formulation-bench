@@ -224,6 +224,22 @@
             "code": {
                 "gurobipy": "model.addConstrs(\n    gp.quicksum(x[i, tau2] for tau2 in range(tau + 1)) >= x[j, tau]\n    for tau in range(t)\n    for i in range(n)\n    for j in range(n)\n    if P[i][j] == 1\n)"
             }
+        },
+        {
+            "description": "Extraction fractions for pure-ore blocks are non-negative.",
+            "formulation": "x_i^\\tau \\ge 0 \\quad \\forall i \\in I_1,\\; \\forall \\tau \\in T",
+            "code": {
+                "gurobipy": "model.addConstrs(x[i, tau] >= 0 for i in I1 for tau in range(t))"
+            },
+            "explicit": true
+        },
+        {
+            "description": "Extraction fractions for pure-ore blocks are at most one.",
+            "formulation": "x_i^\\tau \\le 1 \\quad \\forall i \\in I_1,\\; \\forall \\tau \\in T",
+            "code": {
+                "gurobipy": "model.addConstrs(x[i, tau] <= 1 for i in I1 for tau in range(t))"
+            },
+            "explicit": true
         }
     ],
     "objective": {
