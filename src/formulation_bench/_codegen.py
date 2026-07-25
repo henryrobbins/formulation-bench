@@ -67,11 +67,12 @@ def _build_loops(shape: Shape) -> list[tuple[str, str]]:
 
 def _var_decl(name: str, var: Variable) -> str:
     vtype = _gurobi_type(var)
-    # Continuous variables are free by default; a formulation states any lower
-    # bound explicitly as a constraint. Gurobi's own default (lb=0) would
-    # silently constrain genuinely-free variables (dual/degree/potential vars),
-    # so it is overridden here. Binary/integer keep their vtype-implied bounds.
-    lb = "lb=-GRB.INFINITY, " if var.type is VariableType.continuous else ""
+    # Variables are free by default; a formulation states any lower bound
+    # explicitly as a constraint. Gurobi's `addVar` defaults to lb=0 regardless
+    # of vtype, which would silently constrain genuinely-free variables
+    # (dual/degree/potential vars), so it is overridden here. Binary is the one
+    # type whose bounds really do follow from the vtype, so it is left alone.
+    lb = "" if var.type is VariableType.binary else "lb=-GRB.INFINITY, "
     if var.indices is not None:
         return (
             f'{name} = model.addVars([{var.indices}], {lb}vtype={vtype}, name="{name}")'
