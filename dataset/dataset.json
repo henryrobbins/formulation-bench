@@ -827,17 +827,6 @@
         },
         {
             "a": {
-                "problem": 11,
-                "formulation": "a"
-            },
-            "b": {
-                "problem": 11,
-                "formulation": "c"
-            },
-            "reformulation": true
-        },
-        {
-            "a": {
                 "problem": 12,
                 "formulation": "a"
             },

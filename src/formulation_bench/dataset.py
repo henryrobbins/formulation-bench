@@ -31,7 +31,7 @@ class Dataset:
         >>> from formulation_bench import Dataset
         >>> ds = Dataset("./dataset")
         >>> ds
-        Dataset(root=..., n_problems=20, n_reformulations=96)
+        Dataset(root=..., n_problems=20, n_reformulations=89)
 
     Access a specific problem and one of its formulations::
 
@@ -44,7 +44,7 @@ class Dataset:
         >>> pos = [r for r in ds.reformulations if r.is_reformulation]
         >>> neg = [r for r in ds.reformulations if not r.is_reformulation]
         >>> len(pos), len(neg)
-        (70, 26)
+        (63, 26)
     """
 
     def __init__(self, root: str | Path) -> None:
