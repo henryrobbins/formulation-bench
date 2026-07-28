@@ -571,14 +571,6 @@
             "explicit": true
         },
         {
-            "description": "EC4: Total reachable capacity must cover net demand plus reserve at each period.",
-            "formulation": "L_t - \\sum_{w} p^w_{w,t} + R_t \\le \\sum_{g} \\overline{P}_{g,t} \\quad \\forall t",
-            "code": {
-                "gurobipy": "for t in range(T):\n    model.addConstr(L[t] + R[t] <= gp.quicksum(P_bar[g, t] for g in range(n_G)))"
-            },
-            "explicit": true
-        },
-        {
             "description": "Piecewise convex combination weights are non-negative.",
             "formulation": "\\lambda_{g,l,t} \\ge 0 \\quad \\forall g, l, t",
             "code": {
@@ -609,6 +601,14 @@
                 "gurobipy": "model.addConstrs(c_var[g, t] >= 0 for g in range(n_G) for t in range(T))"
             },
             "explicit": false
+        },
+        {
+            "description": "EC4: Total reachable capacity must cover net demand plus reserve at each period.",
+            "formulation": "L_t - \\sum_{w} p^w_{w,t} + R_t \\le \\sum_{g} \\overline{P}_{g,t} \\quad \\forall t",
+            "code": {
+                "gurobipy": "for t in range(T):\n    model.addConstr(L[t] + R[t] <= gp.quicksum(P_bar[g, t] for g in range(n_G)))"
+            },
+            "explicit": true
         }
     ],
     "objective": {

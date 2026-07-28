@@ -579,38 +579,6 @@
             "explicit": true
         },
         {
-            "description": "EC1 upper bound on v: b[g,t] is at most v[g,t].",
-            "formulation": "b_{g,t} \\le v_{g,t} \\quad \\forall g, t < T-1",
-            "code": {
-                "gurobipy": "for g in range(n_G):\n    for t in range(T - 1):\n        model.addConstr(b[g, t] <= v[g, t])"
-            },
-            "explicit": true
-        },
-        {
-            "description": "EC1 upper bound on w: b[g,t] is at most w[g,t+1].",
-            "formulation": "b_{g,t} \\le w_{g,t+1} \\quad \\forall g, t < T-1",
-            "code": {
-                "gurobipy": "for g in range(n_G):\n    for t in range(T - 1):\n        model.addConstr(b[g, t] <= w[g, t + 1])"
-            },
-            "explicit": true
-        },
-        {
-            "description": "EC1 lower bound: b[g,t] is at least v[g,t] + w[g,t+1] - 1.",
-            "formulation": "v_{g,t} + w_{g,t+1} - 1 \\le b_{g,t} \\quad \\forall g, t < T-1",
-            "code": {
-                "gurobipy": "for g in range(n_G):\n    for t in range(T - 1):\n        model.addConstr(v[g, t] + w[g, t + 1] - 1 <= b[g, t])"
-            },
-            "explicit": true
-        },
-        {
-            "description": "EC2c: P_bar is bounded by the combined startup-shutdown derated capacity with recovery term for simultaneous startup-shutdown.",
-            "formulation": "\\bar{P}_{g,t} \\le P^{\\max}_g u_{g,t} - \\max(P^{\\max}_g - SU_g, 0) v_{g,t} - \\max(P^{\\max}_g - SD_g, 0) w_{g,t+1} + \\min(\\max(P^{\\max}_g - SU_g, 0), \\max(P^{\\max}_g - SD_g, 0)) b_{g,t} \\quad \\forall g, t < T-1",
-            "code": {
-                "gurobipy": "for g in range(n_G):\n    su_derate = max(P_max[g] - SU[g], 0)\n    sd_derate = max(P_max[g] - SD[g], 0)\n    recovery = min(su_derate, sd_derate)\n    for t in range(T - 1):\n        model.addConstr(P_bar[g, t] <= P_max[g] * u[g, t] - su_derate * v[g, t] - sd_derate * w[g, t + 1] + recovery * b[g, t])"
-            },
-            "explicit": true
-        },
-        {
             "description": "Piecewise convex combination weights are non-negative.",
             "formulation": "\\lambda_{g,l,t} \\ge 0 \\quad \\forall g, l, t",
             "code": {
@@ -641,6 +609,38 @@
                 "gurobipy": "model.addConstrs(c_var[g, t] >= 0 for g in range(n_G) for t in range(T))"
             },
             "explicit": false
+        },
+        {
+            "description": "EC1 upper bound on v: b[g,t] is at most v[g,t].",
+            "formulation": "b_{g,t} \\le v_{g,t} \\quad \\forall g, t < T-1",
+            "code": {
+                "gurobipy": "for g in range(n_G):\n    for t in range(T - 1):\n        model.addConstr(b[g, t] <= v[g, t])"
+            },
+            "explicit": true
+        },
+        {
+            "description": "EC1 upper bound on w: b[g,t] is at most w[g,t+1].",
+            "formulation": "b_{g,t} \\le w_{g,t+1} \\quad \\forall g, t < T-1",
+            "code": {
+                "gurobipy": "for g in range(n_G):\n    for t in range(T - 1):\n        model.addConstr(b[g, t] <= w[g, t + 1])"
+            },
+            "explicit": true
+        },
+        {
+            "description": "EC1 lower bound: b[g,t] is at least v[g,t] + w[g,t+1] - 1.",
+            "formulation": "v_{g,t} + w_{g,t+1} - 1 \\le b_{g,t} \\quad \\forall g, t < T-1",
+            "code": {
+                "gurobipy": "for g in range(n_G):\n    for t in range(T - 1):\n        model.addConstr(v[g, t] + w[g, t + 1] - 1 <= b[g, t])"
+            },
+            "explicit": true
+        },
+        {
+            "description": "EC2c: P_bar is bounded by the combined startup-shutdown derated capacity with recovery term for simultaneous startup-shutdown.",
+            "formulation": "\\bar{P}_{g,t} \\le P^{\\max}_g u_{g,t} - \\max(P^{\\max}_g - SU_g, 0) v_{g,t} - \\max(P^{\\max}_g - SD_g, 0) w_{g,t+1} + \\min(\\max(P^{\\max}_g - SU_g, 0), \\max(P^{\\max}_g - SD_g, 0)) b_{g,t} \\quad \\forall g, t < T-1",
+            "code": {
+                "gurobipy": "for g in range(n_G):\n    su_derate = max(P_max[g] - SU[g], 0)\n    sd_derate = max(P_max[g] - SD[g], 0)\n    recovery = min(su_derate, sd_derate)\n    for t in range(T - 1):\n        model.addConstr(P_bar[g, t] <= P_max[g] * u[g, t] - su_derate * v[g, t] - sd_derate * w[g, t + 1] + recovery * b[g, t])"
+            },
+            "explicit": true
         }
     ],
     "objective": {

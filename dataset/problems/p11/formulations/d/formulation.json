@@ -571,14 +571,6 @@
             "explicit": true
         },
         {
-            "description": "EC2b: P_bar is bounded by the shutdown-derated capacity for periods before a shutdown.",
-            "formulation": "\\overline{P}_{g,t} \\le P^{\\max}_g u_{g,t} - \\max(P^{\\max}_g - SD_g, 0) w_{g,t+1} \\quad \\forall g, t < T-1",
-            "code": {
-                "gurobipy": "for g in range(n_G):\n    sd_derate = max(P_max[g] - SD[g], 0)\n    for t in range(T - 1):\n        model.addConstr(P_bar[g, t] <= P_max[g] * u[g, t] - sd_derate * w[g, t + 1])"
-            },
-            "explicit": true
-        },
-        {
             "description": "Piecewise convex combination weights are non-negative.",
             "formulation": "\\lambda_{g,l,t} \\ge 0 \\quad \\forall g, l, t",
             "code": {
@@ -609,6 +601,14 @@
                 "gurobipy": "model.addConstrs(c_var[g, t] >= 0 for g in range(n_G) for t in range(T))"
             },
             "explicit": false
+        },
+        {
+            "description": "EC2b: P_bar is bounded by the shutdown-derated capacity for periods before a shutdown.",
+            "formulation": "\\overline{P}_{g,t} \\le P^{\\max}_g u_{g,t} - \\max(P^{\\max}_g - SD_g, 0) w_{g,t+1} \\quad \\forall g, t < T-1",
+            "code": {
+                "gurobipy": "for g in range(n_G):\n    sd_derate = max(P_max[g] - SD[g], 0)\n    for t in range(T - 1):\n        model.addConstr(P_bar[g, t] <= P_max[g] * u[g, t] - sd_derate * w[g, t + 1])"
+            },
+            "explicit": true
         }
     ],
     "objective": {

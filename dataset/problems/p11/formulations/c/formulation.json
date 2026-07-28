@@ -571,14 +571,6 @@
             "explicit": true
         },
         {
-            "description": "EC2a: P_bar is bounded by the startup-derated capacity.",
-            "formulation": "\\overline{P}_{g,t} \\le P^{\\max}_g u_{g,t} - \\max(P^{\\max}_g - SU_g, 0) v_{g,t} \\quad \\forall g, t",
-            "code": {
-                "gurobipy": "for g in range(n_G):\n    su_derate = max(P_max[g] - SU[g], 0)\n    for t in range(T):\n        model.addConstr(P_bar[g, t] <= P_max[g] * u[g, t] - su_derate * v[g, t])"
-            },
-            "explicit": true
-        },
-        {
             "description": "Piecewise convex combination weights are non-negative.",
             "formulation": "\\lambda_{g,l,t} \\ge 0 \\quad \\forall g, l, t",
             "code": {
@@ -609,6 +601,14 @@
                 "gurobipy": "model.addConstrs(c_var[g, t] >= 0 for g in range(n_G) for t in range(T))"
             },
             "explicit": false
+        },
+        {
+            "description": "EC2a: P_bar is bounded by the startup-derated capacity.",
+            "formulation": "\\overline{P}_{g,t} \\le P^{\\max}_g u_{g,t} - \\max(P^{\\max}_g - SU_g, 0) v_{g,t} \\quad \\forall g, t",
+            "code": {
+                "gurobipy": "for g in range(n_G):\n    su_derate = max(P_max[g] - SU[g], 0)\n    for t in range(T):\n        model.addConstr(P_bar[g, t] <= P_max[g] * u[g, t] - su_derate * v[g, t])"
+            },
+            "explicit": true
         }
     ],
     "objective": {

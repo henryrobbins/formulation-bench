@@ -571,14 +571,6 @@
             "explicit": true
         },
         {
-            "description": "EC3b: P_bar is bounded by the ramp reachability from previous period with startup derating at t-1.",
-            "formulation": "\\overline{P}_{g,t} \\le P^{\\min}_g u_{g,t} + (P^{\\max}_g - P^{\\min}_g) u_{g,t-1} - \\max(P^{\\max}_g - SU_g, 0) v_{g,t-1} + RU_g \\quad \\forall g, t \\ge 1",
-            "code": {
-                "gurobipy": "for g in range(n_G):\n    su_derate = max(P_max[g] - SU[g], 0)\n    for t in range(1, T):\n        model.addConstr(P_bar[g, t] <= P_min[g] * u[g, t] + (P_max[g] - P_min[g]) * u[g, t - 1] - su_derate * v[g, t - 1] + RU[g])"
-            },
-            "explicit": true
-        },
-        {
             "description": "Piecewise convex combination weights are non-negative.",
             "formulation": "\\lambda_{g,l,t} \\ge 0 \\quad \\forall g, l, t",
             "code": {
@@ -609,6 +601,14 @@
                 "gurobipy": "model.addConstrs(c_var[g, t] >= 0 for g in range(n_G) for t in range(T))"
             },
             "explicit": false
+        },
+        {
+            "description": "EC3b: P_bar is bounded by the ramp reachability from previous period with startup derating at t-1.",
+            "formulation": "\\overline{P}_{g,t} \\le P^{\\min}_g u_{g,t} + (P^{\\max}_g - P^{\\min}_g) u_{g,t-1} - \\max(P^{\\max}_g - SU_g, 0) v_{g,t-1} + RU_g \\quad \\forall g, t \\ge 1",
+            "code": {
+                "gurobipy": "for g in range(n_G):\n    su_derate = max(P_max[g] - SU[g], 0)\n    for t in range(1, T):\n        model.addConstr(P_bar[g, t] <= P_min[g] * u[g, t] + (P_max[g] - P_min[g]) * u[g, t - 1] - su_derate * v[g, t - 1] + RU[g])"
+            },
+            "explicit": true
         }
     ],
     "objective": {
