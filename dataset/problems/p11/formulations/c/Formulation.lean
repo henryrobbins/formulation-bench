@@ -77,6 +77,7 @@ structure Vars (P : Params) where
   r : Fin P.nG → Fin P.nT → ℝ -- spinning reserve of generator g at time t
   c_var : Fin P.nG → Fin P.nT → ℝ -- variable production cost above fixed cost
   p_wind : Fin P.nW → Fin P.nT → ℝ -- renewable output for wind generator w at time t
+  b : Fin P.nG → Fin P.nT → ℤ -- EC1 indicator: 1 if generator g starts at t and shuts down at t+1
   P_bar : Fin P.nG → Fin P.nT → ℝ -- maximum reachable output of generator g at time t
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
@@ -146,6 +147,8 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hw_bin : ∀ g : Fin p.nG, ∀ t : Fin p.nT, v.w g t = 0 ∨ v.w g t = 1
   hd_bin : ∀ g : Fin p.nG, ∀ s : Fin (p.nS g), ∀ t : Fin p.nT,
     v.d_su g s t = 0 ∨ v.d_su g s t = 1
+  hb_bin : ∀ g : Fin p.nG, ∀ t : Fin p.nT, t.val + 1 < p.nT →
+    v.b g t = 0 ∨ v.b g t = 1
   -- Non-negativity of continuous variables
   hlam_nn : ∀ g : Fin p.nG, ∀ l : Fin (p.nL g), ∀ t : Fin p.nT, 0 ≤ v.lam g l t
   hlam_le : ∀ g : Fin p.nG, ∀ l : Fin (p.nL g), ∀ t : Fin p.nT, v.lam g l t ≤ 1
@@ -155,11 +158,55 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   -- Renewable output bounds
   hpwind_lo : ∀ w : Fin p.nW, ∀ t : Fin p.nT, p.P_wind_min w t ≤ v.p_wind w t
   hpwind_hi : ∀ w : Fin p.nW, ∀ t : Fin p.nT, v.p_wind w t ≤ p.P_wind_max w t
+  -- EC1 upper bound on v: b[g,t] ≤ v[g,t]
+  hec1_ub_v : ∀ g : Fin p.nG, ∀ t : Fin p.nT, t.val + 1 < p.nT →
+    v.b g t ≤ v.v g t
+  -- EC1 upper bound on w: b[g,t] ≤ w[g,t+1]
+  hec1_ub_w : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
+    v.b g t ≤ v.w g ⟨t.val + 1, ht⟩
+  -- EC1 lower bound: v[g,t] + w[g,t+1] - 1 ≤ b[g,t]
+  hec1_lb : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
+    v.v g t + v.w g ⟨t.val + 1, ht⟩ - 1 ≤ v.b g t
   -- EC2a: startup-derated capacity bound on P_bar
   hec2a : ∀ g : Fin p.nG, ∀ t : Fin p.nT,
     v.P_bar g t ≤ p.P_max g * (v.u g t : ℝ) -
       max (p.P_max g - p.SU g) 0 * (v.v g t : ℝ)
+  -- EC2b: shutdown-derated capacity bound on P_bar for t+1 < nT
+  hec2b : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
+    v.P_bar g t ≤ p.P_max g * (v.u g t : ℝ) -
+      max (p.P_max g - p.SD g) 0 * (v.w g ⟨t.val + 1, ht⟩ : ℝ)
+  -- EC2c: P_bar bounded by combined startup-shutdown derated capacity with b recovery term
+  hec2c : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
+    v.P_bar g t ≤
+      p.P_max g * (v.u g t : ℝ) -
+        max (p.P_max g - p.SU g) 0 * (v.v g t : ℝ) -
+        max (p.P_max g - p.SD g) 0 * (v.w g ⟨t.val + 1, ht⟩ : ℝ) +
+        min (max (p.P_max g - p.SU g) 0) (max (p.P_max g - p.SD g) 0) *
+          (v.b g t : ℝ)
+  -- EC3a: P_bar bounded by previous period output plus ramp-up, relaxed when generator was offline
+  hec3a : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : 0 < t.val,
+    v.P_bar g t ≤
+      p.P_min g * (v.u g t : ℝ) + v.p g ⟨t.val - 1, by omega⟩ + p.RU g +
+        (p.P_max g - p.P_min g) * (1 - (v.u g ⟨t.val - 1, by omega⟩ : ℝ))
+  -- EC3b: P_bar bounded by ramp-reachability with startup derating at t-1
+  hec3b : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : 0 < t.val,
+    v.P_bar g t ≤
+      p.P_min g * (v.u g t : ℝ) +
+        (p.P_max g - p.P_min g) * (v.u g ⟨t.val - 1, by omega⟩ : ℝ) -
+          max (p.P_max g - p.SU g) 0 * (v.v g ⟨t.val - 1, by omega⟩ : ℝ) +
+            p.RU g
+  -- EC3c: P_bar bounded by ramp-reachability with shutdown derating at current period t
+  hec3c : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : 0 < t.val,
+    v.P_bar g t ≤
+      p.P_min g * (v.u g t : ℝ) +
+        (p.P_max g - p.P_min g) * (v.u g ⟨t.val - 1, by omega⟩ : ℝ) -
+          max (p.P_max g - p.SD g) 0 * (v.w g t : ℝ) +
+            p.RU g
+  -- EC4: total reachable capacity covers demand plus reserve
+  hec4 : ∀ t : Fin p.nT,
+    p.L t - ∑ w : Fin p.nW, v.p_wind w t + p.R t ≤ ∑ g : Fin p.nG, v.P_bar g t
 
+-- Minimize total production cost (fixed on-cost + variable cost) and startup costs
 def obj (p : Params) (v : Vars p) : ℝ :=
   (∑ g : Fin p.nG, ∑ t : Fin p.nT,
     (v.c_var g t + p.C_fixed g * (v.u g t : ℝ))) +
