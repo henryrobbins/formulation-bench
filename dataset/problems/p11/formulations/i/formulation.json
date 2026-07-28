@@ -432,6 +432,14 @@
                 "T"
             ]
         },
+        "p_wind": {
+            "description": "Renewable output for wind generator w at time t",
+            "type": "continuous",
+            "shape": [
+                "n_W",
+                "T"
+            ]
+        },
         "P_bar": {
             "description": "EC4 auxiliary: maximum reachable output of generator g at time t",
             "type": "continuous",
@@ -446,7 +454,7 @@
             "description": "Demand balance: total thermal and renewable output equals demand at each period.",
             "formulation": "\\sum_{g} (p_{g,t} + P^{\\min}_g u_{g,t}) + \\sum_{w} p^w_{w,t} = L_t \\quad \\forall t",
             "code": {
-                "gurobipy": "for t in range(T):\n    model.addConstr(gp.quicksum(p[g, t] + P_min[g] * u[g, t] for g in range(n_G)) == L[t])"
+                "gurobipy": "for t in range(T):\n    model.addConstr(gp.quicksum(p[g, t] + P_min[g] * u[g, t] for g in range(n_G)) + gp.quicksum(p_wind[wi, t] for wi in range(n_W)) == L[t])"
             },
             "explicit": true
         },
@@ -571,6 +579,22 @@
             "explicit": true
         },
         {
+            "description": "Renewable output is at least the minimum for each wind generator and time period.",
+            "formulation": "P^{w,\\min}_{w,t} \\le p^w_{w,t} \\quad \\forall w, t",
+            "code": {
+                "gurobipy": "for wi in range(n_W):\n    for t in range(T):\n        model.addConstr(p_wind[wi, t] >= P_wind_min[wi][t])"
+            },
+            "explicit": true
+        },
+        {
+            "description": "Renewable output is at most the maximum for each wind generator and time period.",
+            "formulation": "p^w_{w,t} \\le P^{w,\\max}_{w,t} \\quad \\forall w, t",
+            "code": {
+                "gurobipy": "for wi in range(n_W):\n    for t in range(T):\n        model.addConstr(p_wind[wi, t] <= P_wind_max[wi][t])"
+            },
+            "explicit": true
+        },
+        {
             "description": "Piecewise convex combination weights are non-negative.",
             "formulation": "\\lambda_{g,l,t} \\ge 0 \\quad \\forall g, l, t",
             "code": {
@@ -606,7 +630,7 @@
             "description": "EC4: Total reachable capacity must cover net demand plus reserve at each period.",
             "formulation": "L_t - \\sum_{w} p^w_{w,t} + R_t \\le \\sum_{g} \\overline{P}_{g,t} \\quad \\forall t",
             "code": {
-                "gurobipy": "for t in range(T):\n    model.addConstr(L[t] + R[t] <= gp.quicksum(P_bar[g, t] for g in range(n_G)))"
+                "gurobipy": "for t in range(T):\n    model.addConstr(L[t] - gp.quicksum(p_wind[wi, t] for wi in range(n_W)) + R[t] <= gp.quicksum(P_bar[g, t] for g in range(n_G)))"
             },
             "explicit": true
         }

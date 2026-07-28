@@ -80,9 +80,10 @@ structure Vars (P : Params) where
   P_bar : Fin P.nG → Fin P.nT → ℝ -- maximum reachable output of generator g at time t
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
-  -- Demand balance: total thermal output equals demand at each period
+  -- Demand balance: total thermal and renewable output equals demand at each period
   hdemand : ∀ t : Fin p.nT,
-    ∑ g : Fin p.nG, (v.p g t + p.P_min g * (v.u g t : ℝ)) = p.L t
+    ∑ g : Fin p.nG, (v.p g t + p.P_min g * (v.u g t : ℝ))
+      + ∑ w : Fin p.nW, v.p_wind w t = p.L t
   -- Spinning reserve: total reserve meets or exceeds requirement
   hreserve : ∀ t : Fin p.nT,
     p.R t ≤ ∑ g : Fin p.nG, v.r g t
@@ -156,7 +157,7 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hpwind_hi : ∀ w : Fin p.nW, ∀ t : Fin p.nT, v.p_wind w t ≤ p.P_wind_max w t
   -- EC4: total reachable capacity covers demand plus reserve
   hec4 : ∀ t : Fin p.nT,
-    p.L t + p.R t ≤ ∑ g : Fin p.nG, v.P_bar g t
+    p.L t - ∑ w : Fin p.nW, v.p_wind w t + p.R t ≤ ∑ g : Fin p.nG, v.P_bar g t
 
 def obj (p : Params) (v : Vars p) : ℝ :=
   (∑ g : Fin p.nG, ∑ t : Fin p.nT,
