@@ -84,7 +84,8 @@
             "dataset": "Ferchtandiker2025"
         },
         "notes": [
-            "The efficient formulation `p17.a` is a linear relaxation of the inefficient formulation `p17.b`. Hence, it is not a valid reformulation of `p17.b` by our constructive definition. We include it in the FormulationBench dataset as a negative reformulation example."
+            "The efficient formulation `p17.a` is a linear relaxation of the inefficient formulation `p17.b`. Hence, it is not a valid reformulation of `p17.b` by our constructive definition. We include it in the FormulationBench dataset as a negative reformulation example.",
+            "The grade `g` is an ore fraction in `(0, 1]`: a block of grade one is made entirely of ore, and `p17.a` relaxes exactly those blocks to a continuous extraction fraction. The source data generator instead draws grades from `[0.5, 3.0]`, which leaves most blocks outside both of the block classes `p17.a` is defined over and makes that formulation unbounded. Our `gen_data.py` follows the problem description instead, drawing partial-ore grades from `(0, 1)` and making roughly 20% of blocks pure ore, and scales the grade bounds `G_min` and `G_max` to match. The reference solution in `solution.json` is the optimum of `p17.a`, which is strictly better than the optimum of `p17.b` -- the two formulations are expected to differ, and that gap is the point of the pair."
         ]
     }
 }

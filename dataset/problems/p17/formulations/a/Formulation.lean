@@ -29,6 +29,10 @@ structure Params where
   hT : NeZero T
   hc_nn : ∀ i : Fin n, ∀ t : Fin T, 0 ≤ c i t
   hg_nn: ∀ i :  Fin n, 0 ≤ g i
+  -- Grades are ore fractions, so a grade of 1 denotes a block made entirely of
+  -- ore. This is what makes I0 and I1 a partition of the blocks: without it a
+  -- block with grade above 1 lands in neither, leaving its x with no domain.
+  hg_le_one : ∀ i : Fin n, g i ≤ 1
   hO_nn : ∀ i : Fin n, 0 ≤ O i
   hW_nn : ∀ i : Fin n, 0 ≤ W i
 
