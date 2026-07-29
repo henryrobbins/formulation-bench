@@ -18,7 +18,7 @@ Operational Constraints:
 
 Fixed Hubs: Some hubs (e.g., UNHRD facilities) are non-negotiable; they must be used due to pre-existing agreements or strategic importance.
 
-Time Sensitivity: Deliveries must reach disaster zones within a strict time window (e.g., 72 hours) to prevent secondary crises like disease outbreaks.
+Time Sensitivity: The average time taken to supply a disaster zone must stay within a fixed limit (e.g., 72 hours) to prevent secondary crises like disease outbreaks.
 
 Budget Limits: Organizations can only afford to operate a limited number of additional hubs beyond fixed ones.
 
@@ -35,8 +35,6 @@ Guarantees Coverage for All Disaster Regions:
 
 Ensure every disaster-prone area (e.g., flood-vulnerable Bangladesh, earthquake-prone Nepal) is assigned to at least one hub.
 
-Respects Time and Capacity Limits:
+Respects Time Limits:
 
-Avoid overloading hubs: the hubs have a limit on storage.
-
-Meet strict delivery deadlines: deliveries have a strict time limit to ensure that goods arrive in time.
+Keep delivery times low: the average time to supply a region must not exceed a fixed limit, ensuring that goods arrive in time.
