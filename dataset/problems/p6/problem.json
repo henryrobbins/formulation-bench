@@ -43,7 +43,8 @@
     },
     "metadata": {
         "source": {
-            "dataset": "EvoCut"
+            "dataset": "EvoCut",
+            "citekey": "yazdani2025"
         },
         "notes": [
             "We add implicit assumptions that $|I|, |J| > 0$, $u, f, c \\geq 0$, and $d > 0$.",

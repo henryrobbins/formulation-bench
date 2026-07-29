@@ -16,6 +16,7 @@ dataset/
 ├── lean-toolchain           # Pinned Lean version
 ├── Common.lean              # Lean definitions
 ├── dataset.json             # Problem IDs and reformulation pairs
+├── ref.bib                  # BibTeX entries for every cited source
 ├── problems/                # One subdirectory per problem
 │   ├── p1/
 │   │   ├── description.md   # Natural-language problem description
@@ -41,6 +42,7 @@ The root of the dataset directory contains:
 - Lean project files: `lakefile.toml`, `lake-manifest.json`, `lean-toolchain` (see {doc}`/user_guide/build_lean`)
 - Lean formulation and reformulation definitions: `Common.lean` (see {doc}`/definitions`)
 - A manifest of the problems and reformulations contained in the dataset: `dataset.json`
+- The bibliography every problem and formulation cites: `ref.bib` (see {ref}`source-metadata`)
 - The problems subdirectory (see {ref}`problem-directory`)
 - The reformulations subdirectory (see {ref}`reformulation-pairs-and-proofs`)
 
@@ -96,10 +98,10 @@ Defines the problem `name`, its data `parameters`, and freeform `metadata`:
   Each value is a {class}`Parameter <formulation_bench.models.Parameter>`
   with a `description`, `type`, and `shape` (see
   {ref}`variable-shape-notation`).
-- **`metadata`** — freeform; typically a `source` field recording which
-  dataset the problem was adapted from and a `notes` field with commentary.
-  These populate the source and notes blocks on the {doc}`/problems/index`
-  pages.
+- **`metadata`** — freeform; typically a `source` field recording where the
+  problem was adapted from and a `notes` field with commentary. These
+  populate the source and notes blocks on the {doc}`/problems/index` pages.
+  See {ref}`source-metadata`.
 
 :::{dropdown} `problems/p1/problem.json`
 :icon: code
@@ -184,6 +186,9 @@ The structured description of the MILP. Each field maps onto an attribute of
   `formulation`, and `code.gurobipy`.
 - **`imports`** — *(optional)* list of additional Python import statements
   emitted into the generated `solve.py` (e.g. `["import math"]`).
+- **`metadata`** — freeform; typically a `source` field recording where this
+  particular formulation came from and a `notes` field with commentary. See
+  {ref}`source-metadata`.
 
 The `code.python` / `code.gurobipy` snippets are what
 {meth}`Formulation.gen_solve_py()
@@ -255,6 +260,43 @@ Each entry loads into a {class}`Reformulation
 ```
 :::
 
+
+(source-metadata)=
+## Source Metadata
+
+The `metadata.source` object of a `problem.json` or `formulation.json`
+records attribution. It takes one of two forms:
+
+- **A paper**, identified by a `citekey` naming a BibTeX entry in
+  `dataset/ref.bib`.
+- **A dataset**, identified by a `dataset` name. The docs map each name to
+  its BibTeX entry and homepage.
+
+Any additional keys are free-form identifiers locating the problem or
+formulation within that source — `instance_id`, `variation_id`, or the
+`formulation` name the source itself uses. They are rendered as
+parenthesized detail on the problem page.
+
+A formulation reproduced from a survey or comparative study, but first
+proposed elsewhere, records the originating work under `origin` — itself an
+object with a `citekey`. Both works are then credited on the problem page.
+
+```json
+{
+  "metadata": {
+    "source": {
+      "citekey": "oncan2009",
+      "formulation": "MTZ",
+      "origin": { "citekey": "miller1960" }
+    }
+  }
+}
+```
+
+Every `citekey` must resolve against `dataset/ref.bib`, which is the single
+source of bibliographic truth for the dataset; the docs build renders it as
+the {doc}`/citations` reference list. `scripts/check_citations.py` verifies
+that every key used in the dataset is present in the bibliography.
 
 (variable-shape-notation)=
 ## Variable Shape Notation

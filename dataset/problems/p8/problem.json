@@ -30,7 +30,8 @@
     },
     "metadata": {
         "source": {
-            "dataset": "EvoCut"
+            "dataset": "EvoCut",
+            "citekey": "yazdani2025"
         },
         "notes": [
             "We add the implicit assumptions: there is at least one job and machine, processing times $p_{j,k} \\ge 0$, and $Om$ encodes a valid JSSP instance. To be a valid JSSP instance, each job has exactly one operation assigned per machine.",

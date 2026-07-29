@@ -31,13 +31,8 @@ SOURCE_LINKS = {
     ),
 }
 
-# BibTeX keys in docs/ref.bib, resolved by sphinxcontrib-bibtex against the
-# bibliography on docs/citations.md.
-SOURCE_CITES = {
-    "EquivaFormulation": "zhai2025a",
-    "EvoCut": "yazdani2025",
-    "Ferchtandiker2025": "ferchtandiker2025",
-}
+# Every source carries a `citekey` naming an entry in dataset/ref.bib, which
+# sphinxcontrib-bibtex resolves against the bibliography on docs/citations.md.
 
 
 def _fmt_shape(shape: Shape) -> str:
@@ -145,15 +140,29 @@ def _formulation_section(fid: str, f: Formulation) -> str:
 
 
 def _source_label(src: object) -> str:
+    """Render a ``metadata.source`` as prose.
+
+    A source cites a work by ``citekey``; a source that is one of the
+    collected datasets also names it, which takes the lead and links to its
+    homepage. Any remaining keys are appended as parenthesized detail. A
+    formulation reproduced from one work but first proposed in another
+    records the latter under ``origin``.
+    """
     if not isinstance(src, dict):
         return str(src)
-    name = src.get("dataset", "?")
-    url = SOURCE_LINKS.get(name)
-    head = f"[{name}]({url})" if url else name
-    cite = SOURCE_CITES.get(name)
-    if cite:
-        head += f" {{cite:p}}`{cite}`"
-    extras = [f"{k.replace('_', ' ')}: {v}" for k, v in src.items() if k != "dataset"]
+    cite = src.get("citekey")
+    name = src.get("dataset")
+    if name:
+        url = SOURCE_LINKS.get(name)
+        head = f"[{name}]({url})" if url else name
+        head += f" {{cite:p}}`{cite}`" if cite else ""
+    else:
+        head = f"{{cite:t}}`{cite}`" if cite else "?"
+    skip = {"dataset", "citekey", "origin"}
+    extras = [f"{k.replace('_', ' ')}: {v}" for k, v in src.items() if k not in skip]
+    origin = src.get("origin")
+    if isinstance(origin, dict) and "citekey" in origin:
+        extras.append(f"originally due to {{cite:t}}`{origin['citekey']}`")
     return head + (f" ({', '.join(extras)})" if extras else "")
 
 
@@ -215,9 +224,8 @@ def _problem_page(pid: int, problem) -> str:
 def _source_short(src: object) -> str:
     if not isinstance(src, dict):
         return str(src)
-    name = src.get("dataset", "?")
-    cite = SOURCE_CITES.get(name)
-    return f"{{cite:t}}`{cite}`" if cite else name
+    cite = src.get("citekey")
+    return f"{{cite:t}}`{cite}`" if cite else src.get("dataset", "?")
 
 
 def _index_page(problems: dict[int, object]) -> str:

@@ -21,7 +21,9 @@ extensions = [
     "gen_problem_pages",
 ]
 
-bibtex_bibfiles = ["ref.bib"]
+# The bibliography ships with the dataset so the published tarball carries
+# full attribution for every problem and formulation source.
+bibtex_bibfiles = ["../dataset/ref.bib"]
 bibtex_default_style = "plain"
 
 extlinks = {

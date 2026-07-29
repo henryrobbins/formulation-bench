@@ -75,7 +75,8 @@
     },
     "metadata": {
         "source": {
-            "dataset": "EvoCut"
+            "dataset": "EvoCut",
+            "citekey": "yazdani2025"
         },
         "notes": [
             "We add implicit assumptions that $c_a, f_a, u_a \\ge 0$ and $d_k > 0$.",

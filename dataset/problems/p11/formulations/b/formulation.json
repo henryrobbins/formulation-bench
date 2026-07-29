@@ -709,7 +709,8 @@
     },
     "metadata": {
         "source": {
-            "dataset": "EvoCut"
+            "dataset": "EvoCut",
+            "citekey": "yazdani2025"
         },
         "notes": [
             "This is the MILP formulation given in Section F.7 of EvoCut arXiv submission `v2`. It introduces auxiliary variables $\\overline{P}_{g,t}$ and $b_{g,t}$ to enforce that demand minus renewable output plus reserve can be met by thermal capacity that is reachable under ramp limits, with derating during startups and shutdowns."
