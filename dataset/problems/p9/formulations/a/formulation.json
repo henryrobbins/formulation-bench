@@ -75,6 +75,30 @@
     },
     "assumptions": [
         {
+            "description": "There is at least one node.",
+            "formulation": "n \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert n >= 1"
+            }
+        },
+        {
+            "description": "There is at least one arc.",
+            "formulation": "m \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert m >= 1"
+            }
+        },
+        {
+            "description": "There is at least one commodity.",
+            "formulation": "K \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert K >= 1"
+            }
+        },
+        {
             "description": "Unit transportation costs are non-negative.",
             "formulation": "c_a \\geq 0 \\quad \\forall a \\in A",
             "explicit": false,
