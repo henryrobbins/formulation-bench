@@ -52,6 +52,16 @@ def pytest_collection_modifyitems(
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
     selected = _selected_problems(metafunc.config)
 
+    if "problem" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "problem",
+            [
+                pytest.param(problem, id=f"p{pid}")
+                for pid, problem in _DATASET.problems.items()
+                if selected is None or pid in selected
+            ],
+        )
+
     if "formulation" in metafunc.fixturenames:
         metafunc.parametrize(
             "formulation",
