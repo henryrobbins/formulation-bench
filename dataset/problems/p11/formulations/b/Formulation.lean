@@ -21,7 +21,6 @@ structure Params where
   -- Piecewise production data
   P : ∀ g : Fin nG, Fin (nL g) → ℝ -- piecewise output breakpoints
   C : ∀ g : Fin nG, Fin (nL g) → ℝ -- piecewise variable cost at breakpoints
-  C_fixed : Fin nG → ℝ -- fixed on-cost per generator per period
   -- System parameters
   L : Fin nT → ℝ -- demand at each time period
   R : Fin nT → ℝ -- spinning reserve requirement at each time period
@@ -51,7 +50,6 @@ structure Params where
   hCsu_nn : ∀ g : Fin nG, ∀ s : Fin (nS g), 0 ≤ C_su g s
   hP_nn : ∀ g : Fin nG, ∀ l : Fin (nL g), 0 ≤ P g l
   hC_nn : ∀ g : Fin nG, ∀ l : Fin (nL g), 0 ≤ C g l
-  hCfixed_nn : ∀ g : Fin nG, 0 ≤ C_fixed g
   hL_nn : ∀ t : Fin nT, 0 ≤ L t
   hR_nn : ∀ t : Fin nT, 0 ≤ R t
   hPmin_nn : ∀ g : Fin nG, 0 ≤ P_min g
@@ -75,9 +73,10 @@ structure Vars (P : Params) where
   lam : ∀ g : Fin P.nG, Fin (P.nL g) → Fin P.nT → ℝ -- piecewise weight (g, l, t)
   p : Fin P.nG → Fin P.nT → ℝ -- thermal output above P_min for generator g at time t
   r : Fin P.nG → Fin P.nT → ℝ -- spinning reserve of generator g at time t
-  c_var : Fin P.nG → Fin P.nT → ℝ -- variable production cost above fixed cost
+  c_var : Fin P.nG → Fin P.nT → ℝ -- variable production cost above the first breakpoint's cost
   p_wind : Fin P.nW → Fin P.nT → ℝ -- renewable output for wind generator w at time t
-  b : Fin P.nG → Fin P.nT → ℤ -- EC1 indicator: 1 if generator g starts at t and shuts down at t+1
+  b : -- EC1 indicator: 1 if generator g starts at t and shuts down at t+1
+    Fin P.nG → Fin (P.nT - 1) → ℤ
   P_bar : Fin P.nG → Fin P.nT → ℝ -- maximum reachable output of generator g at time t
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
@@ -134,10 +133,10 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hp_eq : ∀ g : Fin p.nG, ∀ t : Fin p.nT,
     v.p g t = ∑ l : Fin (p.nL g),
       (p.P g l - p.P g ⟨0, (p.hnL_pos g).pos⟩) * v.lam g l t
-  -- Piecewise cost: variable cost equals convex combination of cost breakpoints above fixed cost
+  -- Piecewise cost: variable cost equals convex combination of cost breakpoints above the first breakpoint's cost
   hc_eq : ∀ g : Fin p.nG, ∀ t : Fin p.nT,
     v.c_var g t = ∑ l : Fin (p.nL g),
-      (p.C g l - p.C_fixed g) * v.lam g l t
+      (p.C g l - p.C g ⟨0, (p.hnL_pos g).pos⟩) * v.lam g l t
   -- Piecewise weights sum to on-status
   hlam_sum : ∀ g : Fin p.nG, ∀ t : Fin p.nT,
     ∑ l : Fin (p.nL g), v.lam g l t = (v.u g t : ℝ)
@@ -147,7 +146,7 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hw_bin : ∀ g : Fin p.nG, ∀ t : Fin p.nT, v.w g t = 0 ∨ v.w g t = 1
   hd_bin : ∀ g : Fin p.nG, ∀ s : Fin (p.nS g), ∀ t : Fin p.nT,
     v.d_su g s t = 0 ∨ v.d_su g s t = 1
-  hb_bin : ∀ g : Fin p.nG, ∀ t : Fin p.nT, t.val + 1 < p.nT →
+  hb_bin : ∀ g : Fin p.nG, ∀ t : Fin (p.nT - 1),
     v.b g t = 0 ∨ v.b g t = 1
   -- Non-negativity of continuous variables
   hlam_nn : ∀ g : Fin p.nG, ∀ l : Fin (p.nL g), ∀ t : Fin p.nT, 0 ≤ v.lam g l t
@@ -159,14 +158,14 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hpwind_lo : ∀ w : Fin p.nW, ∀ t : Fin p.nT, p.P_wind_min w t ≤ v.p_wind w t
   hpwind_hi : ∀ w : Fin p.nW, ∀ t : Fin p.nT, v.p_wind w t ≤ p.P_wind_max w t
   -- EC1 upper bound on v: b[g,t] ≤ v[g,t]
-  hec1_ub_v : ∀ g : Fin p.nG, ∀ t : Fin p.nT, t.val + 1 < p.nT →
-    v.b g t ≤ v.v g t
+  hec1_ub_v : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
+    v.b g ⟨t.val, by omega⟩ ≤ v.v g t
   -- EC1 upper bound on w: b[g,t] ≤ w[g,t+1]
   hec1_ub_w : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
-    v.b g t ≤ v.w g ⟨t.val + 1, ht⟩
+    v.b g ⟨t.val, by omega⟩ ≤ v.w g ⟨t.val + 1, ht⟩
   -- EC1 lower bound: v[g,t] + w[g,t+1] - 1 ≤ b[g,t]
   hec1_lb : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
-    v.v g t + v.w g ⟨t.val + 1, ht⟩ - 1 ≤ v.b g t
+    v.v g t + v.w g ⟨t.val + 1, ht⟩ - 1 ≤ v.b g ⟨t.val, by omega⟩
   -- EC2a: startup-derated capacity bound on P_bar
   hec2a : ∀ g : Fin p.nG, ∀ t : Fin p.nT,
     v.P_bar g t ≤ p.P_max g * (v.u g t : ℝ) -
@@ -182,7 +181,7 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
         max (p.P_max g - p.SU g) 0 * (v.v g t : ℝ) -
         max (p.P_max g - p.SD g) 0 * (v.w g ⟨t.val + 1, ht⟩ : ℝ) +
         min (max (p.P_max g - p.SU g) 0) (max (p.P_max g - p.SD g) 0) *
-          (v.b g t : ℝ)
+          (v.b g ⟨t.val, by omega⟩ : ℝ)
   -- EC3a: P_bar bounded by previous period output plus ramp-up, relaxed when generator was offline
   hec3a : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : 0 < t.val,
     v.P_bar g t ≤
@@ -206,10 +205,10 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hec4 : ∀ t : Fin p.nT,
     p.L t - ∑ w : Fin p.nW, v.p_wind w t + p.R t ≤ ∑ g : Fin p.nG, v.P_bar g t
 
--- Minimize total production cost (fixed on-cost + variable cost) and startup costs
+-- Minimize total production cost (first-breakpoint on-cost + variable cost) and startup costs
 def obj (p : Params) (v : Vars p) : ℝ :=
   (∑ g : Fin p.nG, ∑ t : Fin p.nT,
-    (v.c_var g t + p.C_fixed g * (v.u g t : ℝ))) +
+    (v.c_var g t + p.C g ⟨0, (p.hnL_pos g).pos⟩ * (v.u g t : ℝ))) +
   ∑ g : Fin p.nG, ∑ s : Fin (p.nS g), ∑ t : Fin p.nT,
     p.C_su g s * (v.d_su g s t : ℝ)
 

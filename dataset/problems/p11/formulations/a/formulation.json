@@ -62,13 +62,6 @@
                 "n_L[n_G]"
             ]
         },
-        "C_fixed": {
-            "description": "Fixed cost incurred when a thermal generator is on during a time period",
-            "type": "continuous",
-            "shape": [
-                "n_G"
-            ]
-        },
         "L": {
             "description": "Demand requirement at each time period",
             "type": "continuous",
@@ -234,14 +227,6 @@
             "explicit": false,
             "code": {
                 "python": "assert all(C[g][l] >= 0 for g in range(n_G) for l in range(n_L[g]))"
-            }
-        },
-        {
-            "description": "Fixed on-costs are non-negative.",
-            "formulation": "C^{\\text{fixed}}_g \\ge 0 \\quad \\forall g",
-            "explicit": false,
-            "code": {
-                "python": "assert all(C_fixed[g] >= 0 for g in range(n_G))"
             }
         },
         {
@@ -425,7 +410,7 @@
             ]
         },
         "c_var": {
-            "description": "Variable production cost above fixed cost for generator g at time t",
+            "description": "Variable production cost above the cost at the first breakpoint for generator g at time t",
             "type": "continuous",
             "shape": [
                 "n_G",
@@ -547,10 +532,10 @@
             "explicit": true
         },
         {
-            "description": "Piecewise cost: variable cost equals the convex combination of cost breakpoints above fixed cost.",
+            "description": "Piecewise cost: variable cost equals the convex combination of cost breakpoints above the cost at the first breakpoint.",
             "formulation": "c_{g,t} = \\sum_{l} (C_{g,l} - C_{g,0}) \\lambda_{g,l,t} \\quad \\forall g, t",
             "code": {
-                "gurobipy": "for g in range(n_G):\n    for t in range(T):\n        model.addConstr(c_var[g, t] == gp.quicksum((C[g][l] - C_fixed[g]) * lam[g, l, t] for l in range(n_L[g])))"
+                "gurobipy": "for g in range(n_G):\n    for t in range(T):\n        model.addConstr(c_var[g, t] == gp.quicksum((C[g][l] - C[g][0]) * lam[g, l, t] for l in range(n_L[g])))"
             },
             "explicit": true
         },
@@ -611,7 +596,7 @@
             "explicit": false
         },
         {
-            "description": "Variable production cost above the fixed cost is non-negative.",
+            "description": "Variable production cost above the cost at the first breakpoint is non-negative.",
             "formulation": "c_{g,t} \\ge 0 \\quad \\forall g, t",
             "code": {
                 "gurobipy": "model.addConstrs(c_var[g, t] >= 0 for g in range(n_G) for t in range(T))"
@@ -620,10 +605,10 @@
         }
     ],
     "objective": {
-        "description": "Minimize total production cost (fixed on-cost plus variable cost) and startup costs over all generators and time periods.",
-        "formulation": "\\min \\sum_{g} \\sum_{t} (c_{g,t} + C^{\\text{fixed}}_g u_{g,t}) + \\sum_{g} \\sum_{s} \\sum_{t} C^{su}_{g,s} d_{g,s,t}",
+        "description": "Minimize total production cost (on-cost at the first breakpoint plus variable cost) and startup costs over all generators and time periods.",
+        "formulation": "\\min \\sum_{g} \\sum_{t} (c_{g,t} + C_{g,0} u_{g,t}) + \\sum_{g} \\sum_{s} \\sum_{t} C^{su}_{g,s} d_{g,s,t}",
         "code": {
-            "gurobipy": "model.setObjective(gp.quicksum(c_var[g, t] + C_fixed[g] * u[g, t] for g in range(n_G) for t in range(T)) + gp.quicksum(C_su[g][s] * d_su[g, s, t] for g in range(n_G) for s in range(n_S[g]) for t in range(T)), GRB.MINIMIZE)"
+            "gurobipy": "model.setObjective(gp.quicksum(c_var[g, t] + C[g][0] * u[g, t] for g in range(n_G) for t in range(T)) + gp.quicksum(C_su[g][s] * d_su[g, s, t] for g in range(n_G) for s in range(n_S[g]) for t in range(T)), GRB.MINIMIZE)"
         }
     },
     "metadata": {

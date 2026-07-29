@@ -35,11 +35,11 @@ noncomputable def greedyStep (p : Params) (j : Fin p.m)
     (acc : Finset (Fin p.n)) (i : Fin p.n) : Finset (Fin p.n) :=
   if ∀ i' ∈ acc, p.u j < p.d i + p.d i' then insert i acc else acc
 
--- Note: the JSON sorts remaining customers by demand descending before the greedy extension;
--- here we sort by index ascending (· ≤ ·). The result is a valid lifted clique inequality
--- regardless of order, but may differ from the JSON's specific instance.
+-- The greedy extension visits the remaining customers in non-increasing demand order,
+-- ties broken by ascending index.
 noncomputable def liftedClique (p : Params) (j : Fin p.m) : Finset (Fin p.n) :=
-  ((univ \ clique p j).sort (· ≤ ·)).foldl (greedyStep p j) (clique p j)
+  (((univ \ clique p j).sort (· ≤ ·)).mergeSort
+      (fun a b => decide (p.d b ≤ p.d a))).foldl (greedyStep p j) (clique p j)
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
   -- Each customer is assigned to exactly one warehouse

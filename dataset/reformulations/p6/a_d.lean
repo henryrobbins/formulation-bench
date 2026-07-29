@@ -375,14 +375,15 @@ private lemma fwd_feas (p : P6.a.Params) (v : P6.a.Vars p)
         _ ≤ ∑ j : Fin p.m, v.y j := by
               apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
               intro j _ _; exact hybin_nn j
-    -- Now: if S.card < k then sum over top S.card < sum over top k.
+    -- Now: if S.card ≤ k then sum over top S.card ≤ sum over top k.
     -- Combined with hard demand inequality + hk_insuff, get contradiction.
-    -- So S.card ≥ k. Hence k ≤ S.card ≤ ∑ y_j.
+    -- So S.card ≥ k + 1. Hence k + 1 ≤ S.card ≤ ∑ y_j.
     by_contra hcon
     push_neg at hcon
-    -- hcon : ∑ y_j < (k : ℤ).
-    have hScard_lt : (S.card : ℤ) < k := lt_of_le_of_lt Scard_le_y hcon
-    have hScard_lt' : S.card < k := by exact_mod_cast hScard_lt
+    -- hcon : ∑ y_j < (k : ℤ) + 1.
+    have hScard_lt : (S.card : ℤ) < (k : ℤ) + 1 := lt_of_le_of_lt Scard_le_y hcon
+    have hScard_lt' : S.card ≤ k := by
+      exact_mod_cast Int.lt_add_one_iff.mp hScard_lt
     -- Top-S.card sum ≤ Top-k sum (monotone on filters).
     have hmono : ∑ a ∈ (univ : Finset (Fin T.card)).filter
           (fun i : Fin T.card => i.val < S.card), p.u (σ a).val

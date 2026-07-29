@@ -44,7 +44,7 @@ class Dataset:
         >>> pos = [r for r in ds.reformulations if r.is_reformulation]
         >>> neg = [r for r in ds.reformulations if not r.is_reformulation]
         >>> len(pos), len(neg)
-        (63, 26)
+        (62, 27)
     """
 
     def __init__(self, root: str | Path) -> None:

@@ -22,14 +22,14 @@ structure Params where
   hV_nn : 0 ≤ V
 
 structure Vars (p : Params) where
-  e : ℤ  -- number of regular panes produced
-  h : ℤ  -- number of tempered panes produced
+  e : ℝ  -- number of regular panes produced
+  h : ℝ  -- number of tempered panes produced
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
   -- Total heating time does not exceed machine capacity
-  hheating : p.C * (v.e : ℝ) + p.P * (v.h : ℝ) ≤ p.D
+  hheating : p.C * v.e + p.P * v.h ≤ p.D
   -- Total cooling time does not exceed machine capacity
-  hcooling : p.S * (v.e : ℝ) + p.L * (v.h : ℝ) ≤ p.V
+  hcooling : p.S * v.e + p.L * v.h ≤ p.V
   -- [Implicit Constraints]
   he_nn : 0 ≤ v.e
   hh_nn : 0 ≤ v.h

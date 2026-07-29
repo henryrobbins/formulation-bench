@@ -54,10 +54,6 @@ include h
 private lemma fwd_x_nn (i : Fin p.n) (j : Fin p.m) : 0 ≤ v.x i j := by
   rcases h.hx_bin i j with h0 | h1 <;> omega
 
--- y values are nonneg.
-private lemma fwd_y_nn (j : Fin p.m) : 0 ≤ v.y j := by
-  rcases h.hy_bin j with h0 | h1 <;> omega
-
 -- Each customer has exactly one assigned warehouse (value 1 among binary ys).
 private lemma fwd_exists_unique_assign (i : Fin p.n) :
     ∃! j : Fin p.m, v.x i j = 1 := by

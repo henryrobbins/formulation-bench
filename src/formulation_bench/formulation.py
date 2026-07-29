@@ -275,8 +275,8 @@ class Formulation:
             $$u_0 = 1$$
             - Lower bound on MTZ position: each non-depot city's position is at least 2.
             $$u_i \geq 2 \quad \forall i \in V \setminus \{0\}$$
-            - Upper bound on MTZ position: each non-depot city's position is at most n.
-            $$u_i \leq n \quad \forall i \in V \setminus \{0\}$$
+            - Upper bound on MTZ position: each city's position is at most n.
+            $$u_i \leq n \quad \forall i \in V$$
             <BLANKLINE>
             ### Objective
             <BLANKLINE>
@@ -332,16 +332,13 @@ class Formulation:
 
         """
         script = self.path / "gen_params.py"
-        needs_data = 'add_argument("data"' in script.read_text()
-        if needs_data and input_path is None:
+        if input_path is None:
             input_path = self.path.parent.parent / "data.json"
         if output_path is None:
             output_path = self.path / "parameters.json"
-        cmd = ["python", str(script)]
-        if needs_data:
-            cmd.append(str(input_path))
-        cmd.append(str(output_path))
-        subprocess.run(cmd, check=True)
+        subprocess.run(
+            ["python", str(script), str(input_path), str(output_path)], check=True
+        )
 
     def __repr__(self) -> str:
         return f"Formulation(path={self.path!r}, valid={self.valid})"

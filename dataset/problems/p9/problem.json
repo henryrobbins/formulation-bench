@@ -18,14 +18,14 @@
         },
         "tail": {
             "description": "Source node index of each arc",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "m"
             ]
         },
         "head": {
             "description": "Destination node index of each arc",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "m"
             ]
@@ -53,14 +53,14 @@
         },
         "O": {
             "description": "Origin node of each commodity",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "K"
             ]
         },
         "D": {
             "description": "Destination node of each commodity",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "K"
             ]
