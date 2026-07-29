@@ -24,4 +24,4 @@ Commuters will not use a hub if the number of car kilometers saved is too small.
 All these conditions make no value for commuters to use a P&B. It is estimated that $r\%$ of the commuters for which at least one hub exists for which the above 4 reasons do not hold, will use a hub. 
 
 Goal 
-The goal is as follows: Develop a model that determines, given that in total $N$ hubs may be opened, at which locations we should open a hub, such that the total number of commuters that will make use of a hub is maximized. 
+The goal is as follows: Develop a model that determines which additional hub locations to open, given that the $N$ existing hubs must remain open and at most $U$ additional hubs may be opened, such that the total number of commuters that will make use of a hub is maximized.

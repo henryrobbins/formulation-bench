@@ -9,7 +9,7 @@ Fragile Infrastructure: Many regions lack reliable roads, with routes often disr
 
 Geographic Dispersion: Beneficiary camps are frequently located in remote or inaccessible areas, requiring multi-stage transportation (supplier → transshipment point → camp).
 
-Cost Variability: Procurement costs for commodities vary by supplier, while transportation costs depend on distance, road conditions, and fuel availability.
+Cost Variability: Procurement costs vary by commodity, while transportation costs depend on distance, road conditions, and fuel availability.
 
 Nutritional Needs:
 
@@ -39,7 +39,7 @@ Meets Nutritional Standards:
 Provide rations that collectively satisfy all nutrient requirements.
 
 Operational Components
-Suppliers: Costs vary by location and commodity.
+Suppliers: Procurement costs vary by commodity.
 
 Transshipment Points: Intermediate hubs where food is consolidated, repackaged, or redirected. Bottlenecks must be avoided.
 

@@ -35,7 +35,7 @@ Hospital Activation: Decide which new potential hospitals to open, with a limit 
 Household Assignments: Assign each household $i$ to one hospital within $S$ km, if possible.
 
 Critical Constraints
-Existing Hospitals Must Stay Open: All current $M$ hospitals are permanently operational.
+Existing Hospitals Must Stay Open: All current $m$ hospitals are permanently operational.
 
 Limit on New Hospitals: No more than $p$ new hospitals can be opened.
 
