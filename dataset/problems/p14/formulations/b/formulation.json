@@ -32,6 +32,22 @@
     },
     "assumptions": [
         {
+            "description": "Number of candidate DC locations is positive.",
+            "formulation": "|\\mathcal{S}| > 0",
+            "explicit": false,
+            "code": {
+                "python": "assert nS > 0"
+            }
+        },
+        {
+            "description": "Number of hospital locations is positive.",
+            "formulation": "|\\mathcal{H}| > 0",
+            "explicit": false,
+            "code": {
+                "python": "assert nH > 0"
+            }
+        },
+        {
             "description": "Travel times are non-negative.",
             "formulation": "T_{ij} \\geq 0 \\quad \\forall i \\in \\mathcal{S},\\, j \\in \\mathcal{H}",
             "explicit": false,
