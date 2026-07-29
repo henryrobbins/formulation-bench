@@ -16,16 +16,16 @@ structure Params where
   hA_nn : 0 ≤ A
 
 structure Vars (p : Params) where
-  z : ℤ  -- number of regular bottles produced
-  g : ℤ  -- number of vintage bottles produced
+  z : ℝ  -- number of regular bottles produced
+  g : ℝ  -- number of vintage bottles produced
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
   -- Regular bottles ≥ O times vintage bottles
-  hratio : p.O * (v.g : ℝ) ≤ (v.z : ℝ)
+  hratio : p.O * v.g ≤ v.z
   -- At least Q vintage bottles
-  hmin_vintage : p.Q ≤ (v.g : ℝ)
+  hmin_vintage : p.Q ≤ v.g
   -- Total wine usage ≤ available
-  hwine : p.D * (v.g : ℝ) + p.J * (v.z : ℝ) ≤ p.A
+  hwine : p.D * v.g + p.J * v.z ≤ p.A
   hz_nn : 0 ≤ v.z
   hg_nn : 0 ≤ v.g
 
