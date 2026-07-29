@@ -262,9 +262,6 @@
             "dataset": "Ferchtandiker2025",
             "citekey": "ferchtandiker2025",
             "formulation_id": "efficient"
-        },
-        "notes": [
-            "We add all listed implicit assumptions."
-        ]
+        }
     }
 }
