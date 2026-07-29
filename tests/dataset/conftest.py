@@ -19,6 +19,8 @@ import pytest
 from formulation_bench import Dataset
 from formulation_bench.formulation import Formulation
 
+from ._pinning import is_pinnable
+
 DATASET_ROOT = Path(__file__).resolve().parents[2] / "dataset"
 
 #: Problems taken from the EvoCut dataset, whose formulations are all cut
@@ -58,6 +60,18 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
                 for pid, problem in _DATASET.problems.items()
                 if selected is None or pid in selected
                 for fid, f in problem.formulations.items()
+            ],
+        )
+
+    if "pinnable_formulation" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "pinnable_formulation",
+            [
+                pytest.param(f, id=f"p{pid}.{fid}")
+                for pid, problem in _DATASET.problems.items()
+                if selected is None or pid in selected
+                for fid, f in problem.formulations.items()
+                if is_pinnable(f)
             ],
         )
 

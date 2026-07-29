@@ -9,7 +9,7 @@ Matching objectives alone does not pin down the recorded solution: a stored
 variable assignment can be infeasible while the objective it is labelled with is
 still the true optimum (this is how the p12 MTZ positions went unnoticed). So
 formulations stated over exactly the recorded variables are also re-solved with
-those variables pinned to their recorded values.
+those variables pinned to their recorded values (see ``_pinning``).
 """
 
 from __future__ import annotations
@@ -24,7 +24,8 @@ from typing import Any
 import pytest
 
 from formulation_bench.formulation import Formulation
-from formulation_bench.models import Constraint
+
+from ._pinning import pinned
 
 #: Relative tolerance when comparing solved objectives to recorded ones.
 OBJECTIVE_REL_TOL = 1e-6
@@ -38,11 +39,6 @@ OBJECTIVE_SCALE = {f"p{n}.g": 2 for n in range(1, 6)}
 #: Gurobi's error when a model exceeds the 2000 rows/columns of the
 #: size-limited license bundled with gurobipy on PyPI.
 SIZE_LIMIT_ERROR = "Model too large for size-limited license"
-
-#: Absolute slack allowed when pinning a variable to its recorded value. The
-#: recorded values are themselves solver output, so exact equality would make
-#: continuous variables spuriously infeasible.
-PIN_TOL = 1e-6
 
 
 def _run_solve(
@@ -78,61 +74,6 @@ def _label(formulation: Formulation) -> str:
     return f"{formulation.problem.path.name}.{formulation.path.name}"
 
 
-def _rank(value: object) -> int:
-    """Number of dimensions of a recorded variable value."""
-    rank = 0
-    while isinstance(value, list) and value:
-        rank += 1
-        value = value[0]
-    return rank
-
-
-def _pin_code(name: str, value: object) -> str:
-    """gurobipy source pinning variable ``name`` to its recorded ``value``."""
-    depth = _rank(value)
-
-    literal = f"_pinned_{name} = {json.dumps(value)}"
-    if depth == 0:
-        return "\n".join(
-            [
-                literal,
-                f"model.addConstr({name} <= _pinned_{name} + {PIN_TOL})",
-                f"model.addConstr({name} >= _pinned_{name} - {PIN_TOL})",
-            ]
-        )
-
-    idx = [f"_i{k}" for k in range(depth)]
-    recorded = f"_pinned_{name}" + "".join(f"[{i}]" for i in idx)
-    loops = " ".join(
-        f"for {idx[k]} in range(len(_pinned_{name}"
-        + "".join(f"[{i}]" for i in idx[:k])
-        + "))"
-        for k in range(depth)
-    )
-    var = f"{name}[{', '.join(idx)}]"
-    return "\n".join(
-        [
-            literal,
-            f"model.addConstrs({var} <= {recorded} + {PIN_TOL} {loops})",
-            f"model.addConstrs({var} >= {recorded} - {PIN_TOL} {loops})",
-        ]
-    )
-
-
-def _pinned(formulation: Formulation, recorded: dict[str, object]) -> Formulation:
-    pinned = formulation
-    for name in formulation.variables:
-        pinned = pinned.with_constraint(
-            Constraint(
-                description=f"Pin {name} to its recorded value.",
-                formulation="",
-                explicit=True,
-                code={"gurobipy": _pin_code(name, recorded[name])},
-            )
-        )
-    return pinned
-
-
 def test_solve_matches_recorded_objective(
     formulation: Formulation, tmp_path: Path
 ) -> None:
@@ -157,31 +98,19 @@ def test_solve_matches_recorded_objective(
 
 
 def test_recorded_solution_is_feasible(
-    formulation: Formulation, tmp_path: Path
+    pinnable_formulation: Formulation, tmp_path: Path
 ) -> None:
     """The recorded variable values are feasible and attain the recorded objective.
 
-    Only formulations stated over exactly the recorded variables can be checked
-    this way. Reformulations that rename or replace variables (p1-p5, p13.b, ...)
-    are skipped: a shared name there does not imply a shared meaning.
+    Parametrized over the formulations stated in terms of the recorded variables;
+    the rest cannot be checked this way and are not collected.
     """
-    if not formulation.valid:
-        pytest.skip("invalid formulation")
+    formulation = pinnable_formulation
     recorded = formulation.problem.solution
-    assert recorded is not None, "valid formulation with no reference solution"
-
-    if any(v.indices is not None for v in formulation.variables.values()):
-        pytest.skip("indexed variables are not recorded in a pinnable form")
-    if not set(formulation.variables) <= set(recorded.variables):
-        pytest.skip("formulation is stated over different variables")
-    if any(
-        _rank(recorded.variables[name]) != len(v.shape)
-        for name, v in formulation.variables.items()
-    ):
-        pytest.skip("a recorded variable of the same name has a different shape")
+    assert recorded is not None, "pinnable formulation with no reference solution"
 
     solution = _run_solve(
-        _pinned(formulation, recorded.variables),
+        pinned(formulation, recorded.variables),
         tmp_path,
         on_error="the recorded solution is infeasible for this formulation:",
     )

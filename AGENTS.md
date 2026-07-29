@@ -92,6 +92,12 @@ make test-dataset                                  # all problems
 pytest tests/dataset -m dataset --problems 6,12    # restrict to p6 and p12
 ```
 
+The recorded-solution feasibility check additionally pins every variable
+to its recorded value, so it only applies to formulations stated over
+those variables (`tests/dataset/_pinning.py`). The rest are filtered out
+at collection time rather than skipped, so the collected count for that
+test is smaller than the number of formulations.
+
 Six problems build models larger than the size-limited license bundled
 with gurobipy on PyPI (2000 rows/columns). Those are skipped rather than
 failed, so CI covers 14 of the 20 problems; a full run needs an
