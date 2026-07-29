@@ -121,6 +121,14 @@
       "code": {
         "python": "assert all(tau_max[i] >= 0 for i in range(N))"
       }
+    },
+    {
+      "description": "Each time window is non-empty: the earliest permissible arrival is no later than the latest.",
+      "formulation": "\\tau^-_i \\leq \\tau^+_i \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
+      "explicit": false,
+      "code": {
+        "python": "assert all(tau_min[i] <= tau_max[i] for i in range(N))"
+      }
     }
   ],
   "definitions": {
