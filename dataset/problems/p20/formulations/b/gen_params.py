@@ -75,8 +75,7 @@ def main(data_path: str, output_path: str) -> None:
         "q": data["pc"],
         "nutval": data["nutval"],
         "nutreq": data["nutreq"],
-        # data["dem"] is indexed by node; the formulation indexes it by camp.
-        "dem": [data["dem"][j] for j in B],
+        "dem": data["dem"],
         "e": [[int(path[-1] == j) for path in paths] for j in B],
     }
 

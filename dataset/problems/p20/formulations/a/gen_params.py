@@ -26,8 +26,7 @@ def main(data_path: str, output_path: str) -> None:
         "T": T,
         "B": B,
         "E": data["E"],
-        # data["dem"] is indexed by node; the formulation indexes it by camp.
-        "dem": [data["dem"][j] for j in B],
+        "dem": data["dem"],
         "pc": data["pc"],
         "tc": data["tc"],
         "nutreq": data["nutreq"],
