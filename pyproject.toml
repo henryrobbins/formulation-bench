@@ -50,6 +50,7 @@ dev = [
     "lefthook",
     # Used by the codegen solve tests and the dataset validation scripts.
     "gurobipy",
+    "networkx",
     "tqdm",
 ]
 

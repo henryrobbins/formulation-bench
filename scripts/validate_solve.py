@@ -79,6 +79,8 @@ def main() -> None:
 
         expected = problem.solution
         if expected is None:
+            tqdm.write(f"FAIL  reference   {label}  (no {pid}/solution.json)")
+            failures.append((pid, fid, "reference"))
             continue
 
         solution_file = formulation.path / "solution.json"

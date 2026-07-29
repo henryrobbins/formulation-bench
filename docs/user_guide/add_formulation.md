@@ -26,7 +26,7 @@ Reading raw LaTeX while editing the JSON file can be cumbersome. The {doc}`/prob
 
 ## Parameter Generation Script
 
-The parameter generation script `gen_params.py` reads the problem data instance defined in `data.json` and transforms it into the parameter input for the formulation (`parameters.json`). This allows the dataset to have a single source of data per problem. The script should include `--data` and `--output` flags for the `data.json` and `parameters.json` paths, respectively.
+The parameter generation script `gen_params.py` reads the problem data instance defined in `data.json` and transforms it into the parameter input for the formulation (`parameters.json`). This allows the dataset to have a single source of data per problem. The script should accept the input `data.json` and output `parameters.json` paths as positional arguments.
 
 :::{dropdown} `problems/p1/formulations/b/gen_params.py`
 :icon: code
