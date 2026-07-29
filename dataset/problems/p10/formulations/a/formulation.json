@@ -134,9 +134,9 @@
     "definitions": {
         "M": {
             "description": "Big-M constant for arrival-time propagation: upper bound on any feasible arrival time",
-            "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij}",
+            "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij} + \\max_i \\tau^+_i - \\min_j \\tau^-_j",
             "code": {
-                "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N))"
+                "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N)) + max(tau_max) - min(tau_min)"
             }
         }
     },
