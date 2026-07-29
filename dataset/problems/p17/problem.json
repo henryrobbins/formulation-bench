@@ -51,7 +51,7 @@
             "shape": []
         },
         "PC_min": {
-            "description": "Minmum per-period ore processing capacity",
+            "description": "Minimum per-period ore processing capacity",
             "type": "continuous",
             "shape": []
         },
@@ -61,12 +61,12 @@
             "shape": []
         },
         "MC_min": {
-            "description": "Minmum per-period total minng capacity (ore + waste)",
+            "description": "Minimum per-period total mining capacity (ore + waste)",
             "type": "continuous",
             "shape": []
         },
         "MC_max": {
-            "description": "Maximum per-period total minng capacity (ore + waste)",
+            "description": "Maximum per-period total mining capacity (ore + waste)",
             "type": "continuous",
             "shape": []
         },
