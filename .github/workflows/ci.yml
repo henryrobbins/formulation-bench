@@ -63,10 +63,6 @@ jobs:
   dataset:
     name: Dataset
     runs-on: ubuntu-latest
-    # The license bundled with gurobipy on PyPI caps models at 2000 rows and
-    # columns; 6 of the 20 problems exceed it. Set the GUROBI_WLS repository
-    # variable to "true" once the WLS secrets below are configured.
-    if: vars.GUROBI_WLS == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -74,13 +70,9 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - run: uv sync
-      - name: Write Gurobi license
-        run: |
-          cat > "$HOME/gurobi.lic" <<EOF
-          WLSACCESSID=${{ secrets.GUROBI_WLSACCESSID }}
-          WLSSECRET=${{ secrets.GUROBI_WLSSECRET }}
-          LICENSEID=${{ secrets.GUROBI_LICENSEID }}
-          EOF
+      # The license bundled with gurobipy on PyPI caps models at 2000 rows and
+      # columns, so 6 of the 20 problems are skipped here; the suite reports
+      # them as such. A full run needs an unrestricted license.
       - name: Validate dataset
         run: make test-dataset
 

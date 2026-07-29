@@ -35,6 +35,10 @@ OBJECTIVE_REL_TOL = 1e-6
 #: record the factor.
 OBJECTIVE_SCALE = {f"p{n}.g": 2 for n in range(1, 6)}
 
+#: Gurobi's error when a model exceeds the 2000 rows/columns of the
+#: size-limited license bundled with gurobipy on PyPI.
+SIZE_LIMIT_ERROR = "Model too large for size-limited license"
+
 #: Absolute slack allowed when pinning a variable to its recorded value. The
 #: recorded values are themselves solver output, so exact equality would make
 #: continuous variables spuriously infeasible.
@@ -48,6 +52,7 @@ def _run_solve(
 
     An unsolved model fails inside the generated script (it has no solution to
     extract), so ``on_error`` describes what a non-zero exit means to the caller.
+    Models the available license is too small for are skipped rather than failed.
     """
     solve_py = tmp_path / "solve.py"
     solve_py.write_text(formulation.gen_solve_py())
@@ -62,6 +67,8 @@ def _run_solve(
         text=True,
     )
     if result.returncode != 0:
+        if SIZE_LIMIT_ERROR in result.stdout + result.stderr:
+            pytest.skip("model exceeds the size-limited license")
         pytest.fail(f"{on_error}\n{result.stdout[-2000:]}\n{result.stderr[-2000:]}")
 
     return json.loads(solution.read_text())  # type: ignore[no-any-return]

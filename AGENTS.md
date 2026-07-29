@@ -93,7 +93,9 @@ pytest tests/dataset -m dataset --problems 6,12    # restrict to p6 and p12
 ```
 
 Six problems build models larger than the size-limited license bundled
-with gurobipy on PyPI, so a full run needs a proper Gurobi license.
+with gurobipy on PyPI (2000 rows/columns). Those are skipped rather than
+failed, so CI covers 14 of the 20 problems; a full run needs an
+unrestricted Gurobi license.
 
 ## Coverage
 
