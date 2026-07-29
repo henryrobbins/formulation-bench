@@ -275,8 +275,8 @@ class Formulation:
             $$u_0 = 1$$
             - Lower bound on MTZ position: each non-depot city's position is at least 2.
             $$u_i \geq 2 \quad \forall i \in V \setminus \{0\}$$
-            - Upper bound on MTZ position: each non-depot city's position is at most n.
-            $$u_i \leq n \quad \forall i \in V \setminus \{0\}$$
+            - Upper bound on MTZ position: each city's position is at most n.
+            $$u_i \leq n \quad \forall i \in V$$
             <BLANKLINE>
             ### Objective
             <BLANKLINE>
