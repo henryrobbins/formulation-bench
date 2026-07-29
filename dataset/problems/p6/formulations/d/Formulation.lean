@@ -48,14 +48,14 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hy_bin : ∀ j : Fin p.m, v.y j = 0 ∨ v.y j = 1
   -- T-Cover Bound (EC3 cut family): for any non-increasing ordering σ of large-warehouse
   -- capacities and any k, if the top-k prefix of σ is insufficient to cover hard-customer
-  -- demand, at least k warehouses must be open. This is a valid cut family implied by
-  -- feasibility; the JSON computes the scalar k_T (minimum prefix length) which is tightest.
+  -- demand, more than k warehouses must be open.
+  -- Instantiating at k = k_T - 1 recovers ∑ y ≥ k_T, the tightest instance.
   hec3 : ∀ (σ : Fin (largeWarehouses p).card ≃ {j // j ∈ largeWarehouses p}),
     (∀ a b : Fin (largeWarehouses p).card, a ≤ b → p.u (↑(σ b)) ≤ p.u (↑(σ a))) →
     ∀ k : ℕ,
     (∑ a ∈ univ.filter (fun i : Fin (largeWarehouses p).card => i.val < k),
         p.u (↑(σ a)) < ∑ i ∈ hardCustomers p, p.d i) →
-    (k : ℤ) ≤ ∑ j : Fin p.m, v.y j
+    (k : ℤ) + 1 ≤ ∑ j : Fin p.m, v.y j
 
 -- Minimize total fixed opening cost plus transportation cost
 def obj (p : Params) (v : Vars p) : ℝ :=
