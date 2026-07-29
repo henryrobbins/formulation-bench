@@ -50,19 +50,31 @@ All of these must pass before the formulation is done.
 
 ## `metadata.notes`
 
+Use formulation notes for concise context that helps a reader understand why this
+formulation exists or how it relates to the problem, source, or sibling
+formulations.
+
 **DO:**
 
-- DO document any assumptions added to the problem that are not in the source.
+- DO document assumptions or deviations that apply only to this formulation.
+- DO use a short, high-level note when the formulation's relationship to the
+  source or another formulation would not otherwise be clear. Examples include
+  a variable-renaming transformation, aggregation versus disaggregation, a
+  base-10 substitution, or the source/version of an acceleration cut.
 - DO use the `{cite:t}`citekey`` syntax to reference the source in notes.
-- DO keep notes concise
+- DO keep notes concise and focused on information not apparent from the
+  structured formulation.
 
 **DO NOT:**
 
+- DO NOT duplicate the formulation's variables, constraints, objective, or cut
+  behavior in a note. Put explanatory detail about a specific constraint in
+  that constraint's `description` instead.
+- DO NOT use notes as a full natural-language summary of the formulation.
 - DO NOT document deviations from the source used in _every_ formulation;
   document these in the `metadata.notes` field of the problem JSON file instead.
 - DO NOT include a note that solely documents the source of the formulation, unless
-  it adds additional information (e.g., a citation referenced in the source).
-- DO NOT include a summary of the formulation.
+  its provenance helps distinguish this formulation from related formulations.
 - DO NOT describe the formulation parameters and/or `gen_params.py`
 
 ## `explicit` field in `formulation.json`
