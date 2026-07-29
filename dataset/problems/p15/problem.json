@@ -78,6 +78,16 @@
             "shape": [
                 "nH"
             ]
+        },
+        "iFree": {
+            "description": "Index of the free sector",
+            "type": "integer",
+            "shape": []
+        },
+        "hCorp": {
+            "description": "Index of the corporation owner class",
+            "type": "integer",
+            "shape": []
         }
     },
     "metadata": {
