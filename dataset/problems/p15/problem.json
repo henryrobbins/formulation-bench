@@ -43,6 +43,13 @@
                 "nH"
             ]
         },
+        "area": {
+            "description": "Floor area value for each distinct apartment floor area",
+            "type": "continuous",
+            "shape": [
+                "nJ"
+            ]
+        },
         "m": {
             "description": "Minimum floor area required for each sector and owner class",
             "type": "continuous",
