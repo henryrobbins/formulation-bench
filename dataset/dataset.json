@@ -827,83 +827,6 @@
         },
         {
             "a": {
-                "problem": 11,
-                "formulation": "a"
-            },
-            "b": {
-                "problem": 11,
-                "formulation": "c"
-            },
-            "reformulation": true
-        },
-        {
-            "a": {
-                "problem": 11,
-                "formulation": "a"
-            },
-            "b": {
-                "problem": 11,
-                "formulation": "d"
-            },
-            "reformulation": true
-        },
-        {
-            "a": {
-                "problem": 11,
-                "formulation": "a"
-            },
-            "b": {
-                "problem": 11,
-                "formulation": "e"
-            },
-            "reformulation": true
-        },
-        {
-            "a": {
-                "problem": 11,
-                "formulation": "a"
-            },
-            "b": {
-                "problem": 11,
-                "formulation": "f"
-            },
-            "reformulation": true
-        },
-        {
-            "a": {
-                "problem": 11,
-                "formulation": "a"
-            },
-            "b": {
-                "problem": 11,
-                "formulation": "g"
-            },
-            "reformulation": true
-        },
-        {
-            "a": {
-                "problem": 11,
-                "formulation": "a"
-            },
-            "b": {
-                "problem": 11,
-                "formulation": "h"
-            },
-            "reformulation": true
-        },
-        {
-            "a": {
-                "problem": 11,
-                "formulation": "a"
-            },
-            "b": {
-                "problem": 11,
-                "formulation": "i"
-            },
-            "reformulation": true
-        },
-        {
-            "a": {
                 "problem": 12,
                 "formulation": "a"
             },
@@ -1076,7 +999,7 @@
                 "problem": 20,
                 "formulation": "b"
             },
-            "reformulation": true
+            "reformulation": false
         }
     ]
 }

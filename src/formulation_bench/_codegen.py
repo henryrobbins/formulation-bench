@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from .models import DimensionType, Shape, Variable
+from .models import DimensionType, Shape, Variable, VariableType
 
 if TYPE_CHECKING:
     from .formulation import Formulation
@@ -67,11 +67,19 @@ def _build_loops(shape: Shape) -> list[tuple[str, str]]:
 
 def _var_decl(name: str, var: Variable) -> str:
     vtype = _gurobi_type(var)
+    # Variables are free by default; a formulation states any lower bound
+    # explicitly as a constraint. Gurobi's `addVar` defaults to lb=0 regardless
+    # of vtype, which would silently constrain genuinely-free variables
+    # (dual/degree/potential vars), so it is overridden here. Binary is the one
+    # type whose bounds really do follow from the vtype, so it is left alone.
+    lb = "" if var.type is VariableType.binary else "lb=-GRB.INFINITY, "
     if var.indices is not None:
-        return f'{name} = model.addVars([{var.indices}], vtype={vtype}, name="{name}")'
+        return (
+            f'{name} = model.addVars([{var.indices}], {lb}vtype={vtype}, name="{name}")'
+        )
     shape = var.shape
     if shape.is_scalar:
-        return f'{name} = model.addVar(vtype={vtype}, name="{name}")'
+        return f'{name} = model.addVar({lb}vtype={vtype}, name="{name}")'
     if shape.is_ragged:
         loops = _build_loops(shape)
         key = (
@@ -83,10 +91,10 @@ def _var_decl(name: str, var: Variable) -> str:
         loop_str = " ".join(f"for {idx} in {rng}" for idx, rng in loops)
         return (
             f"{name} = {{{key}: model.addVar("
-            f'vtype={vtype}, name=f"{name}_{name_fmt}") {loop_str}}}'
+            f'{lb}vtype={vtype}, name=f"{name}_{name_fmt}") {loop_str}}}'
         )
     dims = ", ".join(d.dim_str for d in shape)
-    return f'{name} = model.addVars({dims}, vtype={vtype}, name="{name}")'
+    return f'{name} = model.addVars({dims}, {lb}vtype={vtype}, name="{name}")'
 
 
 def _solution_extraction(name: str, var: Variable) -> list[str]:

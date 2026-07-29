@@ -22,7 +22,7 @@
             "shape": []
         },
         "T": {
-            "description": "Travel time from candidate DC location i to hospital j",
+            "description": "Travel time from candidate DC location $i$ to hospital $j$",
             "type": "continuous",
             "shape": [
                 "nS",
@@ -30,7 +30,7 @@
             ]
         },
         "delta": {
-            "description": "Feasibility indicator: 1 if travel time from DC i to hospital j is within the limit, 0 otherwise",
+            "description": "Feasibility indicator: $1$ if travel time from DC $i$ to hospital $j$ is within the limit, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nS",
@@ -80,7 +80,7 @@
             }
         },
         {
-            "description": "delta encodes feasibility: 1 iff travel time is within the limit.",
+            "description": "$\\delta$ encodes feasibility: $1$ iff travel time is within the limit.",
             "formulation": "\\delta_{ij} = 1 \\iff T_{ij} \\leq T_{\\text{limit}}, \\quad \\delta_{ij} = 0 \\iff T_{ij} > T_{\\text{limit}} \\quad \\forall i \\in \\mathcal{S},\\, j \\in \\mathcal{H}",
             "explicit": true,
             "code": {
@@ -90,14 +90,14 @@
     ],
     "variables": {
         "x": {
-            "description": "1 if candidate DC location i is opened, 0 otherwise",
+            "description": "$1$ if candidate DC location $i$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nS"
             ]
         },
         "y": {
-            "description": "1 if hospital j is assigned to DC i, 0 otherwise",
+            "description": "$1$ if hospital $j$ is assigned to DC $i$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nS",
@@ -107,7 +107,7 @@
     },
     "constraints": [
         {
-            "description": "Select exactly n DC locations.",
+            "description": "Select exactly $n$ DC locations.",
             "formulation": "\\sum_{i \\in \\mathcal{S}} x_i = n",
             "explicit": true,
             "code": {
@@ -149,6 +149,7 @@
     "metadata": {
         "source": {
             "dataset": "Ferchtandiker2025",
+            "citekey": "ferchtandiker2025",
             "formulation_id": "efficient"
         },
         "notes": [

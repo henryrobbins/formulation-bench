@@ -57,7 +57,7 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
 
 -- Maximize total reward for all flights across all locations and time periods
 def obj (p : Params) (v : Vars p) : ℝ :=
-  ∑ a : Fin p.nA, ∑ t : Fin p.nT, p.r a t * (v.n a t : ℝ)
+  -(∑ a : Fin p.nA, ∑ t : Fin p.nT, p.r a t * (v.n a t : ℝ))
 
 def formulation : MILPFormulation where
   Params   := Params

@@ -18,14 +18,14 @@
         },
         "n_S": {
             "description": "Number of startup categories per thermal generator",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "n_G"
             ]
         },
         "ell": {
             "description": "Startup lag (minimum offline periods) for each startup category of each generator",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "n_G",
                 "n_S[n_G]"
@@ -42,7 +42,9 @@
         "n_L": {
             "description": "Number of piecewise production breakpoints per thermal generator",
             "type": "integer",
-            "shape": []
+            "shape": [
+                "n_G"
+            ]
         },
         "P": {
             "description": "Piecewise production breakpoints for each generator",
@@ -58,13 +60,6 @@
             "shape": [
                 "n_G",
                 "n_L[n_G]"
-            ]
-        },
-        "C_fixed": {
-            "description": "Fixed cost incurred when a thermal generator is on during a time period",
-            "type": "continuous",
-            "shape": [
-                "n_G"
             ]
         },
         "L": {
@@ -141,14 +136,14 @@
         },
         "U": {
             "description": "Minimum up time for each generator",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "n_G"
             ]
         },
         "D": {
             "description": "Minimum down time for each generator",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "n_G"
             ]
@@ -163,12 +158,11 @@
     },
     "metadata": {
         "source": {
-            "dataset": "EvoCut"
+            "dataset": "EvoCut",
+            "citekey": "yazdani2025"
         },
         "notes": [
-            "We add implicit assumptions for non-empty sets, non-negativity of all parameters, and the ordering constraints $P^{\\max}_g \\ge P^{\\min}_g$ and $P^{w,\\max}_{w,t} \\ge P^{w,\\min}_{w,t}$.",
-            "EvoCut arXiv submission `v1` does not include this problem.",
-            "EvoCut arXiv submission `v2` proposes 10 inequalities; the first three are combined to generate formulation `p11.b` and the remainder are used to generate formulations `p11.c-i`."
+            "We add implicit assumptions for non-empty sets, non-negativity of all parameters, and the ordering constraints $P^{\\max}_g \\ge P^{\\min}_g$ and $P^{w,\\max}_{w,t} \\ge P^{w,\\min}_{w,t}$."
         ]
     }
 }

@@ -24,7 +24,7 @@
             ]
         },
         "a": {
-            "description": "Coverage indicator: 1 if household i is within distance S of hospital j, 0 otherwise",
+            "description": "Coverage indicator: $1$ if household $i$ is within distance $S$ of hospital $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nI",
@@ -41,7 +41,7 @@
         {
             "description": "Number of household clusters is positive.",
             "formulation": "nI > 0",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "python": "assert nI > 0"
             }
@@ -49,7 +49,7 @@
         {
             "description": "Total number of candidate hospital sites is positive.",
             "formulation": "M > 0",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "python": "assert M > 0"
             }
@@ -71,6 +71,14 @@
             }
         },
         {
+            "description": "Number of existing hospitals is non-negative.",
+            "formulation": "m \\geq 0",
+            "explicit": false,
+            "code": {
+                "python": "assert m >= 0"
+            }
+        },
+        {
             "description": "Number of existing hospitals does not exceed total hospital sites.",
             "formulation": "m \\leq M",
             "explicit": false,
@@ -81,14 +89,14 @@
     ],
     "variables": {
         "x": {
-            "description": "1 if hospital j is opened, 0 otherwise",
+            "description": "$1$ if hospital $j$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "M"
             ]
         },
         "y": {
-            "description": "1 if demand at household i is served by hospital j, 0 otherwise",
+            "description": "$1$ if demand at household $i$ is served by hospital $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nI",
@@ -106,7 +114,7 @@
             }
         },
         {
-            "description": "At most p new hospitals can be opened.",
+            "description": "At most $p$ new hospitals can be opened.",
             "formulation": "\\sum_{j \\in J_1} x_j \\leq p",
             "explicit": true,
             "code": {
@@ -148,6 +156,7 @@
     "metadata": {
         "source": {
             "dataset": "Ferchtandiker2025",
+            "citekey": "ferchtandiker2025",
             "variation_id": "inefficient"
         },
         "notes": [

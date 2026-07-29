@@ -5,9 +5,7 @@ Produces a small reproducible instance (~10 households, 3 existing hospitals,
 5 candidate sites) adapted from the source data generator in
 dataset/sources/Ferchtandiker2025/timor_leste/data_generator.py.
 
-The output keys match exactly what formulations a and b gen_params.py consume:
-  households, existing_hospitals, candidate_hospitals, all_hospitals,
-  population, distance_indicators, max_new_hospitals.
+The output keys are the parameters declared in problem.json.
 """
 
 import json
@@ -38,44 +36,36 @@ def generate_data(seed: int = 42) -> dict:
     """Generate a small Timor-Leste hospital location instance."""
     rng = random.Random(seed)
 
-    # Sets (string IDs)
-    households = [f"H{i + 1}" for i in range(N)]
-    existing_hospitals = [f"EJ{i + 1}" for i in range(M_EX)]
-    candidate_hospitals = [f"CJ{i + 1}" for i in range(NUM_NEW)]
-    all_hospitals = existing_hospitals + candidate_hospitals
+    # Hospital sites are indexed with the existing ones first.
+    M = M_EX + NUM_NEW
 
     # Random coordinates on a 100x100 grid
     household_coords = _rand_coords(rng, N)
-    hospital_coords = _rand_coords(rng, M_EX + NUM_NEW)
+    hospital_coords = _rand_coords(rng, M)
 
-    # Population per household
-    population = {h: rng.randint(50, 499) for h in households}
+    population = [rng.randint(50, 499) for _ in range(N)]
 
     # Travel distances (Euclidean with small noise, rounded)
-    travel_distances: dict[str, dict[str, float]] = {}
-    for i, h in enumerate(households):
-        travel_distances[h] = {}
-        for j, hosp in enumerate(all_hospitals):
-            dist = _euclidean(household_coords[i], hospital_coords[j])
-            travel_distances[h][hosp] = round(dist + rng.uniform(-5, 5), 2)
-
-    # Distance indicators: 1 if within S, else 0
-    distance_indicators: dict[str, dict[str, int]] = {}
-    for h in households:
-        distance_indicators[h] = {}
-        for hosp in all_hospitals:
-            distance_indicators[h][hosp] = int(travel_distances[h][hosp] <= S)
+    travel_distances = [
+        [
+            round(
+                _euclidean(household_coords[i], hospital_coords[j])
+                + rng.uniform(-5, 5),
+                2,
+            )
+            for j in range(M)
+        ]
+        for i in range(N)
+    ]
 
     return {
-        "households": households,
-        "existing_hospitals": existing_hospitals,
-        "candidate_hospitals": candidate_hospitals,
-        "all_hospitals": all_hospitals,
-        "population": population,
-        "travel_distances": travel_distances,
-        "distance_indicators": distance_indicators,
-        "max_travel_distance": S,
-        "max_new_hospitals": P,
+        "nI": N,
+        "m": M_EX,
+        "M": M,
+        "v": population,
+        "d": travel_distances,
+        "S": S,
+        "p": P,
     }
 
 

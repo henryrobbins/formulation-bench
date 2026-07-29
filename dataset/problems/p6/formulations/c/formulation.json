@@ -12,28 +12,28 @@
             "shape": []
         },
         "d": {
-            "description": "Demand of customer i",
+            "description": "Demand of customer $i$",
             "type": "continuous",
             "shape": [
                 "n"
             ]
         },
         "u": {
-            "description": "Capacity of warehouse j",
+            "description": "Capacity of warehouse $j$",
             "type": "continuous",
             "shape": [
                 "m"
             ]
         },
         "f": {
-            "description": "Fixed cost to open warehouse j",
+            "description": "Fixed cost to open warehouse $j$",
             "type": "continuous",
             "shape": [
                 "m"
             ]
         },
         "c": {
-            "description": "Transportation cost if all of customer i's demand is served by warehouse j (already accounts for d_i)",
+            "description": "Transportation cost if all of customer $i$'s demand is served by warehouse $j$ (already accounts for $d_i$)",
             "type": "continuous",
             "shape": [
                 "n",
@@ -42,6 +42,22 @@
         }
     },
     "assumptions": [
+        {
+            "description": "There is at least one customer.",
+            "formulation": "n \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert n >= 1"
+            }
+        },
+        {
+            "description": "There is at least one warehouse.",
+            "formulation": "m \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert m >= 1"
+            }
+        },
         {
             "description": "Demand of each customer is positive.",
             "formulation": "d_i > 0 \\quad \\forall i \\in I",
@@ -77,7 +93,7 @@
     ],
     "variables": {
         "x": {
-            "description": "1 if customer i is assigned to warehouse j, 0 otherwise",
+            "description": "$1$ if customer $i$ is assigned to warehouse $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "n",
@@ -85,7 +101,7 @@
             ]
         },
         "y": {
-            "description": "1 if warehouse j is opened, 0 otherwise",
+            "description": "$1$ if warehouse $j$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "m"
@@ -101,7 +117,7 @@
             }
         },
         "k_dem": {
-            "description": "Minimum number of largest-capacity warehouses whose capacities (taken in non-increasing order) sum to at least D.",
+            "description": "Minimum number of largest-capacity warehouses whose capacities (taken in non-increasing order) sum to at least $D$.",
             "formulation": "k_{\\mathrm{dem}} = \\min \\Big\\{ k \\geq 0 : \\sum_{\\ell=1}^{k} u_{(\\ell)} \\geq D \\Big\\},\\quad u_{(1)} \\geq u_{(2)} \\geq \\cdots \\geq u_{(m)}",
             "code": {
                 "python": "k_dem = 0\ncumsum = 0\nfor ui in sorted(u, reverse=True):\n    cumsum += ui; k_dem += 1\n    if cumsum >= D: break"
@@ -126,7 +142,7 @@
             "explicit": true
         },
         {
-            "description": "Demand-Cover Bound (EC2): at least k_dem warehouses must be opened.",
+            "description": "Demand-Cover Bound (EC2): at least $k_{\\mathrm{dem}}$ warehouses must be opened.",
             "formulation": "\\sum_{j \\in J} y_j \\geq k_{\\mathrm{dem}}",
             "code": {
                 "gurobipy": "model.addConstr(gp.quicksum(y[j] for j in range(m)) >= k_dem)"
@@ -144,11 +160,12 @@
     "metadata": {
         "source": {
             "dataset": "EvoCut",
+            "citekey": "yazdani2025",
             "version": 1,
             "name": "EC2"
         },
         "notes": [
-            "The total demand must be satisfied by the total capacity of opened warehouses. This gives a simple lower bound on the number of warehouses that must be opened."
+            "This is the CWLP formulation from `v1` of {cite:t}`yazdani2025` augmented with the second lower bound of the proposed hybrid inequality (EC2)."
         ]
     }
 }

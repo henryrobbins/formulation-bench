@@ -12,7 +12,7 @@
       "shape": []
     },
     "d": {
-      "description": "Travel time from job i's return terminal to job j's pickup terminal; d[i][i] is the loaded time (rejection penalty) of job i",
+      "description": "Travel time from job $i$'s return terminal to job $j$'s pickup terminal; $d_{ii}$ is the loaded time (rejection penalty) of job $i$",
       "type": "continuous",
       "shape": [
         "N",
@@ -20,7 +20,7 @@
       ]
     },
     "d0": {
-      "description": "Travel time from the home terminal of truck k to job i's pickup terminal",
+      "description": "Travel time from the home terminal of truck $k$ to job $i$'s pickup terminal",
       "type": "continuous",
       "shape": [
         "K",
@@ -28,7 +28,7 @@
       ]
     },
     "dH": {
-      "description": "Travel time from job i's return terminal to the home terminal of truck k",
+      "description": "Travel time from job $i$'s return terminal to the home terminal of truck $k$",
       "type": "continuous",
       "shape": [
         "K",
@@ -83,7 +83,7 @@
       }
     },
     {
-      "description": "Triangle inequality for depot-to-job travel: going directly to job i is no longer than going via job j first.",
+      "description": "Triangle inequality for depot-to-job travel: going directly to job $i$ is no longer than going via job $j$ first.",
       "formulation": "d^k_{0i} \\leq d^k_{0j} + d_{ji} \\quad \\forall k \\in \\{0,\\dots,K-1\\},\\, i, j \\in \\{0,\\dots,N-1\\}",
       "explicit": false,
       "code": {
@@ -121,25 +121,33 @@
       "code": {
         "python": "assert all(tau_max[i] >= 0 for i in range(N))"
       }
+    },
+    {
+      "description": "Each time window is non-empty: the earliest permissible arrival is no later than the latest.",
+      "formulation": "\\tau^-_i \\leq \\tau^+_i \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
+      "explicit": false,
+      "code": {
+        "python": "assert all(tau_min[i] <= tau_max[i] for i in range(N))"
+      }
     }
   ],
   "definitions": {
     "EST": {
-      "description": "Earliest start time for job i: maximum of its time-window lower bound and the earliest any truck can arrive",
+      "description": "Earliest start time for job $i$: maximum of its time-window lower bound and the earliest any truck can arrive",
       "formulation": "\\mathrm{EST}_i = \\max\\!\\left(\\tau^-_i,\\, \\min_{k \\in \\{0,\\dots,K-1\\}} (v^k + d^k_{0i})\\right) \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
       "code": {
         "python": "EST = [max(tau_min[i], min(v[k] + d0[k][i] for k in range(K))) for i in range(N)]"
       }
     },
     "A_minus": {
-      "description": "Set of infeasible sequencing pairs (i,j): job j cannot follow job i without violating j's time window",
+      "description": "Set of infeasible sequencing pairs $(i,j)$: job $j$ cannot follow job $i$ without violating $j$'s time window",
       "formulation": "\\mathcal{A}^- = \\{(i,j) \\in \\{0,\\dots,N-1\\}^2 : i \\ne j \\wedge \\mathrm{EST}_i + d_{ii} + d_{ij} > \\tau^+_j\\}",
       "code": {
         "python": "A_minus = {(i, j) for i in range(N) for j in range(N) if i != j and EST[i] + d[i][i] + d[i][j] > tau_max[j]}"
       }
     },
     "F2": {
-      "description": "Set of mutually feasible pairs: distinct jobs where neither sequencing direction is in A_minus",
+      "description": "Set of mutually feasible pairs: distinct jobs where neither sequencing direction is in $\\mathcal{A}^-$",
       "formulation": "F_2 = \\{(i,j) \\in \\{0,\\dots,N-1\\}^2 : i \\ne j,\\, (i,j) \\notin \\mathcal{A}^-,\\, (j,i) \\notin \\mathcal{A}^-\\}",
       "code": {
         "python": "F2 = {(i, j) for i in range(N) for j in range(N) if i != j and (i, j) not in A_minus and (j, i) not in A_minus}"
@@ -147,15 +155,15 @@
     },
     "M": {
       "description": "Big-M constant for arrival-time propagation: upper bound on any feasible arrival time",
-      "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij}",
+      "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij} + \\max_i \\tau^+_i - \\min_j \\tau^-_j",
       "code": {
-        "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N))"
+        "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N)) + max(tau_max) - min(tau_min)"
       }
     }
   },
   "variables": {
     "x": {
-      "description": "1 if arc (u,v) is selected in the routing cycle cover; x[K+i][K+i]=1 means job i is rejected",
+      "description": "$1$ if arc $(u,v)$ is selected in the routing cycle cover; $x_{K+i,K+i} = 1$ means job $i$ is rejected",
       "type": "binary",
       "shape": [
         "K+N",
@@ -163,7 +171,7 @@
       ]
     },
     "delta": {
-      "description": "Arrival time at job i's pickup terminal",
+      "description": "Arrival time at job $i$'s pickup terminal",
       "type": "continuous",
       "shape": [
         "N"
@@ -188,7 +196,7 @@
       "explicit": true
     },
     {
-      "description": "Arrival time at job i is at least the earliest possible arrival from any truck.",
+      "description": "Arrival time at job $i$ is at least the earliest possible arrival from any truck.",
       "formulation": "\\delta_i - \\sum_{k=0}^{K-1} (d^k_{0i} + v^k)\\,x_{k,K+i} \\ge 0 \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
       "code": {
         "gurobipy": "model.addConstrs(delta[i] - gp.quicksum((d0[k][i] + v[k]) * x[k, K + i] for k in range(K)) >= 0 for i in range(N))"
@@ -212,7 +220,7 @@
       "explicit": true
     },
     {
-      "description": "EC2: For each mutually feasible pair (i,j), at most one of the two sequencing directions or a rejection of i can hold.",
+      "description": "EC2: For each mutually feasible pair $(i,j)$, at most one of the two sequencing directions or a rejection of $i$ can hold.",
       "formulation": "x_{K+i,K+j} + x_{K+j,K+i} + x_{K+i,K+i} \\le 1 \\quad \\forall (i,j) \\in F_2",
       "code": {
         "gurobipy": "for i, j in F2:\n    model.addConstr(x[K + i, K + j] + x[K + j, K + i] + x[K + i, K + i] <= 1)"
@@ -229,10 +237,11 @@
   },
   "metadata": {
     "source": {
-      "dataset": "EvoCut"
+      "dataset": "EvoCut",
+      "citekey": "yazdani2025"
     },
     "notes": [
-        "For each pair of jobs $(i, j)$ that are individually feasible but where both sequencings can't both occur, at most one of $x_{K+i,K+j}$, $x_{K+j,K+i}$, or rejection self-loop $x_{K+i,K+i}$ may be active."
+            "This is the PDPTW formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC2."
     ]
   }
 }

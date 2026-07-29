@@ -75,6 +75,30 @@
     },
     "assumptions": [
         {
+            "description": "There is at least one node.",
+            "formulation": "n \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert n >= 1"
+            }
+        },
+        {
+            "description": "There is at least one arc.",
+            "formulation": "m \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert m >= 1"
+            }
+        },
+        {
+            "description": "There is at least one commodity.",
+            "formulation": "K \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert K >= 1"
+            }
+        },
+        {
             "description": "Unit transportation costs are non-negative.",
             "formulation": "c_a \\geq 0 \\quad \\forall a \\in A",
             "explicit": false,
@@ -125,7 +149,7 @@
     },
     "variables": {
         "x": {
-            "description": "Flow of commodity k on arc a",
+            "description": "Flow of commodity $k$ on arc $a$",
             "type": "continuous",
             "shape": [
                 "m",
@@ -133,7 +157,7 @@
             ]
         },
         "y": {
-            "description": "1 if arc a is activated, 0 otherwise",
+            "description": "$1$ if arc $a$ is activated, $0$ otherwise",
             "type": "integer",
             "shape": [
                 "m"
@@ -190,7 +214,7 @@
             "explicit": true
         },
         {
-            "description": "No outflow from any commodity's destination: commodity k has zero outflow from node D_k.",
+            "description": "No outflow from any commodity's destination: commodity $k$ has zero outflow from node $D_k$.",
             "formulation": "\\sum_{a \\in \\delta^+(D_k)} x_{ak} = 0 \\quad \\forall k \\in K",
             "code": {
                 "gurobipy": "model.addConstrs(\n    gp.quicksum(x[a, k] for a in out[D[k]]) == 0\n    for k in range(K)\n)"
@@ -198,7 +222,7 @@
             "explicit": false
         },
         {
-            "description": "Destination In-Cut Bound (V1 EC1): for each commodity k, the incoming arcs to its destination, weighted by capacity plus the maximum incoming capacity, must jointly cover the demand plus that maximum.",
+            "description": "Destination In-Cut Bound (V1 EC1): for each commodity $k$, the incoming arcs to its destination, weighted by capacity plus the maximum incoming capacity, must jointly cover the demand plus that maximum.",
             "formulation": "\\sum_{a \\in \\delta^-(D_k)} \\bigl(u_a + u^{\\max}_k\\bigr)\\,y_a \\;\\ge\\; d_k + u^{\\max}_k \\qquad \\forall k \\in K",
             "code": {
                 "gurobipy": "for k in range(K):\n    inc_dk = inc[D[k]]\n    if not inc_dk:\n        continue\n    u_max_k = max(u[a] for a in inc_dk)\n    model.addConstr(\n        gp.quicksum((u[a] + u_max_k) * y[a] for a in inc_dk) >= d[k] + u_max_k\n    )"
@@ -216,11 +240,12 @@
     "metadata": {
         "source": {
             "dataset": "EvoCut",
+            "citekey": "yazdani2025",
             "version": 1,
             "name": "EC1"
         },
         "notes": [
-            "For each commodity $k$, the incoming arcs to its destination $D_k$ must together provide enough capacity to deliver demand $d_k$. The inequality is a lifted cover inequality on the activation variables of those incoming arcs."
+            "This is the MCND formulation from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC1."
         ]
     }
 }

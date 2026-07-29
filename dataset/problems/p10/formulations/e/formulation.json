@@ -12,7 +12,7 @@
       "shape": []
     },
     "d": {
-      "description": "Travel time from job i's return terminal to job j's pickup terminal; d[i][i] is the loaded time (rejection penalty) of job i",
+      "description": "Travel time from job $i$'s return terminal to job $j$'s pickup terminal; $d_{ii}$ is the loaded time (rejection penalty) of job $i$",
       "type": "continuous",
       "shape": [
         "N",
@@ -20,7 +20,7 @@
       ]
     },
     "d0": {
-      "description": "Travel time from the home terminal of truck k to job i's pickup terminal",
+      "description": "Travel time from the home terminal of truck $k$ to job $i$'s pickup terminal",
       "type": "continuous",
       "shape": [
         "K",
@@ -28,7 +28,7 @@
       ]
     },
     "dH": {
-      "description": "Travel time from job i's return terminal to the home terminal of truck k",
+      "description": "Travel time from job $i$'s return terminal to the home terminal of truck $k$",
       "type": "continuous",
       "shape": [
         "K",
@@ -83,7 +83,7 @@
       }
     },
     {
-      "description": "Triangle inequality for depot-to-job travel: going directly to job i is no longer than going via job j first.",
+      "description": "Triangle inequality for depot-to-job travel: going directly to job $i$ is no longer than going via job $j$ first.",
       "formulation": "d^k_{0i} \\leq d^k_{0j} + d_{ji} \\quad \\forall k \\in \\{0,\\dots,K-1\\},\\, i, j \\in \\{0,\\dots,N-1\\}",
       "explicit": false,
       "code": {
@@ -121,25 +121,33 @@
       "code": {
         "python": "assert all(tau_max[i] >= 0 for i in range(N))"
       }
+    },
+    {
+      "description": "Each time window is non-empty: the earliest permissible arrival is no later than the latest.",
+      "formulation": "\\tau^-_i \\leq \\tau^+_i \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
+      "explicit": false,
+      "code": {
+        "python": "assert all(tau_min[i] <= tau_max[i] for i in range(N))"
+      }
     }
   ],
   "definitions": {
     "EST": {
-      "description": "Earliest start time for job i: the maximum of its time window lower bound and the earliest any truck can reach it",
+      "description": "Earliest start time for job $i$: the maximum of its time window lower bound and the earliest any truck can reach it",
       "formulation": "\\mathrm{EST}_i = \\max\\!\\left(\\tau^-_i,\\, \\min_{k \\in \\{0,\\dots,K-1\\}} (v^k + d^k_{0i})\\right) \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
       "code": {
         "python": "EST = [max(tau_min[i], min(v[k] + d0[k][i] for k in range(K))) for i in range(N)]"
       }
     },
     "A_minus": {
-      "description": "Set of arc pairs (i,j) that are infeasible: serving j after i always violates j's time window upper bound",
+      "description": "Set of arc pairs $(i,j)$ that are infeasible: serving $j$ after $i$ always violates $j$'s time window upper bound",
       "formulation": "\\mathcal{A}^- = \\{(i,j) \\in \\{0,\\dots,N-1\\}^2 : i \\ne j \\wedge \\mathrm{EST}_i + d_{ii} + d_{ij} > \\tau^+_j\\}",
       "code": {
         "python": "A_minus = {(i, j) for i in range(N) for j in range(N) if i != j and EST[i] + d[i][i] + d[i][j] > tau_max[j]}"
       }
     },
     "Q": {
-      "description": "Set of incompatible triples (i,k,j): routing i->k->j always violates j's time window upper bound",
+      "description": "Set of incompatible triples $(i,k,j)$: routing $i \\to k \\to j$ always violates $j$'s time window upper bound",
       "formulation": "Q = \\{(i,k,j) \\in \\{0,\\dots,N-1\\}^3 : i \\ne k,\\, k \\ne j,\\, (i,k) \\notin \\mathcal{A}^-,\\, (k,j) \\notin \\mathcal{A}^-,\\, \\max(\\mathrm{EST}_k,\\, \\mathrm{EST}_i + d_{ii} + d_{ik}) + d_{kk} + d_{kj} > \\tau^+_j\\}",
       "code": {
         "python": "Q = [(i, k, j) for i in range(N) for k in range(N) for j in range(N) if i != k and k != j and (i, k) not in A_minus and (k, j) not in A_minus and max(EST[k], EST[i] + d[i][i] + d[i][k]) + d[k][k] + d[k][j] > tau_max[j]]"
@@ -147,15 +155,15 @@
     },
     "M": {
       "description": "Big-M constant for arrival-time propagation: upper bound on any feasible arrival time",
-      "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij}",
+      "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij} + \\max_i \\tau^+_i - \\min_j \\tau^-_j",
       "code": {
-        "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N))"
+        "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N)) + max(tau_max) - min(tau_min)"
       }
     }
   },
   "variables": {
     "x": {
-      "description": "1 if arc (u,v) is selected in the routing cycle cover; x[K+i][K+i]=1 means job i is rejected",
+      "description": "$1$ if arc $(u,v)$ is selected in the routing cycle cover; $x_{K+i,K+i} = 1$ means job $i$ is rejected",
       "type": "binary",
       "shape": [
         "K+N",
@@ -163,7 +171,7 @@
       ]
     },
     "delta": {
-      "description": "Arrival time at job i's pickup terminal",
+      "description": "Arrival time at job $i$'s pickup terminal",
       "type": "continuous",
       "shape": [
         "N"
@@ -188,7 +196,7 @@
       "explicit": true
     },
     {
-      "description": "Arrival time at job i is at least the earliest possible arrival from any truck.",
+      "description": "Arrival time at job $i$ is at least the earliest possible arrival from any truck.",
       "formulation": "\\delta_i - \\sum_{k=0}^{K-1} (d^k_{0i} + v^k)\\,x_{k,K+i} \\ge 0 \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
       "code": {
         "gurobipy": "model.addConstrs(delta[i] - gp.quicksum((d0[k][i] + v[k]) * x[k, K + i] for k in range(K)) >= 0 for i in range(N))"
@@ -212,7 +220,7 @@
       "explicit": true
     },
     {
-      "description": "EC4: For each triple (i,k,j) where serving k after i and j after k violates the time window of j, at most one of the two arcs or a rejection of k can hold.",
+      "description": "EC4: For each triple $(i,k,j)$ where serving $k$ after $i$ and $j$ after $k$ violates the time window of $j$, at most one of the two arcs or a rejection of $k$ can hold.",
       "formulation": "x_{K+i,K+k} + x_{K+k,K+j} + x_{K+k,K+k} \\le 1 \\quad \\forall (i,k,j) \\in \\mathcal{Q}",
       "code": {
         "gurobipy": "for i, k, j in Q:\n    model.addConstr(x[K + i, K + k] + x[K + k, K + j] + x[K + k, K + k] <= 1)"
@@ -229,10 +237,11 @@
   },
   "metadata": {
     "source": {
-      "dataset": "EvoCut"
+      "dataset": "EvoCut",
+      "citekey": "yazdani2025"
     },
     "notes": [
-        "For each triple $(i, k, j)$ where serving $k$ after $i$ and then $j$ after $k$ violates $j$'s time window, at most one of the two arcs $x_{K+i,K+k}$, $x_{K+k,K+j}$, or rejection self-loop $x_{K+k,K+k}$ may be active."
+            "This is the PDPTW formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC4."
     ]
   }
 }

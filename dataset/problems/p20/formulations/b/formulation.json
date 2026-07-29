@@ -1,5 +1,5 @@
 {
-    "valid": true,
+    "valid": false,
     "parameters": {
         "nN": {
             "description": "Total number of nodes in the supply network (suppliers, transshipment points, and beneficiary camps)",
@@ -37,28 +37,28 @@
             "shape": []
         },
         "S": {
-            "description": "Supplier node indices: S[s] is the index in N of supplier s",
+            "description": "Supplier node indices: $S_s$ is the index in $N$ of supplier $s$",
             "type": "integer",
             "shape": [
                 "nS"
             ]
         },
         "T": {
-            "description": "Transshipment node indices: T[t] is the index in N of transshipment node t",
+            "description": "Transshipment node indices: $T_t$ is the index in $N$ of transshipment node $t$",
             "type": "integer",
             "shape": [
                 "nT"
             ]
         },
         "B": {
-            "description": "Beneficiary camp node indices: B[j] is the index in N of beneficiary camp j",
+            "description": "Beneficiary camp node indices: $B_j$ is the index in $N$ of beneficiary camp $j$",
             "type": "integer",
             "shape": [
                 "nB"
             ]
         },
         "E": {
-            "description": "Adjacency matrix: 1 if a directed edge exists from node i to node j, 0 otherwise",
+            "description": "Adjacency matrix: $1$ if a directed edge exists from node $i$ to node $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nN",
@@ -66,7 +66,7 @@
             ]
         },
         "pE": {
-            "description": "Path-edge indicator: 1 if edge (i, j) is part of path p, 0 otherwise",
+            "description": "Path-edge indicator: $1$ if edge $(i, j)$ is part of path $p$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nP",
@@ -75,7 +75,7 @@
             ]
         },
         "pRank": {
-            "description": "Rank/position of node v within path p; strictly increases along path edges",
+            "description": "Rank/position of node $v$ within path $p$; strictly increases along path edges",
             "type": "integer",
             "shape": [
                 "nP",
@@ -83,7 +83,7 @@
             ]
         },
         "c": {
-            "description": "Shipping cost per kg of commodity k along path p",
+            "description": "Shipping cost per kg of commodity $k$ along path $p$",
             "type": "continuous",
             "shape": [
                 "nP",
@@ -91,14 +91,14 @@
             ]
         },
         "q": {
-            "description": "Procurement cost per kg of commodity k",
+            "description": "Procurement cost per kg of commodity $k$",
             "type": "continuous",
             "shape": [
                 "nK"
             ]
         },
         "nutval": {
-            "description": "Nutritional value per kg of commodity k for nutrient l",
+            "description": "Nutritional value per kg of commodity $k$ for nutrient $l$",
             "type": "continuous",
             "shape": [
                 "nK",
@@ -106,21 +106,21 @@
             ]
         },
         "nutreq": {
-            "description": "Per-person nutritional requirement for nutrient l",
+            "description": "Per-person nutritional requirement for nutrient $l$",
             "type": "continuous",
             "shape": [
                 "nL"
             ]
         },
         "dem": {
-            "description": "Number of beneficiaries at beneficiary camp j",
+            "description": "Number of beneficiaries at beneficiary camp $j$",
             "type": "integer",
             "shape": [
                 "nB"
             ]
         },
         "e": {
-            "description": "Indicator: 1 if path p ends at beneficiary camp j, 0 otherwise",
+            "description": "Indicator: $1$ if path $p$ ends at beneficiary camp $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nB",
@@ -178,7 +178,7 @@
             }
         },
         {
-            "description": "Each supplier node index is a valid node index (in range [0, nN)).",
+            "description": "Each supplier node index is a valid node index (in range $[0, n_N)$).",
             "formulation": "S_s \\in N \\quad \\forall s \\in N_S",
             "explicit": true,
             "code": {
@@ -186,7 +186,7 @@
             }
         },
         {
-            "description": "Each transshipment node index is a valid node index (in range [0, nN)).",
+            "description": "Each transshipment node index is a valid node index (in range $[0, n_N)$).",
             "formulation": "T_t \\in N \\quad \\forall t \\in N_T",
             "explicit": true,
             "code": {
@@ -194,7 +194,7 @@
             }
         },
         {
-            "description": "Each beneficiary camp node index is a valid node index (in range [0, nN)).",
+            "description": "Each beneficiary camp node index is a valid node index (in range $[0, n_N)$).",
             "formulation": "B_j \\in N \\quad \\forall j \\in N_B",
             "explicit": true,
             "code": {
@@ -202,7 +202,7 @@
             }
         },
         {
-            "description": "The supplier, transshipment, and beneficiary node-class maps partition N (every node belongs to exactly one class).",
+            "description": "The supplier, transshipment, and beneficiary node-class maps partition $N$ (every node belongs to exactly one class).",
             "formulation": "N = N_S \\sqcup N_T \\sqcup N_B",
             "explicit": true,
             "code": {
@@ -258,7 +258,7 @@
             }
         },
         {
-            "description": "End indicator e is consistent with pE: e_{j,p} = 1 iff path p ends at beneficiary camp j.",
+            "description": "End indicator $e$ is consistent with $pE$: $e_{j,p} = 1$ iff path $p$ ends at beneficiary camp $j$.",
             "formulation": "e_{j,p} = \\sum_{i \\in N} pE_{p,i,B_j} - \\sum_{k \\in N} pE_{p,B_j,k} \\quad \\forall j \\in N_B, p \\in P",
             "explicit": false,
             "code": {
@@ -274,11 +274,11 @@
             }
         },
         {
-            "description": "Path indexing is complete: every valid simple supplier-to-beneficiary path is indexed by some p in P.",
+            "description": "Path indexing is complete: every valid simple supplier-to-beneficiary path is indexed by some $p \\in P$.",
             "formulation": "\\forall \\text{ valid simple } S\\text{-to-}B \\text{ path } \\pi, \\exists p \\in P : pE_p = \\pi",
             "explicit": false,
             "code": {
-                "python": "# Completeness must be verified by external path enumeration; not asserted here."
+                "python": "def simple_paths(i, visited):\n    if i in B:\n        yield frozenset(zip(visited, visited[1:]))\n        return\n    for j in range(nN):\n        if E[i][j] and j not in visited:\n            yield from simple_paths(j, visited + [j])\nassert {arcs for s in S for arcs in simple_paths(s, [s])} <= {\n    frozenset((i, j) for i in range(nN) for j in range(nN) if pE[p][i][j])\n    for p in range(nP)\n}"
             }
         },
         {
@@ -332,7 +332,7 @@
     ],
     "variables": {
         "x": {
-            "description": "Amount of commodity k shipped along path p (kg)",
+            "description": "Amount of commodity $k$ shipped along path $p$ (kg)",
             "type": "continuous",
             "shape": [
                 "nP",
@@ -391,11 +391,12 @@
     "metadata": {
         "source": {
             "dataset": "Ferchtandiker2025",
+            "citekey": "ferchtandiker2025",
             "variation_id": "inefficient"
         },
         "notes": [
             "The inefficient formulation is path-based.",
-            "Proving this is a valid reformulation requires introducing many assumptions that relate the path-based parameters to the underlying supply network structure of the efficient formulation. These assumptions ensure the set of paths is well-formed and allows for a flow-decomposition argument."
+            "The assumptions relate the path-based parameters to the underlying supply network of the efficient formulation, ensuring the set of paths is well-formed and complete. They support a flow-decomposition argument, but that argument only recovers the efficient formulation's arc flows when those flows are acyclic. Since formulation `a` allows cyclic flows, this is an invalid reformulation under our stricter reformulation definition."
         ]
     }
 }

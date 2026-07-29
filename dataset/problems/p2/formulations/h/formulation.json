@@ -96,7 +96,7 @@
     },
     "constraints": [
         {
-            "description": "The combined weight of cat paw treats in both blends should not surpass R kilograms, determined by adding together F multiplied by n and M multiplied by v.",
+            "description": "The combined weight of cat paw treats in both blends should not surpass $R$ kilograms, determined by adding together $F$ multiplied by $n$ and $M$ multiplied by $v$.",
             "formulation": "R \\geq F \\times n + M \\times v",
             "explicit": true,
             "code": {
@@ -104,7 +104,7 @@
             }
         },
         {
-            "description": "The combined weight of gold shark snacks in the two mixes should not go over W kilograms, which is determined as the sum of ((100 - F) multiplied by n) and ((100 - M) multiplied by v).",
+            "description": "The combined weight of gold shark snacks in the two mixes should not go over $W$ kilograms, which is determined as the sum of ($(100 - F)$ multiplied by $n$) and ($(100 - M)$ multiplied by $v$).",
             "formulation": "W \\geq \\frac{(100 - F)}{100} \\times n + \\frac{(100 - M)}{100} \\times v",
             "explicit": true,
             "code": {
@@ -129,7 +129,7 @@
         }
     ],
     "objective": {
-        "description": "The goal is to increase the overall profit to the highest possible level, which is determined by the formula (S * n) + (Z * v).",
+        "description": "The goal is to increase the overall profit to the highest possible level, which is determined by the formula $(S \\times n) + (Z \\times v)$.",
         "formulation": "Max \\left( S \\times n + Z \\times v \\right)",
         "code": {
             "gurobipy": "model.setObjective(S * n + Z * v, GRB.MAXIMIZE)"
@@ -138,11 +138,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "74",
             "variation_id": "j"
         },
         "notes": [
-            "Random formulation unrelated to the original problem."
+            "Transformation of formulation `a`: Random formulation unrelated to the original problem."
         ]
     }
 }

@@ -17,8 +17,14 @@ extensions = [
     "sphinx.ext.intersphinx",
     "numpydoc",
     "sphinx_design",
+    "sphinxcontrib.bibtex",
     "gen_problem_pages",
 ]
+
+# The bibliography ships with the dataset so the published tarball carries
+# full attribution for every problem and formulation source.
+bibtex_bibfiles = ["../dataset/ref.bib"]
+bibtex_default_style = "plain"
 
 extlinks = {
     "github": (

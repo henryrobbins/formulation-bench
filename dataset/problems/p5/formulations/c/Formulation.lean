@@ -29,6 +29,7 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   htotal : ((v.h_0 + 10 * v.h_1 : ℤ) : ℝ) + ((v.d_0 + 10 * v.d_1 : ℤ) : ℝ) ≤ (p.D : ℝ)
   -- At least P topsoil bags
   hmin_top : (p.P : ℝ) ≤ ((v.d_0 + 10 * v.d_1 : ℤ) : ℝ)
+  -- [Implicit Constraints]
   -- Digit bounds
   hh0_nn : 0 ≤ v.h_0
   hh1_nn : 0 ≤ v.h_1

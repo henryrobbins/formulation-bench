@@ -219,15 +219,14 @@ private lemma fwd_feas (p : P6.a.Params) (v : P6.a.Vars p)
       · exact h0
       · exact absurd h1 ha
     exact (hA ▸ hB ▸ (add_zero _).symm)
-  -- Apply sum_le_top_k: S.card ≤ k (we'll derive from ∑ y_j < k assumption via contradiction).
-  -- Strategy: contrapositive. Assume k ≤ ∑ y_j is false, i.e. ∑ y_j < k.
+  -- Apply sum_le_top_k: S.card ≤ k (we'll derive from ∑ y_j ≤ k assumption via contradiction).
+  -- Strategy: contrapositive. Assume k + 1 ≤ ∑ y_j is false, i.e. ∑ y_j ≤ k.
   by_contra hlt
   push_neg at hlt
-  -- hlt : ∑ j, v.y j < k
-  have hcard_lt : S.card < k := by
-    have : (S.card : ℤ) < (k : ℤ) := by rw [hY_eq]; exact_mod_cast hlt
-    exact_mod_cast this
-  have hcard_le : S.card ≤ k := le_of_lt hcard_lt
+  -- hlt : ∑ j, v.y j < k + 1
+  have hcard_le : S.card ≤ k := by
+    have h1 : (S.card : ℤ) < (k : ℤ) + 1 := by rw [hY_eq]; exact_mod_cast hlt
+    exact_mod_cast Int.lt_add_one_iff.mp h1
   -- The antitone function is `fun a => p.u (σ a)` with nonneg values.
   have hg_nn : ∀ a : Fin p.m, 0 ≤ p.u (σ a) := fun a => p.hu_nn (σ a)
   have hg_anti : ∀ a b : Fin p.m, a ≤ b → p.u (σ b) ≤ p.u (σ a) := hσ

@@ -6,26 +6,17 @@ def main(data_path: str, output_path: str) -> None:
     with open(data_path) as f:
         data = json.load(f)
 
-    households = data["households"]  # e.g. ["H1", "H2", ...]
-    all_hospitals = data["all_hospitals"]  # e.g. ["EJ1", ..., "CJ1", ...]
-    existing_hospitals = data["existing_hospitals"]
-
-    nI = len(households)
-    m = len(existing_hospitals)
-    M = len(all_hospitals)
-
-    v = [data["population"][h] for h in households]
-
-    distance_indicators = data["distance_indicators"]
-    a = [[distance_indicators[h][hosp] for hosp in all_hospitals] for h in households]
+    d = data["d"]
+    S = data["S"]
+    a = [[int(dij <= S) for dij in di] for di in d]
 
     params = {
-        "nI": nI,
-        "m": m,
-        "M": M,
-        "v": v,
+        "nI": data["nI"],
+        "m": data["m"],
+        "M": data["M"],
+        "v": data["v"],
         "a": a,
-        "p": data["max_new_hospitals"],
+        "p": data["p"],
     }
 
     with open(output_path, "w") as f:

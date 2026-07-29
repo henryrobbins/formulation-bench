@@ -88,7 +88,7 @@
     },
     "constraints": [
         {
-            "description": "Constraint defining zed in terms of original variables.",
+            "description": "Constraint defining $\\text{zed}$ in terms of original variables.",
             "formulation": "zed = Z * h + B * d",
             "explicit": true,
             "code": {
@@ -96,7 +96,7 @@
             }
         },
         {
-            "description": "The percentage of topsoil bags should not go beyond K out of all bags.",
+            "description": "The percentage of topsoil bags should not go beyond $K$ out of all bags.",
             "formulation": "K \\times ( d + h ) \\geq d",
             "explicit": true,
             "code": {
@@ -104,7 +104,7 @@
             }
         },
         {
-            "description": "The combined amount of subsoil bags and topsoil bags must not surpass D.",
+            "description": "The combined amount of subsoil bags and topsoil bags must not surpass $D$.",
             "formulation": "D \\geq d + h",
             "explicit": true,
             "code": {
@@ -112,7 +112,7 @@
             }
         },
         {
-            "description": "A minimum of P bags of topsoil is required to be utilized.",
+            "description": "A minimum of $P$ bags of topsoil is required to be utilized.",
             "formulation": "P \\leq d",
             "explicit": true,
             "code": {
@@ -137,7 +137,7 @@
         }
     ],
     "objective": {
-        "description": "Minimize the new variable zed.",
+        "description": "Minimize the new variable $\\text{zed}$.",
         "formulation": "Minimize \\ zed",
         "code": {
             "gurobipy": "model.setObjective(zed, GRB.MINIMIZE)"
@@ -146,11 +146,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "217",
             "variation_id": "f"
         },
         "notes": [
-            "Substitute the objective function with a new variable and linking constraint."
+            "Transformation of formulation `a`: Substitute the objective function with a new variable and linking constraint."
         ]
     }
 }

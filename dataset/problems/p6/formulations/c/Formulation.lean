@@ -35,14 +35,13 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hx_bin : ∀ i : Fin p.n, ∀ j : Fin p.m, v.x i j = 0 ∨ v.x i j = 1
   hy_bin : ∀ j : Fin p.m, v.y j = 0 ∨ v.y j = 1
   -- Demand-Cover Bound (EC2 cut family): for any non-increasing capacity ordering σ and any k,
-  -- if the top-k prefix of σ is insufficient to cover total demand, at least k warehouses must
-  -- be open. This is a valid cut family implied by feasibility; the JSON computes the scalar
-  -- k_dem (minimum prefix length covering total demand) which is the tightest instance.
+  -- if the top-k prefix of σ is insufficient to cover total demand, more than k warehouses must
+  -- be open. Instantiating at k = k_dem - 1 recovers ∑ y ≥ k_dem, the tightest instance.
   hec2 : ∀ (σ : Fin p.m ≃ Fin p.m),
     (∀ a b : Fin p.m, a ≤ b → p.u (σ b) ≤ p.u (σ a)) →
     ∀ k : ℕ,
     (∑ a ∈ univ.filter (fun i : Fin p.m => i.val < k), p.u (σ a) < ∑ i : Fin p.n, p.d i) →
-    (k : ℤ) ≤ ∑ j : Fin p.m, v.y j
+    (k : ℤ) + 1 ≤ ∑ j : Fin p.m, v.y j
 
 -- Minimize total fixed opening cost plus transportation cost
 def obj (p : Params) (v : Vars p) : ℝ :=

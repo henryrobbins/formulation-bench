@@ -31,7 +31,8 @@ private def paramMap (p : P10.a.Params) : P10.e.Params :=
     htri := p.htri
     hv_nn := p.hv_nn
     hτ_min_nn := p.hτ_min_nn
-    hτ_max_nn := p.hτ_max_nn }
+    hτ_max_nn := p.hτ_max_nn
+    hτ_window := p.hτ_window }
 
 -- ============================================================================
 -- § Forward Mapping and Feasibility
@@ -80,12 +81,12 @@ private lemma arc_forces_self_zero (u w : Fin (p.K + p.N)) (huw : u ≠ w)
   omega
 
 /-- Number of jobs with strictly earlier arrival time than `i`. -/
-private noncomputable def rank {N : ℕ} (δ : Fin N → ℝ) (i : Fin N) : ℕ :=
-  (univ.filter (fun j : Fin N => δ j < δ i)).card
+private noncomputable def rank (δ : Fin p.N → ℝ) (i : Fin p.N) : ℕ :=
+  (univ.filter (fun j : Fin p.N => δ j < δ i)).card
 
 omit h in
 private lemma rank_lt {i j : Fin p.N} (hdlt : v.δ j < v.δ i) :
-    rank v.δ j < rank v.δ i := by
+    rank (p := p) v.δ j < rank (p := p) v.δ i := by
   apply card_lt_card
   rw [_root_.ssubset_iff_subset_ne]
   refine ⟨?_, ?_⟩
@@ -107,11 +108,11 @@ private lemma reach_truck (i : Fin p.N)
   haveI := p.hK
   haveI := p.hN
   -- Strong induction on rank.
-  suffices hind : ∀ n (i : Fin p.N), rank v.δ i < n →
+  suffices hind : ∀ n (i : Fin p.N), rank (p := p) v.δ i < n →
       v.x ⟨p.K + i.val, by have := i.isLt; omega⟩
           ⟨p.K + i.val, by have := i.isLt; omega⟩ = 0 →
       ∃ k : Fin p.K, p.v k + p.d0 k i ≤ v.δ i from
-    hind (rank v.δ i + 1) i (Nat.lt_succ_self _) hi
+    hind (rank (p := p) v.δ i + 1) i (Nat.lt_succ_self _) hi
   intro n
   induction n with
   | zero => intro i hrk; exact absurd hrk (Nat.not_lt_zero _)
@@ -199,8 +200,8 @@ private lemma reach_truck (i : Fin p.N)
         have hpdjj := p.hd_pos j j
         have hpdji := p.hd_pos j i
         linarith
-      have hrk_j : rank v.δ j < rank v.δ i := rank_lt hdlt
-      have hrk_jn : rank v.δ j < n := by omega
+      have hrk_j : rank (p := p) v.δ j < rank (p := p) v.δ i := rank_lt hdlt
+      have hrk_jn : rank (p := p) v.δ j < n := by omega
       obtain ⟨k, hk⟩ := ih j hrk_jn hj_acc
       refine ⟨k, ?_⟩
       have hpdjj := p.hd_pos j j
