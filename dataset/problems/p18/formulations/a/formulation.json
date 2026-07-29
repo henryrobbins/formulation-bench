@@ -71,9 +71,17 @@
             }
         },
         {
+            "description": "Number of existing hospitals is non-negative.",
+            "formulation": "m \\geq 0",
+            "explicit": false,
+            "code": {
+                "python": "assert m >= 0"
+            }
+        },
+        {
             "description": "Number of existing hospitals does not exceed total hospital sites.",
             "formulation": "m \\leq M",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "python": "assert m <= M"
             }
