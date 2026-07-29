@@ -113,7 +113,7 @@
             }
         },
         {
-            "description": "Ore grade of each block is at most one. Grades are ore fractions, so a grade of one denotes a block made entirely of ore. This is what makes I_0 and I_1 a partition of I: without it, a block with grade above one falls into neither set and its extraction variable is left with no domain.",
+            "description": "Ore grade of each block is at most one (pure-ore blocks have grade equal to 1).",
             "formulation": "g_i \\leq 1 \\quad \\forall i \\in I",
             "explicit": false,
             "code": {
@@ -263,8 +263,7 @@
             "formulation_id": "efficient"
         },
         "notes": [
-            "We add all listed implicit assumptions.",
-            "The source model defines I_0 = {i : g_i < 1} and I_1 = {i : g_i = 1} and gives a domain to each, but its data generator draws grades from [0.5, 3.0]. Blocks with grade above one then belong to neither set and their extraction variables are unbounded, so the MILP has no finite optimum. We take the problem description as authoritative -- grades are ore fractions, and the blocks that are 'completely made up of ore' are exactly I_1 -- and record g_i <= 1 as an implicit assumption so the two sets partition I."
+            "We add all listed implicit assumptions."
         ]
     }
 }
