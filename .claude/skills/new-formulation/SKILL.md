@@ -61,7 +61,8 @@ formulations.
   source or another formulation would not otherwise be clear. Examples include
   a variable-renaming transformation, aggregation versus disaggregation, a
   base-10 substitution, or the source/version of an acceleration cut.
-- DO use the `{cite:t}`citekey`` syntax to reference the source in notes.
+- DO use the `{cite:t}`citekey`` syntax when a note mentions the source by
+  name.
 - DO keep notes concise and focused on information not apparent from the
   structured formulation.
 
