@@ -31,11 +31,6 @@ private def fwd (p : P7.a.Params) (v : P7.a.Vars p) : P7.h.Vars (paramMap p) :=
     s := v.s
     t := v.t }
 
--- strips_covering is defined identically in the two namespaces; the Finset
--- has the same underlying filter on `Fin p.N × Fin p.N`.
-private lemma strips_covering_eq (N : ℕ) (j : Fin N) :
-    P7.a.strips_covering N j = P7.h.strips_covering N j := rfl
-
 section ForwardHelpers
 
 variable {p : P7.a.Params} {v : P7.a.Vars p} (h : P7.a.Feasible p v)

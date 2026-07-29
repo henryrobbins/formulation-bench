@@ -52,10 +52,6 @@ private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
 
 end ForwardHelpers
 
--- strips_covering is identical in P7.a and P7.d.
-private lemma strips_covering_eq (N : ℕ) (j : Fin N) :
-    P7.a.strips_covering N j = P7.d.strips_covering N j := rfl
-
 private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
     (h : P7.a.Feasible p v) :
     P7.d.Feasible (paramMap p) (fwd p v) := by

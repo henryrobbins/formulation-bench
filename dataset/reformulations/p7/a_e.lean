@@ -51,11 +51,6 @@ private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
     0 ≤ v.s i ab.1 ab.2 := by
   rcases h.hs_bin i ab hab with h0 | h1 <;> omega
 
-private lemma fwd_x_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
-    (hab : ab ∈ P7.a.I p.N) :
-    0 ≤ v.x i ab.1 ab.2 := by
-  rcases h.hx_bin i ab hab with h0 | h1 <;> omega
-
 private lemma fwd_h_nn (i : Fin p.N) (j : Fin p.N) :
     0 ≤ v.h i j := by
   rcases h.hh_bin i j with h0 | h1 <;> omega
