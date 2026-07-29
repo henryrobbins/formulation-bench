@@ -25,10 +25,10 @@
             ]
         },
         "r": {
-            "description": "Revenue earned by scheduling flight p in time period t",
+            "description": "Reward earned for a flight being at location a in time period t",
             "type": "continuous",
             "shape": [
-                "nP",
+                "nA",
                 "nT"
             ]
         },
