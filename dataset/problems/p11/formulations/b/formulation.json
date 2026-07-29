@@ -713,7 +713,7 @@
             "citekey": "yazdani2025"
         },
         "notes": [
-            "This is the SHUC formulation from `v2` of {cite:t}`yazdani2025` augmented with its ten jointly applied acceleration cuts."
+            "This is the SHUC formulation from `v2` of {cite:t}`yazdani2025` augmented with its ten jointly applied acceleration cuts. It introduces auxiliary variables $\\overline{P}_{g,t}$ and $b_{g,t}$ to enforce that demand minus renewable output plus reserve can be met by thermal capacity that is reachable under ramp limits, with derating during startups and shutdowns"
         ]
     }
 }
