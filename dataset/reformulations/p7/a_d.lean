@@ -40,19 +40,17 @@ include h
 private lemma fwd_h_nn (i j : Fin p.N) : 0 ≤ v.h i j := by
   rcases h.hh_bin i j with h0 | h1 <;> omega
 
-private lemma fwd_x_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_x_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.x i ab.1 ab.2 := by
-  rcases h.hx_bin i ab with h0 | h1 <;> omega
+  rcases h.hx_bin i ab hab with h0 | h1 <;> omega
 
-private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.s i ab.1 ab.2 := by
-  rcases h.hs_bin i ab with h0 | h1 <;> omega
+  rcases h.hs_bin i ab hab with h0 | h1 <;> omega
 
 end ForwardHelpers
-
--- strips_covering is identical in P7.a and P7.d.
-private lemma strips_covering_eq (N : ℕ) (j : Fin N) :
-    P7.a.strips_covering N j = P7.d.strips_covering N j := rfl
 
 private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
     (h : P7.a.Feasible p v) :
@@ -62,13 +60,13 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
   · intro i; exact h.hrow i
   · intro j; exact h.hcol j
   · intro i j; exact h.hcov i j
-  · intro ab; exact h.htop ab
-  · intro i ab hi; exact h.hflow i ab hi
-  · intro ab; exact h.hbot ab
+  · intro ab hab; exact h.htop ab hab
+  · intro i ab hab hi; exact h.hflow i ab hab hi
+  · intro ab hab; exact h.hbot ab hab
   · intro i j; exact h.hh_bin i j
-  · intro i ab; exact h.hx_bin i ab
-  · intro i ab; exact h.hs_bin i ab
-  · intro i ab; exact h.ht_bin i ab
+  · intro i ab hab; exact h.hx_bin i ab hab
+  · intro i ab hab; exact h.hs_bin i ab hab
+  · intro i ab hab; exact h.ht_bin i ab hab
   · -- htopBreak: v.h 0 j ≤ ∑ ab ∈ strips_covering p.N j, v.s ⟨1, hN_gt⟩ ab.1 ab.2
     intro j hN_gt
     -- Case split on v.h 0 j
@@ -83,8 +81,8 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
       have hsum_nn : 0 ≤ ∑ ab ∈ P7.d.strips_covering (paramMap p).N j,
           v.s i1 ab.1 ab.2 := by
         apply Finset.sum_nonneg
-        intro ab _
-        exact fwd_s_nn h i1 ab
+        intro ab hab
+        exact fwd_s_nn h i1 ab (Finset.mem_filter.mp hab).1
       haveI : NeZero (paramMap p).N := p.hN
       show v.h (0 : Fin (paramMap p).N) j ≤ _
       change v.h (0 : Fin p.N) j ≤ _
@@ -102,14 +100,15 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
       have hx0_zero : ∀ ab ∈ P7.a.strips_covering p.N j,
           v.x i0 ab.1 ab.2 = 0 := by
         intro ab hab
-        rcases h.hx_bin i0 ab with hx0 | hx1
+        rcases h.hx_bin i0 ab (Finset.mem_filter.mp hab).1 with hx0 | hx1
         · exact hx0
         · exfalso
           let F : Fin p.N × Fin p.N → ℤ := fun ab => v.x i0 ab.1 ab.2
           have hother_nn : ∀ ab' ∈ (P7.a.strips_covering p.N j).erase ab,
               0 ≤ F ab' := by
-            intro ab' _
+            intro ab' hab'
             exact fwd_x_nn h i0 ab'
+              (Finset.mem_filter.mp (Finset.mem_of_mem_erase hab')).1
           have hsplit : F ab + ∑ ab' ∈ (P7.a.strips_covering p.N j).erase ab, F ab'
               = ∑ ab' ∈ P7.a.strips_covering p.N j, F ab' :=
             Finset.add_sum_erase _ F hab
@@ -153,7 +152,7 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
         have hall0 : ∀ ab ∈ P7.a.strips_covering p.N j,
             v.x i1 ab.1 ab.2 = 0 := by
           intro ab hab
-          rcases h.hx_bin i1 ab with h0' | h1'
+          rcases h.hx_bin i1 ab (Finset.mem_filter.mp hab).1 with h0' | h1'
           · exact h0'
           · exact absurd h1' (hne ab hab)
         have : ∑ ab ∈ P7.a.strips_covering p.N j,
@@ -163,7 +162,8 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
         linarith
       obtain ⟨abstar, habstar_in, habstar_x1⟩ := hexists
       -- Step 5: flow at row 1 for abstar
-      have hflow1 := h.hflow i1 abstar (by show 0 < (1 : ℕ); norm_num)
+      have hflow1 := h.hflow i1 abstar (Finset.mem_filter.mp habstar_in).1
+        (by show 0 < (1 : ℕ); norm_num)
       have hx0_zero_star : v.x i0 abstar.1 abstar.2 = 0 :=
         hx0_zero abstar habstar_in
       -- The hflow1 has Fin index ⟨i1.val - 1, _⟩ for the predecessor; that's defeq to i0.
@@ -176,8 +176,8 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
         have := hflow1
         rw [hpred_eq] at this
         exact this
-      have ht0_bin := h.ht_bin i0 abstar
-      have hs1_bin := h.hs_bin i1 abstar
+      have ht0_bin := h.ht_bin i0 abstar (Finset.mem_filter.mp habstar_in).1
+      have hs1_bin := h.hs_bin i1 abstar (Finset.mem_filter.mp habstar_in).1
       have hs1_star : v.s i1 abstar.1 abstar.2 = 1 := by
         rcases ht0_bin with ht0 | ht0 <;>
           rcases hs1_bin with hs0 | hs0 <;>
@@ -186,8 +186,9 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
       let S : Fin p.N × Fin p.N → ℤ := fun ab => v.s i1 ab.1 ab.2
       have hs1_others_nn : ∀ ab ∈ (P7.a.strips_covering p.N j).erase abstar,
           0 ≤ S ab := by
-        intro ab _
+        intro ab hab
         exact fwd_s_nn h i1 ab
+          (Finset.mem_filter.mp (Finset.mem_of_mem_erase hab)).1
       have hsplit : S abstar + ∑ ab ∈ (P7.a.strips_covering p.N j).erase abstar, S ab
           = ∑ ab ∈ P7.a.strips_covering p.N j, S ab :=
         Finset.add_sum_erase _ S habstar_in

@@ -90,10 +90,7 @@
         "D": {
             "description": "Minimum required distance between a hub and a POI (kilometers)",
             "type": "continuous",
-            "shape": [
-                "M",
-                "nP"
-            ]
+            "shape": []
         },
         "Delta": {
             "description": "Maximum additional travel time allowed when using a bike via a hub compared to driving directly by car (minutes)",

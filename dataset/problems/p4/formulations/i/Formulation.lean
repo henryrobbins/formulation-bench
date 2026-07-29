@@ -20,17 +20,17 @@ structure Params where
   hP_nn : 0 ≤ P
 
 structure Vars (p : Params) where
-  e : ℤ  -- number of runners used
-  p : ℤ  -- number of canoe trips
-  a : ℤ  -- number of runner trips
+  e : ℝ  -- number of runners used
+  p : ℝ  -- number of canoe trips
+  a : ℝ  -- number of runner trips
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
   -- Canoe deliveries ≤ fraction P of total deliveries
-  hcanoe_frac : (v.p : ℝ) * p.Z ≤ p.P * ((v.p : ℝ) * p.Z + (v.a : ℝ) * p.V)
+  hcanoe_frac : v.p * p.Z ≤ p.P * (v.p * p.Z + v.a * p.V)
   -- Total delivery time ≤ available
-  htime : p.U * (v.a : ℝ) + p.N * (v.p : ℝ) ≤ p.C
+  htime : p.U * v.a + p.N * v.p ≤ p.C
   -- At least E runners required
-  hmin_runners : p.E ≤ (v.e : ℝ)
+  hmin_runners : p.E ≤ v.e
   -- [Implicit Constraints]
   he_nn : 0 ≤ v.e
   hp_nn : 0 ≤ v.p

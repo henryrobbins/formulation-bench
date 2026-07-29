@@ -54,7 +54,7 @@
         "source": {
             "dataset": "EquivaFormulation",
             "citekey": "zhai2025a",
-            "instance_id": 92
+            "instance_id": "92"
         },
         "notes": [
             "The source variable type is continuous; we correct the variable type to integer.",

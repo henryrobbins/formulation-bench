@@ -41,7 +41,7 @@
         {
             "description": "Number of household clusters is positive.",
             "formulation": "nI > 0",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "python": "assert nI > 0"
             }
@@ -49,7 +49,7 @@
         {
             "description": "Total number of candidate hospital sites is positive.",
             "formulation": "M > 0",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "python": "assert M > 0"
             }
@@ -68,6 +68,14 @@
             "explicit": false,
             "code": {
                 "python": "assert p >= 0"
+            }
+        },
+        {
+            "description": "Number of existing hospitals is non-negative.",
+            "formulation": "m \\geq 0",
+            "explicit": false,
+            "code": {
+                "python": "assert m >= 0"
             }
         },
         {

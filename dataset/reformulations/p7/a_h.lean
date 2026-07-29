@@ -31,20 +31,16 @@ private def fwd (p : P7.a.Params) (v : P7.a.Vars p) : P7.h.Vars (paramMap p) :=
     s := v.s
     t := v.t }
 
--- strips_covering is defined identically in the two namespaces; the Finset
--- has the same underlying filter on `Fin p.N × Fin p.N`.
-private lemma strips_covering_eq (N : ℕ) (j : Fin N) :
-    P7.a.strips_covering N j = P7.h.strips_covering N j := rfl
-
 section ForwardHelpers
 
 variable {p : P7.a.Params} {v : P7.a.Vars p} (h : P7.a.Feasible p v)
 include h
 
 -- Each t value is nonneg.
-private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.t i ab.1 ab.2 := by
-  rcases h.ht_bin i ab with h0 | h1 <;> omega
+  rcases h.ht_bin i ab hab with h0 | h1 <;> omega
 
 -- EC1 (V2) holds on any a-feasible point.
 private lemma fwd_ec1 (i : Fin p.N) (j : Fin p.N) (hi : 0 < i.val) :
@@ -57,9 +53,10 @@ private lemma fwd_ec1 (i : Fin p.N) (j : Fin p.N) (hi : 0 < i.val) :
   have hs_ge : ∀ ab ∈ P7.a.strips_covering p.N j,
       v.x i ab.1 ab.2 - v.x i' ab.1 ab.2 ≤
         v.s i ab.1 ab.2 := by
-    intro ab _
-    have hfl := h.hflow i ab hi
-    have ht_nn := fwd_t_nn h i' ab
+    intro ab hab
+    have habI : ab ∈ P7.a.I p.N := (Finset.mem_filter.mp hab).1
+    have hfl := h.hflow i ab habI hi
+    have ht_nn := fwd_t_nn h i' ab habI
     -- hflow: x i - x (i-1) - s i + t (i-1) = 0, so s i = x i - x (i-1) + t (i-1)
     show v.x i ab.1 ab.2 - v.x i' ab.1 ab.2 ≤
         v.s i ab.1 ab.2

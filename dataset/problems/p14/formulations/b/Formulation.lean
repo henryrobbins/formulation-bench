@@ -14,12 +14,12 @@ structure Params where
   numDC : ℕ  -- number of DCs to open
   T : Fin nS → Fin nH → ℝ  -- travel time from candidate DC i to hospital j
   T_limit : ℝ  -- travel time limit
-  -- Assumptions
+  -- Implicit Assumptions
   hnS : NeZero nS
   hnH : NeZero nH
-  -- Implicit Assumptions
   hT_nn : ∀ i j, 0 ≤ T i j
   hT_limit_nn : 0 ≤ T_limit
+  hnumDC_le : numDC ≤ nS
 
 structure Vars (p : Params) where
   x : Fin p.nS → ℤ      -- DC activation: 1 if candidate DC i is opened

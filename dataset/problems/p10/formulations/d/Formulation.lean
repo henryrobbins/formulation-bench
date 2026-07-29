@@ -26,6 +26,7 @@ structure Params where
   hv_nn : ∀ k : Fin K, 0 ≤ v k
   hτ_min_nn : ∀ i : Fin N, 0 ≤ τ_min i
   hτ_max_nn : ∀ i : Fin N, 0 ≤ τ_max i
+  hτ_window : ∀ i : Fin N, τ_min i ≤ τ_max i
 
 noncomputable def EST (p : Params) (i : Fin p.N) : ℝ :=
   haveI := p.hK

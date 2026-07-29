@@ -2,7 +2,8 @@ import argparse
 import json
 
 
-def main(output_path: str) -> None:
+def main(data_path: str, output_path: str) -> None:
+    # This formulation's parameters are fixed; the instance data is unused.
     params = {
         "D": 300,
         "V": 300,
@@ -20,6 +21,7 @@ def main(output_path: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("data", help="Path to data.json")
     parser.add_argument("output", help="Path to write parameters.json")
     args = parser.parse_args()
-    main(args.output)
+    main(args.data, args.output)

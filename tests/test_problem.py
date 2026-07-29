@@ -22,7 +22,7 @@ def test_name_loaded_when_present(problem11: Problem) -> None:
 def test_metadata_loaded_eagerly(problem1: Problem) -> None:
     source = problem1.metadata["source"]
     assert source["dataset"] == "EquivaFormulation"
-    assert source["instance_id"] == 47
+    assert source["instance_id"] == "47"
 
 
 def test_parameters_loaded_eagerly(problem1: Problem) -> None:

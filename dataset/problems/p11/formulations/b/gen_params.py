@@ -16,7 +16,6 @@ def main(data_path: str, output_path: str) -> None:
         "n_L": data["n_L"],
         "P": data["P"],
         "C": data["C"],
-        "C_fixed": data["C_fixed"],
         "L": data["L"],
         "R": data["R"],
         "P_min": data["P_min"],

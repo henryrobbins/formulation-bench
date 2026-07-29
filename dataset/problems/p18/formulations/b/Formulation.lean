@@ -16,13 +16,13 @@ structure Params where
   a : Fin nI → Fin M → ℤ  -- coverage indicator: 1 if d_ij ≤ S, 0 otherwise
   p : ℤ                    -- maximum number of new hospitals to open
   -- Assumptions
+  ha_bin : ∀ i j, a i j = 0 ∨ a i j = 1
+  -- Implicit Assumptions
   hnI : NeZero nI
   hM : NeZero M
-  -- Implicit Assumptions
-  hmM : m ≤ M  -- existing hospital count bounded by total sites
   hv_nn : ∀ i, 0 ≤ v i
-  ha_bin : ∀ i j, a i j = 0 ∨ a i j = 1
   hp_nn : 0 ≤ p
+  hmM : m ≤ M  -- existing hospital count bounded by total sites
 
 structure Vars (P : Params) where
   x : Fin P.M → ℤ  -- hospital open indicator: 1 if hospital j is opened, 0 otherwise

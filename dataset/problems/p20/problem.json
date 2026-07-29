@@ -6,6 +6,11 @@
             "type": "integer",
             "shape": []
         },
+        "nB": {
+            "description": "Number of beneficiary camps",
+            "type": "integer",
+            "shape": []
+        },
         "nK": {
             "description": "Number of food commodities",
             "type": "integer",
@@ -32,10 +37,10 @@
             ]
         },
         "dem": {
-            "description": "Number of beneficiaries at each node (0 for non-beneficiary nodes)",
+            "description": "Number of beneficiaries at each beneficiary camp, in increasing order of node index",
             "type": "integer",
             "shape": [
-                "nN"
+                "nB"
             ]
         },
         "pc": {

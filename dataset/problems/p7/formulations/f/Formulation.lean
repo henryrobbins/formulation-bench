@@ -9,9 +9,13 @@ open BigOperators Finset
 
 namespace P7.f
 
+/-- Column intervals (a, b) with a ≤ b, for a given grid size N. -/
+def I (N : ℕ) : Finset (Fin N × Fin N) :=
+  univ.filter (fun ab => ab.1.val ≤ ab.2.val)
+
 /-- Column intervals (a, b) with a ≤ j ≤ b, for a given grid size N and column j. -/
 def strips_covering (N : ℕ) (j : Fin N) : Finset (Fin N × Fin N) :=
-  univ.filter (fun ab => ab.1.val ≤ j.val ∧ j.val ≤ ab.2.val)
+  (I N).filter (fun ab => ab.1.val ≤ j.val ∧ j.val ≤ ab.2.val)
 
 structure Params where
   N : ℕ -- grid size (number of rows and columns)
@@ -33,23 +37,23 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hcov : ∀ i : Fin p.N, ∀ j : Fin p.N,
     ∑ ab ∈ strips_covering p.N j, v.x i ab.1 ab.2 + v.h i j = 1
   -- Top-row flow: strip activity equals strip start at row 0
-  htop : ∀ ab : Fin p.N × Fin p.N,
+  htop : ∀ ab ∈ I p.N,
     haveI := p.hN
     v.x 0 ab.1 ab.2 = v.s 0 ab.1 ab.2
   -- Middle-row flow balance
-  hflow : ∀ i : Fin p.N, ∀ ab : Fin p.N × Fin p.N, ∀ hi : 0 < i.val,
+  hflow : ∀ i : Fin p.N, ∀ ab ∈ I p.N, ∀ hi : 0 < i.val,
     v.x i ab.1 ab.2 - v.x ⟨i.val - 1, by omega⟩ ab.1 ab.2 -
     v.s i ab.1 ab.2 + v.t ⟨i.val - 1, by omega⟩ ab.1 ab.2 = 0
   -- Bottom-row flow: strip activity equals strip end at last row
-  hbot : ∀ ab : Fin p.N × Fin p.N,
+  hbot : ∀ ab ∈ I p.N,
     v.x ⟨p.N - 1, Nat.sub_lt (Nat.pos_of_ne_zero p.hN.out) Nat.one_pos⟩ ab.1 ab.2 =
     v.t ⟨p.N - 1, Nat.sub_lt (Nat.pos_of_ne_zero p.hN.out) Nat.one_pos⟩ ab.1 ab.2
   hh_bin : ∀ i : Fin p.N, ∀ j : Fin p.N, v.h i j = 0 ∨ v.h i j = 1
-  hx_bin : ∀ i : Fin p.N, ∀ ab : Fin p.N × Fin p.N,
+  hx_bin : ∀ i : Fin p.N, ∀ ab ∈ I p.N,
     v.x i ab.1 ab.2 = 0 ∨ v.x i ab.1 ab.2 = 1
-  hs_bin : ∀ i : Fin p.N, ∀ ab : Fin p.N × Fin p.N,
+  hs_bin : ∀ i : Fin p.N, ∀ ab ∈ I p.N,
     v.s i ab.1 ab.2 = 0 ∨ v.s i ab.1 ab.2 = 1
-  ht_bin : ∀ i : Fin p.N, ∀ ab : Fin p.N × Fin p.N,
+  ht_bin : ∀ i : Fin p.N, ∀ ab ∈ I p.N,
     v.t i ab.1 ab.2 = 0 ∨ v.t i ab.1 ab.2 = 1
   -- EC5 (V1): Interior Vertical-Above Break
   -- An interior hole forces a strip covering that column span to end in the row above
@@ -58,7 +62,7 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
 
 -- Minimize the total number of rectangular tiles used (each tile contributes exactly one start)
 def obj (p : Params) (v : Vars p) : ℝ :=
-  ∑ i : Fin p.N, ∑ ab : Fin p.N × Fin p.N,
+  ∑ i : Fin p.N, ∑ ab ∈ I p.N,
     (v.s i ab.1 ab.2 : ℝ)
 
 def formulation : MILPFormulation where

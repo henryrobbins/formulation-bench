@@ -30,7 +30,8 @@ private def paramMap (p : P10.a.Params) : P10.d.Params :=
     htri := p.htri
     hv_nn := p.hv_nn
     hτ_min_nn := p.hτ_min_nn
-    hτ_max_nn := p.hτ_max_nn }
+    hτ_max_nn := p.hτ_max_nn
+    hτ_window := p.hτ_window }
 
 -- ============================================================================
 -- § Helper Lemmas

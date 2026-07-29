@@ -22,6 +22,7 @@ structure Params where
   hnH : NeZero nH
   hT_nn : ∀ i j, 0 ≤ T i j
   hT_limit_nn : 0 ≤ T_limit
+  hnumDC_le : numDC ≤ nS
   hdelta_def : ∀ i j, (delta i j = 1 ↔ T i j ≤ T_limit) ∧ (delta i j = 0 ↔ T_limit < T i j)
 
 structure Vars (p : Params) where

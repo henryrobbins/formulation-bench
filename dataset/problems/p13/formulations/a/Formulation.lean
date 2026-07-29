@@ -59,7 +59,7 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
 
 -- Maximize total reward for visiting locations
 def obj (p : Params) (v : Vars p) : ℝ :=
-  ∑ pl : Fin p.nP, ∑ a : Fin p.nA, ∑ t : Fin p.nT, p.r a t * (v.y pl a t : ℝ)
+  -(∑ pl : Fin p.nP, ∑ a : Fin p.nA, ∑ t : Fin p.nT, p.r a t * (v.y pl a t : ℝ))
 
 def formulation : MILPFormulation where
   Params   := Params

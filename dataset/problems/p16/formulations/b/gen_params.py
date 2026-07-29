@@ -6,66 +6,40 @@ def main(data_path: str, output_path: str) -> None:
     with open(data_path) as f:
         data = json.load(f)
 
-    junctions = data["junctions"]  # e.g. ["s1", "s2", ...]
-    hubs = data["hubs"]  # e.g. ["h1", "h2", ...]
-    pois = data["pois"]  # e.g. ["p1", "p2", ...]
+    nS = data["nS"]
+    M = data["M"]
+    nP = data["nP"]
 
-    nS = len(junctions)
-    M = len(hubs)
-    nP = len(pois)
-    N = data["num_existing_hubs"]  # first N hubs are existing
-    U = data["max_new_hubs"]
-
-    # Demand: v[s][p]  (nS x nP)
-    v = [[data["demand"][junctions[s]][pois[p]] for p in range(nP)] for s in range(nS)]
-
-    # Feasibility: F[s][h][p]  (nS x M x nP)
-    # F_{shp} = 1 iff all four conditions hold:
-    #   (1) car_time_sh[s][h] + bike_time_hp[h][p] - car_time_sp[s][p] <= Delta
-    #   (2) bike_time_hp[h][p] <= max_bike_time
-    #   (3) distance_hp[h][p] >= min_hub_poi_distance
-    #   (4) distance_sp[s][p] - distance_sh[s][h] >= min_distance_diff
-    T = data["max_bike_time"]
-    Delta = data["max_additional_time"]
-    tau = data["min_distance_diff"]
-
-    F = []
-    for s in range(nS):
-        F_s = []
-        for h in range(M):
-            F_sh = []
-            for p in range(nP):
-                extra_time = (
-                    data["car_time_sh"][junctions[s]][hubs[h]]
-                    + data["bike_time_hp"][hubs[h]][pois[p]]
-                    - data["car_time_sp"][junctions[s]][pois[p]]
+    # F[s][h][p] = 1 iff routing junction s to POI p via hub h is viable:
+    #   (1) the detour via the hub costs at most Delta extra minutes
+    #   (2) the bike leg takes at most T minutes
+    #   (3) the hub is at least D kilometers from the POI
+    #   (4) driving to the hub saves at least tau kilometers over driving to the POI
+    F = [
+        [
+            [
+                int(
+                    data["c_sh"][s][h] + data["b_hp"][h][p] - data["c_sp"][s][p]
+                    <= data["Delta"]
+                    and data["b_hp"][h][p] <= data["T"]
+                    and data["d_hp"][h][p] >= data["D"]
+                    and data["d_sp"][s][p] - data["d_sh"][s][h] >= data["tau"]
                 )
-                bike_time = data["bike_time_hp"][hubs[h]][pois[p]]
-                dist_hp = data["distance_hp"][hubs[h]][pois[p]]
-                dist_saving = (
-                    data["distance_sp"][junctions[s]][pois[p]]
-                    - data["distance_sh"][junctions[s]][hubs[h]]
-                )
-                if (
-                    extra_time <= Delta
-                    and bike_time <= T
-                    and dist_hp >= data["min_hub_poi_distance"]
-                    and dist_saving >= tau
-                ):
-                    F_sh.append(1)
-                else:
-                    F_sh.append(0)
-            F_s.append(F_sh)
-        F.append(F_s)
+                for p in range(nP)
+            ]
+            for h in range(M)
+        ]
+        for s in range(nS)
+    ]
 
     params = {
-        "N": N,
+        "N": data["N"],
         "M": M,
         "nP": nP,
         "nS": nS,
-        "v": v,
+        "v": data["v"],
         "F": F,
-        "U": U,
+        "U": data["U"],
     }
 
     with open(output_path, "w") as f:

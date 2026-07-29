@@ -1,5 +1,5 @@
 {
-    "valid": true,
+    "valid": false,
     "parameters": {
         "nN": {
             "description": "Total number of nodes in the supply network (suppliers, transshipment points, and beneficiary camps)",
@@ -278,7 +278,7 @@
             "formulation": "\\forall \\text{ valid simple } S\\text{-to-}B \\text{ path } \\pi, \\exists p \\in P : pE_p = \\pi",
             "explicit": false,
             "code": {
-                "python": "# Completeness must be verified by external path enumeration; not asserted here."
+                "python": "def simple_paths(i, visited):\n    if i in B:\n        yield frozenset(zip(visited, visited[1:]))\n        return\n    for j in range(nN):\n        if E[i][j] and j not in visited:\n            yield from simple_paths(j, visited + [j])\nassert {arcs for s in S for arcs in simple_paths(s, [s])} <= {\n    frozenset((i, j) for i in range(nN) for j in range(nN) if pE[p][i][j])\n    for p in range(nP)\n}"
             }
         },
         {
@@ -396,7 +396,7 @@
         },
         "notes": [
             "The inefficient formulation is path-based.",
-            "Proving this is a valid reformulation requires introducing many assumptions that relate the path-based parameters to the underlying supply network structure of the efficient formulation. These assumptions ensure the set of paths is well-formed and allows for a flow-decomposition argument."
+            "The assumptions relate the path-based parameters to the underlying supply network of the efficient formulation, ensuring the set of paths is well-formed and complete. They support a flow-decomposition argument, but that argument only recovers the efficient formulation's arc flows when those flows are acyclic. Since formulation `a` allows cyclic flows, this is an invalid reformulation under our stricter reformulation definition."
         ]
     }
 }

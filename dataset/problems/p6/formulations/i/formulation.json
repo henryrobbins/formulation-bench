@@ -43,6 +43,22 @@
     },
     "assumptions": [
         {
+            "description": "There is at least one customer.",
+            "formulation": "n \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert n >= 1"
+            }
+        },
+        {
+            "description": "There is at least one warehouse.",
+            "formulation": "m \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert m >= 1"
+            }
+        },
+        {
             "description": "Demand of each customer is positive.",
             "formulation": "d_i > 0 \\quad \\forall i \\in I",
             "explicit": false,
