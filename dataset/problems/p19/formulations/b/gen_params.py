@@ -14,23 +14,24 @@ def main(data_path: str, output_path: str) -> None:
     nC = len(regions)
 
     # a: affected population per region, indexed 0..nC-1
-    # data["a"] is a dict keyed by region name string (second formulation field)
-    a_raw = data["a"]
-    a = [a_raw[regions[c]] for c in range(nC)]
+    # data["a_c"] is a dict keyed by region name string
+    a_c_raw = data["a_c"]
+    a = [a_c_raw[regions[c]] for c in range(nC)]
 
     # C: cost per person from hub h to region c, shape [nH][nC]
-    # data["C_alt"] is a dict keyed by string repr of (hub, region) tuple,
+    # data["C_hc"] is a dict keyed by string repr of (hub, region) tuple,
     # e.g. "('hub_1', 'region_1')"
-    C_alt_raw = data["C_alt"]
+    C_hc_raw = data["C_hc"]
     C = [
-        [C_alt_raw[f"('{hubs[h]}', '{regions[c]}')"] for c in range(nC)]
+        [C_hc_raw[f"('{hubs[h]}', '{regions[c]}')"] for c in range(nC)]
         for h in range(nH)
     ]
 
     # t: travel time from hub h to region c, shape [nH][nC]
-    t_raw = data["t"]
+    t_hc_raw = data["t_hc"]
     t = [
-        [t_raw[f"('{hubs[h]}', '{regions[c]}')"] for c in range(nC)] for h in range(nH)
+        [t_hc_raw[f"('{hubs[h]}', '{regions[c]}')"] for c in range(nC)]
+        for h in range(nH)
     ]
 
     # Hf: fixed-hub binary indicator, shape [nH]
