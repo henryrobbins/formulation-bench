@@ -78,11 +78,13 @@ structure Vars (P : Params) where
   c_var : Fin P.nG → Fin P.nT → ℝ -- variable production cost above fixed cost
   p_wind : Fin P.nW → Fin P.nT → ℝ -- renewable output for wind generator w at time t
   b : Fin P.nG → Fin P.nT → ℤ -- EC1 indicator: 1 if generator g starts at t and shuts down at t+1
+  P_bar : Fin P.nG → Fin P.nT → ℝ -- maximum reachable output of generator g at time t
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
-  -- Demand balance: total thermal output equals demand at each period
+  -- Demand balance: total thermal and renewable output equals demand at each period
   hdemand : ∀ t : Fin p.nT,
-    ∑ g : Fin p.nG, (v.p g t + p.P_min g * (v.u g t : ℝ)) = p.L t
+    ∑ g : Fin p.nG, (v.p g t + p.P_min g * (v.u g t : ℝ))
+      + ∑ w : Fin p.nW, v.p_wind w t = p.L t
   -- Spinning reserve: total reserve meets or exceeds requirement
   hreserve : ∀ t : Fin p.nT,
     p.R t ≤ ∑ g : Fin p.nG, v.r g t
@@ -165,6 +167,44 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   -- EC1 lower bound: v[g,t] + w[g,t+1] - 1 ≤ b[g,t]
   hec1_lb : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
     v.v g t + v.w g ⟨t.val + 1, ht⟩ - 1 ≤ v.b g t
+  -- EC2a: startup-derated capacity bound on P_bar
+  hec2a : ∀ g : Fin p.nG, ∀ t : Fin p.nT,
+    v.P_bar g t ≤ p.P_max g * (v.u g t : ℝ) -
+      max (p.P_max g - p.SU g) 0 * (v.v g t : ℝ)
+  -- EC2b: shutdown-derated capacity bound on P_bar for t+1 < nT
+  hec2b : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
+    v.P_bar g t ≤ p.P_max g * (v.u g t : ℝ) -
+      max (p.P_max g - p.SD g) 0 * (v.w g ⟨t.val + 1, ht⟩ : ℝ)
+  -- EC2c: P_bar bounded by combined startup-shutdown derated capacity with b recovery term
+  hec2c : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : t.val + 1 < p.nT,
+    v.P_bar g t ≤
+      p.P_max g * (v.u g t : ℝ) -
+        max (p.P_max g - p.SU g) 0 * (v.v g t : ℝ) -
+        max (p.P_max g - p.SD g) 0 * (v.w g ⟨t.val + 1, ht⟩ : ℝ) +
+        min (max (p.P_max g - p.SU g) 0) (max (p.P_max g - p.SD g) 0) *
+          (v.b g t : ℝ)
+  -- EC3a: P_bar bounded by previous period output plus ramp-up, relaxed when generator was offline
+  hec3a : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : 0 < t.val,
+    v.P_bar g t ≤
+      p.P_min g * (v.u g t : ℝ) + v.p g ⟨t.val - 1, by omega⟩ + p.RU g +
+        (p.P_max g - p.P_min g) * (1 - (v.u g ⟨t.val - 1, by omega⟩ : ℝ))
+  -- EC3b: P_bar bounded by ramp-reachability with startup derating at t-1
+  hec3b : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : 0 < t.val,
+    v.P_bar g t ≤
+      p.P_min g * (v.u g t : ℝ) +
+        (p.P_max g - p.P_min g) * (v.u g ⟨t.val - 1, by omega⟩ : ℝ) -
+          max (p.P_max g - p.SU g) 0 * (v.v g ⟨t.val - 1, by omega⟩ : ℝ) +
+            p.RU g
+  -- EC3c: P_bar bounded by ramp-reachability with shutdown derating at current period t
+  hec3c : ∀ g : Fin p.nG, ∀ t : Fin p.nT, ∀ ht : 0 < t.val,
+    v.P_bar g t ≤
+      p.P_min g * (v.u g t : ℝ) +
+        (p.P_max g - p.P_min g) * (v.u g ⟨t.val - 1, by omega⟩ : ℝ) -
+          max (p.P_max g - p.SD g) 0 * (v.w g t : ℝ) +
+            p.RU g
+  -- EC4: total reachable capacity covers demand plus reserve
+  hec4 : ∀ t : Fin p.nT,
+    p.L t - ∑ w : Fin p.nW, v.p_wind w t + p.R t ≤ ∑ g : Fin p.nG, v.P_bar g t
 
 -- Minimize total production cost (fixed on-cost + variable cost) and startup costs
 def obj (p : Params) (v : Vars p) : ℝ :=

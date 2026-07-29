@@ -79,9 +79,10 @@ structure Vars (P : Params) where
   p_wind : Fin P.nW → Fin P.nT → ℝ -- renewable output for wind generator w at time t
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
-  -- Demand balance: total thermal output equals demand at each period
+  -- Demand balance: total thermal and renewable output equals demand at each period
   hdemand : ∀ t : Fin p.nT,
-    ∑ g : Fin p.nG, (v.p g t + p.P_min g * (v.u g t : ℝ)) = p.L t
+    ∑ g : Fin p.nG, (v.p g t + p.P_min g * (v.u g t : ℝ))
+      + ∑ w : Fin p.nW, v.p_wind w t = p.L t
   -- Spinning reserve: total reserve meets or exceeds requirement
   hreserve : ∀ t : Fin p.nT,
     p.R t ≤ ∑ g : Fin p.nG, v.r g t
