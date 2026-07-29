@@ -104,7 +104,7 @@
         {
             "description": "The upper bound on digit 0 of each experiment frequency (must be at most 9).",
             "formulation": "j\\_0_i \\leq 9 \\quad \\forall i",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "gurobipy": "model.addConstrs(j_0[i] <= 9 for i in range(M))"
             }
@@ -112,7 +112,7 @@
         {
             "description": "The upper bound on digit 1 of each experiment frequency (must be at most 9).",
             "formulation": "j\\_1_i \\leq 9 \\quad \\forall i",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "gurobipy": "model.addConstrs(j_1[i] <= 9 for i in range(M))"
             }

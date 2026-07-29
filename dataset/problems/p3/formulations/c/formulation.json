@@ -136,7 +136,7 @@
         {
             "description": "Digit 0 of the beaker count is at most 9 for all beakers.",
             "formulation": "n\\_0_i \\leq 9 \\quad \\forall i",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "gurobipy": "model.addConstrs(n_0[i] <= 9 for i in range(N))"
             }
@@ -144,7 +144,7 @@
         {
             "description": "Digit 1 of the beaker count is at most 9 for all beakers.",
             "formulation": "n\\_1_i \\leq 9 \\quad \\forall i",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "gurobipy": "model.addConstrs(n_1[i] <= 9 for i in range(N))"
             }
