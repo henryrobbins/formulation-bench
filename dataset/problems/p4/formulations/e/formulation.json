@@ -169,7 +169,7 @@
             "variation_id": "g"
         },
         "notes": [
-            "Introduce slack variables to convert inequality constraints into equality constraints.",
+            "Transformation of formulation `a`: Introduce slack variables to convert inequality constraints into equality constraints.",
             "The $S$ bus constraint upper bound was absent from the source; we add an explicit constraint with slack variable."
         ]
     }

@@ -169,7 +169,7 @@
             "variation_id": "k"
         },
         "notes": [
-            "Random formulation unrelated to the original problem, with the same optimal objective value as the original problem."
+            "Transformation of formulation `a`: Random formulation unrelated to the original problem, with the same optimal objective value as the original problem."
         ]
     }
 }

@@ -94,7 +94,7 @@
             "variation_id": "l"
         },
         "notes": [
-            "Arbitrarily remove constraints from the original formulation."
+            "Transformation of formulation `a`: Arbitrarily remove constraints from the original formulation."
         ]
     }
 }

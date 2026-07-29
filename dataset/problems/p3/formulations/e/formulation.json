@@ -189,7 +189,7 @@
             "variation_id": "g"
         },
         "notes": [
-            "Introduce slack variables to convert inequality constraints into equality constraints.",
+            "Transformation of formulation `a`: Introduce slack variables to convert inequality constraints into equality constraints.",
             "Source variation was missing the slack variables; we introduced them."
         ]
     }

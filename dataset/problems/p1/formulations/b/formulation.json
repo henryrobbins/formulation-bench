@@ -151,7 +151,7 @@
             "variation_id": "c"
         },
         "notes": [
-            "Change the names of parameters and variables.",
+            "Transformation of formulation `a`: Change the names of parameters and variables.",
             "Source typo $U \\leq A \\times K + s \\times r$ corrected to $U \\leq A \\times s + K \\times r$ to match Gurobi code and problem description."
         ]
     }
