@@ -44,18 +44,6 @@ section ForwardHelpers
 variable {p : P9.a.Params} {v : P9.a.Vars p} (h : P9.a.Feasible p v)
 include h
 
-/-- Per-commodity capacity: x_{e,k} ≤ u_e * y_e. -/
-private lemma per_commodity_cap (e : Fin p.m) (k : Fin p.K) :
-    v.x e k ≤ p.u e * (v.y e : ℝ) := by
-  haveI := p.hK
-  have hsum : v.x e k ≤ ∑ k' : Fin p.K, v.x e k' :=
-    Finset.single_le_sum
-      (f := fun k' : Fin p.K => v.x e k')
-      (s := univ)
-      (hf := fun k' _ => h.hx_nn e k')
-      (mem_univ k)
-  exact le_trans hsum (h.hcap e)
-
 /-- No flow of commodity k enters its origin. -/
 private lemma no_inflow_origin (k : Fin p.K) :
     (univ.filter (fun e : Fin p.m => p.head e = p.O k)).sum

@@ -133,11 +133,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "47",
             "variation_id": "j"
         },
         "notes": [
-            "Random formulation unrelated to the original problem."
+            "Transformation of formulation `a`: Random formulation unrelated to the original problem."
         ]
     }
 }

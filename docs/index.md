@@ -20,4 +20,5 @@ problems/index
 schema
 definitions
 api/index
+citations
 ```

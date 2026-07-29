@@ -71,29 +71,29 @@
     ],
     "variables": {
         "d1": {
-            "description": "Part 1 of variable d: The quantity of bags containing topsoil",
+            "description": "Part 1 of variable $d$: The quantity of bags containing topsoil",
             "type": "integer",
             "shape": []
         },
         "d2": {
-            "description": "Part 2 of variable d: The quantity of bags containing topsoil",
+            "description": "Part 2 of variable $d$: The quantity of bags containing topsoil",
             "type": "integer",
             "shape": []
         },
         "h1": {
-            "description": "Part 1 of variable h: The quantity of underground bags",
+            "description": "Part 1 of variable $h$: The quantity of underground bags",
             "type": "integer",
             "shape": []
         },
         "h2": {
-            "description": "Part 2 of variable h: The quantity of underground bags",
+            "description": "Part 2 of variable $h$: The quantity of underground bags",
             "type": "integer",
             "shape": []
         }
     },
     "constraints": [
         {
-            "description": "The percentage of topsoil bags should not go beyond K out of all bags.",
+            "description": "The percentage of topsoil bags should not go beyond $K$ out of all bags.",
             "formulation": "K \\times ( d1 + d2+ h1 + h2) \\geq d1 + d2",
             "explicit": true,
             "code": {
@@ -101,7 +101,7 @@
             }
         },
         {
-            "description": "The combined amount of subsoil bags and topsoil bags must not surpass D.",
+            "description": "The combined amount of subsoil bags and topsoil bags must not surpass $D$.",
             "formulation": "D \\geq d1 + d2+ h1 + h2",
             "explicit": true,
             "code": {
@@ -109,7 +109,7 @@
             }
         },
         {
-            "description": "A minimum of P bags of topsoil is required to be utilized.",
+            "description": "A minimum of $P$ bags of topsoil is required to be utilized.",
             "formulation": "P \\leq d1 + d2",
             "explicit": true,
             "code": {
@@ -150,7 +150,7 @@
         }
     ],
     "objective": {
-        "description": "The total amount of water needed consists of the combined value of (Z multiplied by the quantity of subsoil bags) and (B multiplied by the quantity of topsoil bags). The aim is to reduce the overall water consumption as much as possible.",
+        "description": "The total amount of water needed consists of the combined value of ($Z$ multiplied by the quantity of subsoil bags) and ($B$ multiplied by the quantity of topsoil bags). The aim is to reduce the overall water consumption as much as possible.",
         "formulation": "Min \\left( B \\times (d1 + d2)+ Z \\times (h1 + h2)\\right )",
         "code": {
             "gurobipy": "model.setObjective(Z * (h1 + h2)+ B * (d1 + d2), GRB.MINIMIZE)"
@@ -159,11 +159,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "217",
             "variation_id": "h"
         },
         "notes": [
-            "Splits variables."
+            "Transformation of formulation `a`: Splits variables."
         ]
     }
 }

@@ -41,17 +41,15 @@ variable {p : P7.a.Params} {v : P7.a.Vars p} (h : P7.a.Feasible p v)
 include h
 
 -- Nonnegativity on Fin indices.
-private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.t i ab.1 ab.2 := by
-  rcases h.ht_bin i ab with h0 | h1 <;> omega
+  rcases h.ht_bin i ab hab with h0 | h1 <;> omega
 
-private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.s i ab.1 ab.2 := by
-  rcases h.hs_bin i ab with h0 | h1 <;> omega
-
-private lemma fwd_x_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
-    0 ≤ v.x i ab.1 ab.2 := by
-  rcases h.hx_bin i ab with h0 | h1 <;> omega
+  rcases h.hs_bin i ab hab with h0 | h1 <;> omega
 
 private lemma fwd_h_nn (i : Fin p.N) (j : Fin p.N) :
     0 ≤ v.h i j := by
@@ -80,8 +78,8 @@ private lemma fwd_ec4 (p : P7.a.Params) (v : P7.a.Vars p)
       ab ∈ P7.a.strips_covering p.N j →
       v.x iLast ab.1 ab.2 - v.x iPrev ab.1 ab.2 -
         v.s iLast ab.1 ab.2 + v.t iPrev ab.1 ab.2 = 0 := by
-    intro ab _
-    have hf := hfeas.hflow iLast ab hiLast_pos
+    intro ab hab
+    have hf := hfeas.hflow iLast ab (Finset.mem_filter.mp hab).1 hiLast_pos
     rw [hpred_eq] at hf
     exact hf
   have hsum_flow :
@@ -108,10 +106,10 @@ private lemma fwd_ec4 (p : P7.a.Params) (v : P7.a.Vars p)
   have hcol_j : ∑ i : Fin p.N, v.h i j = 1 := hfeas.hcol j
   have hs_nn : ∀ ab ∈ P7.a.strips_covering p.N j,
       0 ≤ v.s iLast ab.1 ab.2 := by
-    intro ab _; exact fwd_s_nn hfeas iLast ab
+    intro ab hab; exact fwd_s_nn hfeas iLast ab (Finset.mem_filter.mp hab).1
   have ht_nn : ∀ ab ∈ P7.a.strips_covering p.N j,
       0 ≤ v.t iPrev ab.1 ab.2 := by
-    intro ab _; exact fwd_t_nn hfeas iPrev ab
+    intro ab hab; exact fwd_t_nn hfeas iPrev ab (Finset.mem_filter.mp hab).1
   have hsum_s_nn : 0 ≤ ∑ ab ∈ P7.a.strips_covering p.N j,
       v.s iLast ab.1 ab.2 := Finset.sum_nonneg hs_nn
   rw [← strips_covering_eq]
@@ -171,13 +169,13 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
   · intro i; exact h.hrow i
   · intro j; exact h.hcol j
   · intro i j; exact h.hcov i j
-  · intro ab; exact h.htop ab
-  · intro i ab hi; exact h.hflow i ab hi
-  · intro ab; exact h.hbot ab
+  · intro ab hab; exact h.htop ab hab
+  · intro i ab hab hi; exact h.hflow i ab hab hi
+  · intro ab hab; exact h.hbot ab hab
   · intro i j; exact h.hh_bin i j
-  · intro i ab; exact h.hx_bin i ab
-  · intro i ab; exact h.hs_bin i ab
-  · intro i ab; exact h.ht_bin i ab
+  · intro i ab hab; exact h.hx_bin i ab hab
+  · intro i ab hab; exact h.hs_bin i ab hab
+  · intro i ab hab; exact h.ht_bin i ab hab
   · intro j hN; exact fwd_ec4 p v h j hN
 
 -- ============================================================================

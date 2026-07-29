@@ -17,7 +17,7 @@
             "shape": []
         },
         "adj": {
-            "description": "Adjacency matrix: 1 if a is adjacent to a', 0 otherwise",
+            "description": "Adjacency matrix: $1$ if $a$ is adjacent to $a'$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nA",
@@ -25,7 +25,7 @@
             ]
         },
         "r": {
-            "description": "Reward for being at location a at time t",
+            "description": "Reward for being at location $a$ at time $t$",
             "type": "continuous",
             "shape": [
                 "nA",
@@ -33,7 +33,7 @@
             ]
         },
         "cap": {
-            "description": "Capacity of location a at time t",
+            "description": "Capacity of location $a$ at time $t$",
             "type": "integer",
             "shape": [
                 "nA",
@@ -61,7 +61,7 @@
     ],
     "variables": {
         "y": {
-            "description": "1 if flight p is at location a at time t, 0 otherwise",
+            "description": "$1$ if flight $p$ is at location $a$ at time $t$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nP",
@@ -70,7 +70,7 @@
             ]
         },
         "z": {
-            "description": "1 if flight p moves from a at time t to a' at time t+1, 0 otherwise",
+            "description": "$1$ if flight $p$ moves from $a$ at time $t$ to $a'$ at time $t+1$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nP",
@@ -98,7 +98,7 @@
             }
         },
         {
-            "description": "Flow conservation: flights at location a at time t equal those at t-1 plus arrivals minus departures (one-step transitions).",
+            "description": "Flow conservation: flights at location $a$ at time $t$ equal those at $t-1$ plus arrivals minus departures (one-step transitions).",
             "formulation": "y_{p,a,t} = y_{p,a,t-1} + \\sum_{a' \\in A} z_{p,a',a,t-1} - \\sum_{a' \\in A} z_{p,a,a',t-1} \\quad \\forall p \\in P, a \\in A, t \\in T, t > 0",
             "explicit": true,
             "code": {
@@ -122,7 +122,7 @@
             }
         },
         {
-            "description": "Movements at time t require the flight to be present at time t (depart only from where you are).",
+            "description": "Movements at time $t$ require the flight to be present at time $t$ (depart only from where you are).",
             "formulation": "\\sum_{a' \\in A} z_{p,a,a',t} \\leq y_{p,a,t} \\quad \\forall p \\in P, a \\in A, t \\in T",
             "explicit": true,
             "code": {
@@ -140,6 +140,7 @@
     "metadata": {
         "source": {
             "dataset": "Ferchtandiker2025",
+            "citekey": "ferchtandiker2025",
             "formulation_id": "inefficient"
         },
         "notes": [

@@ -7,21 +7,21 @@
             "shape": []
         },
         "Y": {
-            "description": "The quantity of resource j that is accessible.",
+            "description": "The quantity of resource $j$ that is accessible.",
             "type": "continuous",
             "shape": [
                 "N"
             ]
         },
         "A": {
-            "description": "The quantity of electrical energy generated from trial i",
+            "description": "The quantity of electrical energy generated from trial $i$",
             "type": "continuous",
             "shape": [
                 "M"
             ]
         },
         "I": {
-            "description": "Resource j quantity needed for experiment i.",
+            "description": "Resource $j$ quantity needed for experiment $i$.",
             "type": "continuous",
             "shape": [
                 "N",
@@ -113,11 +113,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "74",
             "variation_id": "i"
         },
         "notes": [
-            "Re-scale the objective function.",
+            "Transformation of formulation `a`: Re-scale the objective function.",
             "Source variation scaled the variables and objective by a factor of 1/10. This makes the reformulation invalid when the decision variables are integer. We replace the source transformation by simply scaling the objective by a factor of 2."
         ]
     }

@@ -42,29 +42,6 @@ private lemma exists_unique_out {p : P12.a.Params} {v : P12.a.Vars p}
       _ = v.x i k + v.x i k' := sum_pair (Ne.symm hne)
   linarith
 
-/-- Each node has a unique incoming arc in Fin p.n. -/
-private lemma exists_unique_in {p : P12.a.Params} {v : P12.a.Vars p}
-    (h : P12.a.Feasible p v) (j : Fin p.n) :
-    ∃! k : Fin p.n, v.x k j = 1 := by
-  haveI : NeZero p.n := ⟨by have := p.hn; omega⟩
-  have hsum := h.hin j
-  have hex : ∃ k : Fin p.n, v.x k j = 1 := by
-    by_contra hc
-    push_neg at hc
-    have h0 : ∀ k : Fin p.n, v.x k j = 0 := fun k =>
-      (h.hx_bin k j).resolve_right (hc k)
-    simp [h0] at hsum
-  obtain ⟨k, hk⟩ := hex
-  refine ⟨k, hk, fun k' hk' => ?_⟩
-  by_contra hne
-  have hge : ∑ i : Fin p.n, v.x i j ≥ v.x k j + v.x k' j :=
-    calc ∑ i : Fin p.n, v.x i j
-        ≥ ∑ i ∈ ({k, k'} : Finset (Fin p.n)), v.x i j :=
-          sum_le_sum_of_subset_of_nonneg (subset_univ _)
-            (fun i _ _ => xnn h i j)
-      _ = v.x k j + v.x k' j := sum_pair (Ne.symm hne)
-  linarith
-
 /-- The successor of i (unique k with x i k = 1), as Fin p.n. -/
 private noncomputable def succF {p : P12.a.Params} {v : P12.a.Vars p}
     (h : P12.a.Feasible p v) (i : Fin p.n) : Fin p.n :=

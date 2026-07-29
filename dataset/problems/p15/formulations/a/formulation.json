@@ -27,7 +27,7 @@
             "shape": []
         },
         "R": {
-            "description": "Number of apartments with floor area j in configuration v",
+            "description": "Number of apartments with floor area $j$ in configuration $v$",
             "type": "integer",
             "shape": [
                 "nJ",
@@ -35,7 +35,7 @@
             ]
         },
         "O": {
-            "description": "Profit per apartment for sector i, floor area j, and owner h",
+            "description": "Profit per apartment for sector $i$, floor area $j$, and owner $h$",
             "type": "continuous",
             "shape": [
                 "nI",
@@ -44,14 +44,14 @@
             ]
         },
         "area": {
-            "description": "Actual floor area value for area index j",
+            "description": "Actual floor area value for area index $j$",
             "type": "continuous",
             "shape": [
                 "nJ"
             ]
         },
         "m": {
-            "description": "Minimum floor area required for each sector i and owner h",
+            "description": "Minimum floor area required for each sector $i$ and owner $h$",
             "type": "continuous",
             "shape": [
                 "nI",
@@ -59,21 +59,21 @@
             ]
         },
         "a": {
-            "description": "Minimum fraction of total apartments that must belong to each sector i",
+            "description": "Minimum fraction of total apartments that must belong to each sector $i$",
             "type": "continuous",
             "shape": [
                 "nI"
             ]
         },
         "s": {
-            "description": "Minimum average floor area required for apartments in each sector i",
+            "description": "Minimum average floor area required for apartments in each sector $i$",
             "type": "continuous",
             "shape": [
                 "nI"
             ]
         },
         "o": {
-            "description": "Minimum fraction of total apartments that must belong to each owner class h",
+            "description": "Minimum fraction of total apartments that must belong to each owner class $h$",
             "type": "continuous",
             "shape": [
                 "nH"
@@ -132,7 +132,7 @@
             }
         },
         {
-            "description": "R is non-negative.",
+            "description": "$R$ is non-negative.",
             "formulation": "R_{jv} \\geq 0 \\quad \\forall j \\in J, v \\in V",
             "explicit": false,
             "code": {
@@ -198,7 +198,7 @@
     ],
     "variables": {
         "x": {
-            "description": "Number of floors using configuration v with owner h",
+            "description": "Number of floors using configuration $v$ with owner $h$",
             "type": "integer",
             "shape": [
                 "nV",
@@ -206,7 +206,7 @@
             ]
         },
         "y": {
-            "description": "Number of apartments in sector i with floor area j and owner h",
+            "description": "Number of apartments in sector $i$ with floor area $j$ and owner $h$",
             "type": "integer",
             "shape": [
                 "nI",
@@ -217,7 +217,7 @@
     },
     "constraints": [
         {
-            "description": "Total number of floors equals K.",
+            "description": "Total number of floors equals $K$.",
             "formulation": "\\sum_{v \\in V} \\sum_{h \\in H} x_{vh} = K",
             "explicit": true,
             "code": {
@@ -225,7 +225,7 @@
             }
         },
         {
-            "description": "Apartment-count consistency: for each area j and owner h, the total apartments of area j supplied by chosen configurations equals the total apartments of area j assigned to any sector.",
+            "description": "Apartment-count consistency: for each area $j$ and owner $h$, the total apartments of area $j$ supplied by chosen configurations equals the total apartments of area $j$ assigned to any sector.",
             "formulation": "\\sum_{v \\in V} R_{jv}\\, x_{vh} = \\sum_{i \\in I} y_{ijh} \\quad \\forall j \\in J,\\; h \\in H",
             "explicit": true,
             "code": {
@@ -233,7 +233,7 @@
             }
         },
         {
-            "description": "Minimum fraction of total apartments that must be in sector i.",
+            "description": "Minimum fraction of total apartments that must be in sector $i$.",
             "formulation": "\\sum_{j \\in J} \\sum_{h \\in H} y_{ijh} \\geq a_i \\sum_{l \\in I} \\sum_{j \\in J} \\sum_{h \\in H} y_{ljh} \\quad \\forall i \\in I",
             "explicit": true,
             "code": {
@@ -241,7 +241,7 @@
             }
         },
         {
-            "description": "Minimum average floor area for sector i.",
+            "description": "Minimum average floor area for sector $i$.",
             "formulation": "\\sum_{j \\in J} \\sum_{h \\in H} \\text{area}_j \\times y_{ijh} \\geq s_i \\sum_{j \\in J} \\sum_{h \\in H} y_{ijh} \\quad \\forall i \\in I",
             "explicit": true,
             "code": {
@@ -249,7 +249,7 @@
             }
         },
         {
-            "description": "Apartments with area below minimum for (sector i, owner h) must be zero.",
+            "description": "Apartments with area below minimum for (sector $i$, owner $h$) must be zero.",
             "formulation": "y_{ijh} = 0 \\quad \\forall i \\in I,\\; j \\in J,\\; h \\in H \\text{ with } \\text{area}_j < m_{ih}",
             "explicit": true,
             "code": {
@@ -265,7 +265,7 @@
             }
         },
         {
-            "description": "Minimum fraction of total apartments for owner h.",
+            "description": "Minimum fraction of total apartments for owner $h$.",
             "formulation": "\\sum_{i \\in I} \\sum_{j \\in J} y_{ijh} \\geq o_h \\sum_{i \\in I} \\sum_{j \\in J} \\sum_{h' \\in H} y_{ijh'} \\quad \\forall h \\in H",
             "explicit": true,
             "code": {
@@ -273,7 +273,7 @@
             }
         },
         {
-            "description": "x is non-negative.",
+            "description": "$x$ is non-negative.",
             "formulation": "x_{vh} \\geq 0 \\quad \\forall v \\in V,\\; h \\in H",
             "explicit": false,
             "code": {
@@ -281,7 +281,7 @@
             }
         },
         {
-            "description": "y is non-negative.",
+            "description": "$y$ is non-negative.",
             "formulation": "y_{ijh} \\geq 0 \\quad \\forall i \\in I,\\; j \\in J,\\; h \\in H",
             "explicit": false,
             "code": {
@@ -299,6 +299,7 @@
     "metadata": {
         "source": {
             "dataset": "Ferchtandiker2025",
+            "citekey": "ferchtandiker2025",
             "formulation_id": "efficient"
         },
         "notes": [

@@ -12,14 +12,14 @@
             "shape": []
         },
         "ResourceAvailable": {
-            "description": "Amount of resource j available",
+            "description": "Amount of resource $j$ available",
             "type": "continuous",
             "shape": [
                 "NumResources"
             ]
         },
         "ResourceRequired": {
-            "description": "Amount of resource j required for experiment i",
+            "description": "Amount of resource $j$ required for experiment $i$",
             "type": "continuous",
             "shape": [
                 "NumResources",
@@ -27,7 +27,7 @@
             ]
         },
         "ElectricityProduced": {
-            "description": "Amount of electricity produced by experiment i",
+            "description": "Amount of electricity produced by experiment $i$",
             "type": "continuous",
             "shape": [
                 "NumExperiments"
@@ -113,6 +113,7 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "74",
             "variation_id": "original"
         },

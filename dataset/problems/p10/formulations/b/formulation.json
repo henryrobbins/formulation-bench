@@ -12,7 +12,7 @@
       "shape": []
     },
     "d": {
-      "description": "Travel time from job i's return terminal to job j's pickup terminal; d[i][i] is the loaded time (rejection penalty) of job i",
+      "description": "Travel time from job $i$'s return terminal to job $j$'s pickup terminal; $d_{ii}$ is the loaded time (rejection penalty) of job $i$",
       "type": "continuous",
       "shape": [
         "N",
@@ -20,7 +20,7 @@
       ]
     },
     "d0": {
-      "description": "Travel time from the home terminal of truck k to job i's pickup terminal",
+      "description": "Travel time from the home terminal of truck $k$ to job $i$'s pickup terminal",
       "type": "continuous",
       "shape": [
         "K",
@@ -28,7 +28,7 @@
       ]
     },
     "dH": {
-      "description": "Travel time from job i's return terminal to the home terminal of truck k",
+      "description": "Travel time from job $i$'s return terminal to the home terminal of truck $k$",
       "type": "continuous",
       "shape": [
         "K",
@@ -83,7 +83,7 @@
       }
     },
     {
-      "description": "Triangle inequality for depot-to-job travel: going directly to job i is no longer than going via job j first.",
+      "description": "Triangle inequality for depot-to-job travel: going directly to job $i$ is no longer than going via job $j$ first.",
       "formulation": "d^k_{0i} \\leq d^k_{0j} + d_{ji} \\quad \\forall k \\in \\{0,\\dots,K-1\\},\\, i, j \\in \\{0,\\dots,N-1\\}",
       "explicit": false,
       "code": {
@@ -121,18 +121,26 @@
       "code": {
         "python": "assert all(tau_max[i] >= 0 for i in range(N))"
       }
+    },
+    {
+      "description": "Each time window is non-empty: the earliest permissible arrival is no later than the latest.",
+      "formulation": "\\tau^-_i \\leq \\tau^+_i \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
+      "explicit": false,
+      "code": {
+        "python": "assert all(tau_min[i] <= tau_max[i] for i in range(N))"
+      }
     }
   ],
   "definitions": {
     "EST": {
-      "description": "Earliest feasible arrival time at job i: maximum of the time-window lower bound and the earliest reachable time from any truck.",
+      "description": "Earliest feasible arrival time at job $i$: maximum of the time-window lower bound and the earliest reachable time from any truck.",
       "formulation": "\\mathrm{EST}_i = \\max\\!\\left(\\tau^-_i,\\, \\min_{k \\in \\{0,\\dots,K-1\\}} (v^k + d^k_{0i})\\right) \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
       "code": {
         "python": "EST = [max(tau_min[i], min(v[k] + d0[k][i] for k in range(K))) for i in range(N)]"
       }
     },
     "A_minus": {
-      "description": "Set of arc pairs (i, j) that are infeasible due to time windows: job j cannot be served after job i.",
+      "description": "Set of arc pairs $(i, j)$ that are infeasible due to time windows: job $j$ cannot be served after job $i$.",
       "formulation": "\\mathcal{A}^- = \\{(i,j) \\in \\{0,\\dots,N-1\\}^2 : i \\neq j \\wedge \\mathrm{EST}_i + d_{ii} + d_{ij} > \\tau^+_j\\}",
       "code": {
         "python": "A_minus = {(i, j) for i in range(N) for j in range(N) if i != j and EST[i] + d[i][i] + d[i][j] > tau_max[j]}"
@@ -140,15 +148,15 @@
     },
     "M": {
       "description": "Big-M constant for arrival-time propagation: upper bound on any feasible arrival time.",
-      "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij}",
+      "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij} + \\max_i \\tau^+_i - \\min_j \\tau^-_j",
       "code": {
-        "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N))"
+        "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N)) + max(tau_max) - min(tau_min)"
       }
     }
   },
   "variables": {
     "x": {
-      "description": "1 if arc (u,v) is selected in the routing cycle cover; x[K+i][K+i]=1 means job i is rejected",
+      "description": "$1$ if arc $(u,v)$ is selected in the routing cycle cover; $x_{K+i,K+i} = 1$ means job $i$ is rejected",
       "type": "binary",
       "shape": [
         "K+N",
@@ -156,7 +164,7 @@
       ]
     },
     "delta": {
-      "description": "Arrival time at job i's pickup terminal",
+      "description": "Arrival time at job $i$'s pickup terminal",
       "type": "continuous",
       "shape": [
         "N"
@@ -181,7 +189,7 @@
       "explicit": true
     },
     {
-      "description": "Arrival time at job i is at least the earliest possible arrival from any truck.",
+      "description": "Arrival time at job $i$ is at least the earliest possible arrival from any truck.",
       "formulation": "\\delta_i - \\sum_{k=0}^{K-1} (d^k_{0i} + v^k)\\,x_{k,K+i} \\ge 0 \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
       "code": {
         "gurobipy": "model.addConstrs(delta[i] - gp.quicksum((d0[k][i] + v[k]) * x[k, K + i] for k in range(K)) >= 0 for i in range(N))"
@@ -205,7 +213,7 @@
       "explicit": true
     },
     {
-      "description": "EC1: Fix to zero any arc from job i to job j that is infeasible due to time windows.",
+      "description": "EC1: Fix to zero any arc from job $i$ to job $j$ that is infeasible due to time windows.",
       "formulation": "x_{K+i,K+j} = 0 \\quad \\forall (i,j) \\in \\mathcal{A}^-",
       "code": {
         "gurobipy": "for (i, j) in A_minus:\n    x[K + i, K + j].ub = 0"
@@ -222,10 +230,11 @@
   },
   "metadata": {
     "source": {
-      "dataset": "EvoCut"
+      "dataset": "EvoCut",
+      "citekey": "yazdani2025"
     },
     "notes": [
-        "Any arc from job $i$ to job $j$ whose travel time makes job $j$'s time window unreachable from job $i$ is fixed to zero."
+            "This is the PDPTW formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC1."
     ]
   }
 }

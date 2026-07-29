@@ -4,8 +4,7 @@ Generate data.json for the Dutch Housing Problem (p15).
 Adapted from dataset/sources/Ferchtandiker2025/dutch_housing_problem/data_generator.py.
 Uses a small instance (10 floors) with a fixed seed (42) for reproducibility.
 
-The generated data includes floor configurations, apartment layouts, profit
-coefficients, and housing-policy constraints used by both formulation a and b.
+The output keys are the parameters declared in problem.json.
 """
 
 import json
@@ -49,93 +48,62 @@ def generate_data(seed: int = SEED, total_floors: int = TOTAL_FLOORS) -> dict:
         for j in range(i, len(part_keys)):
             floor_configurations.append(part_keys[i] + part_keys[j])
 
-    # For each floor configuration, enumerate apartments (A_v) and their areas
-    apartments_in_config = {}
-    apartment_area = {}
-    # apartments_by_area_config[str(area)][config]: count of apts with area in config
-    apartments_by_area_config = {}
+    # The apartment areas each configuration is built from
+    config_areas = [floor_parts[v[0]] + floor_parts[v[1]] for v in floor_configurations]
 
-    for v in floor_configurations:
-        part1, part2 = v[0], v[1]
-        apt_areas = floor_parts[part1] + floor_parts[part2]
-        apartments = [f"apt{a + 1}" for a in range(len(apt_areas))]
-        apartments_in_config[v] = apartments
-        apartment_area[v] = {a: area for a, area in zip(apartments, apt_areas)}
-        # Build R_{jv}: count of apartments of each area in this configuration
-        for area in areas:
-            area_key = str(area)
-            if area_key not in apartments_by_area_config:
-                apartments_by_area_config[area_key] = {}
-            apartments_by_area_config[area_key][v] = apt_areas.count(area)
+    # R_{jv}: count of apartments of area j in configuration v
+    R = [[apt_areas.count(j) for apt_areas in config_areas] for j in areas]
 
-    # Number of apartments in each configuration
-    apartments_per_config = {
-        v: len(apartments_in_config[v]) for v in floor_configurations
-    }
-
-    floors = list(range(1, total_floors + 1))
-
-    # Profit per apartment (p_{ijh}), keyed by sector -> str(area) -> owner
-    profit_per_apartment = {}
+    # Profit per apartment (O_{ijh}): the social sector earns least, the free
+    # sector most, scaled by floor area and discounted for non-investor owners.
+    O = []
     for i in sectors:
-        profit_per_apartment[i] = {}
+        base = 10000 if i == "social" else (20000 if i == "middle" else 30000)
+        rows = []
         for j in areas:
-            area_key = str(j)
-            profit_per_apartment[i][area_key] = {}
-            for h in owners:
-                # Social sector: lower profit; free sector: higher profit
-                base = 10000 if i == "social" else (20000 if i == "middle" else 30000)
-                area_factor = (j - min(areas)) / (max(areas) - min(areas))
-                owner_factor = (
-                    1.0 if h == "investor" else (0.9 if h == "private" else 0.8)
-                )
-                profit_per_apartment[i][area_key][h] = int(
-                    base * (1 + 0.5 * area_factor) * owner_factor
-                    + random.randint(-1000, 1000)
-                )
+            area_factor = (j - min(areas)) / (max(areas) - min(areas))
+            rows.append(
+                [
+                    int(
+                        base
+                        * (1 + 0.5 * area_factor)
+                        * (1.0 if h == "investor" else (0.9 if h == "private" else 0.8))
+                        + random.randint(-1000, 1000)
+                    )
+                    for h in owners
+                ]
+            )
+        O.append(rows)
 
-    # Minimal area per sector/owner (m_{ih})
-    min_area_requirement = {}
-    for i in sectors:
-        min_area_requirement[i] = {}
-        for h in owners:
-            if i == "social" and h == "corporation":
-                min_area_requirement[i][h] = 40
-            elif i == "middle" and h == "corporation":
-                min_area_requirement[i][h] = 50
-            elif i == "free":
-                min_area_requirement[i][h] = 60
-            else:
-                min_area_requirement[i][h] = 36  # fallback to smallest area
+    # Minimal area per sector/owner (m_{ih}); 36 is the smallest area available
+    min_area = {("social", "corporation"): 40, ("middle", "corporation"): 50}
+    m = [
+        [60 if i == "free" else min_area.get((i, h), 36) for h in owners]
+        for i in sectors
+    ]
 
-    # Minimum percentage of apartments in each sector (b_i)
-    min_sector_percentage = {"social": 0.4, "middle": 0.4, "free": 0.0}
+    # Minimum share of apartments per sector and per owner class, and minimum
+    # average area per sector
+    min_sector_share = {"social": 0.4, "middle": 0.4, "free": 0.0}
+    min_avg_area = {"social": 40, "middle": 50, "free": 60}
+    min_owner_share = {"corporation": 0.0, "investor": 0.7, "private": 0.0}
 
-    # Minimum average area per sector (s_i)
-    min_avg_area_per_sector = {"social": 40, "middle": 50, "free": 60}
-
-    # Minimum ownership percentage (o_h)
-    min_ownership_percentage = {"corporation": 0.0, "investor": 0.7, "private": 0.0}
-
-    data = {
-        "sectors": sectors,
-        "areas": areas,
-        "owners": owners,
-        "floor_configurations": floor_configurations,
-        "apartments_in_config": apartments_in_config,
-        "apartment_area": apartment_area,
-        "apartments_per_config": apartments_per_config,
-        "apartments_by_area_config": apartments_by_area_config,
-        "floors": floors,
-        "total_floors": total_floors,
-        "profit_per_apartment": profit_per_apartment,
-        "min_area_requirement": min_area_requirement,
-        "min_sector_percentage": min_sector_percentage,
-        "min_avg_area_per_sector": min_avg_area_per_sector,
-        "min_ownership_percentage": min_ownership_percentage,
+    return {
+        "nI": len(sectors),
+        "nJ": len(areas),
+        "nH": len(owners),
+        "nV": len(floor_configurations),
+        "K": total_floors,
+        "R": R,
+        "O": O,
+        "area": areas,
+        "m": m,
+        "a": [min_sector_share[i] for i in sectors],
+        "s": [min_avg_area[i] for i in sectors],
+        "o": [min_owner_share[h] for h in owners],
+        "iFree": sectors.index("free"),
+        "hCorp": owners.index("corporation"),
     }
-
-    return data
 
 
 def main() -> None:

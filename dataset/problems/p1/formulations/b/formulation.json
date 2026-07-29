@@ -96,7 +96,7 @@
     },
     "constraints": [
         {
-            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be U.",
+            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be $U$.",
             "formulation": "U \\leq A \\times s + K \\times r",
             "explicit": true,
             "code": {
@@ -112,7 +112,7 @@
             }
         },
         {
-            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass V.",
+            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass $V$.",
             "formulation": "V \\geq r \\times W + s \\times Y",
             "explicit": true,
             "code": {
@@ -146,11 +146,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "47",
             "variation_id": "c"
         },
         "notes": [
-            "Change the names of parameters and variables.",
+            "Transformation of formulation `a`: Change the names of parameters and variables.",
             "Source typo $U \\leq A \\times K + s \\times r$ corrected to $U \\leq A \\times s + K \\times r$ to match Gurobi code and problem description."
         ]
     }

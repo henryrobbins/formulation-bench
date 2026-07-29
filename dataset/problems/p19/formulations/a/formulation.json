@@ -45,7 +45,7 @@
             "shape": []
         },
         "Hf": {
-            "description": "Indicator for each hub: 1 if the hub is fixed and must remain open, 0 otherwise",
+            "description": "Indicator for each hub: $1$ if the hub is fixed and must remain open, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nH"
@@ -96,7 +96,7 @@
     ],
     "variables": {
         "x": {
-            "description": "Amount of supply (as a fraction of demand) transported from hub h to region c",
+            "description": "Amount of supply (as a fraction of demand) transported from hub $h$ to region $c$",
             "type": "continuous",
             "shape": [
                 "nH",
@@ -104,7 +104,7 @@
             ]
         },
         "y": {
-            "description": "1 if hub h is opened, 0 otherwise",
+            "description": "$1$ if hub $h$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nH"
@@ -113,7 +113,7 @@
     },
     "constraints": [
         {
-            "description": "Each hub can only serve regions if it is open: total supply shipped from hub h is at most nC times its open indicator.",
+            "description": "Each hub can only serve regions if it is open: total supply shipped from hub $h$ is at most $nC$ times its open indicator.",
             "formulation": "\\sum_{c \\in C} x_{hc} \\leq |C| \\, y_h \\quad \\forall h \\in H",
             "explicit": true,
             "code": {
@@ -171,6 +171,7 @@
     "metadata": {
         "source": {
             "dataset": "Ferchtandiker2025",
+            "citekey": "ferchtandiker2025",
             "formulation_id": "efficient"
         }
     }

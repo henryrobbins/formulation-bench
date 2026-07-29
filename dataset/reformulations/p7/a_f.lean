@@ -38,17 +38,15 @@ include h
 private lemma fwd_h_nn (i j : Fin p.N) : 0 ≤ v.h i j := by
   rcases h.hh_bin i j with h0 | h1 <;> omega
 
-private lemma fwd_x_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
-    0 ≤ v.x i ab.1 ab.2 := by
-  rcases h.hx_bin i ab with h0 | h1 <;> omega
-
-private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.t i ab.1 ab.2 := by
-  rcases h.ht_bin i ab with h0 | h1 <;> omega
+  rcases h.ht_bin i ab hab with h0 | h1 <;> omega
 
-private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.s i ab.1 ab.2 := by
-  rcases h.hs_bin i ab with h0 | h1 <;> omega
+  rcases h.hs_bin i ab hab with h0 | h1 <;> omega
 
 -- If there is a hole at (i, j), then for any row i' ≠ i (in Fin p.N),
 -- v.h i' j = 0. Follows from hcol and binarity.
@@ -88,13 +86,13 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
   · intro i; exact h.hrow i
   · intro j; exact h.hcol j
   · intro i j; exact h.hcov i j
-  · intro ab; exact h.htop ab
-  · intro i ab hi; exact h.hflow i ab hi
-  · intro ab; exact h.hbot ab
+  · intro ab hab; exact h.htop ab hab
+  · intro i ab hab hi; exact h.hflow i ab hab hi
+  · intro ab hab; exact h.hbot ab hab
   · intro i j; exact h.hh_bin i j
-  · intro i ab; exact h.hx_bin i ab
-  · intro i ab; exact h.hs_bin i ab
-  · intro i ab; exact h.ht_bin i ab
+  · intro i ab hab; exact h.hx_bin i ab hab
+  · intro i ab hab; exact h.hs_bin i ab hab
+  · intro i ab hab; exact h.ht_bin i ab hab
   · -- hintBreakAbove
     intro i j hi_pos hi_lt
     have hi_lt_p : i.val < p.N := show i.val < (paramMap p).N from i.isLt
@@ -107,9 +105,9 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
           ∑ ab ∈ P7.f.strips_covering (paramMap p).N j, v.t ⟨i.val - 1, _⟩ ab.1 ab.2
       rw [hij0]
       apply Finset.sum_nonneg
-      intro ab _
+      intro ab hab
       change 0 ≤ v.t iPred ab.1 ab.2
-      exact fwd_t_nn h iPred ab
+      exact fwd_t_nn h iPred ab (Finset.mem_filter.mp hab).1
     · -- v.h i j = 1
       show v.h i j ≤
           ∑ ab ∈ P7.f.strips_covering (paramMap p).N j, v.t ⟨i.val - 1, _⟩ ab.1 ab.2
@@ -145,15 +143,17 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
               v.s i ab.1 ab.2) := by
         rw [← Finset.sum_sub_distrib, ← Finset.sum_add_distrib]
         apply Finset.sum_congr rfl
-        intro ab _
-        have hflow := h.hflow i ab hi_pos
+        intro ab hab
+        have habI : ab ∈ P7.a.I p.N := (Finset.mem_filter.mp hab).1
+        have hflow := h.hflow i ab habI hi_pos
         -- hflow uses ⟨i.val - 1, _⟩; that's defeq to iPred.
         change v.x i ab.1 ab.2 - v.x iPred ab.1 ab.2 -
             v.s i ab.1 ab.2 + v.t iPred ab.1 ab.2 = 0 at hflow
         linarith
       have hs_nn :
           0 ≤ ∑ ab ∈ P7.a.strips_covering p.N j, v.s i ab.1 ab.2 :=
-        Finset.sum_nonneg (fun ab _ => fwd_s_nn h i ab)
+        Finset.sum_nonneg (fun ab hab =>
+          fwd_s_nn h i ab (Finset.mem_filter.mp hab).1)
       change (1 : ℤ) ≤
           ∑ ab ∈ P7.f.strips_covering (paramMap p).N j, v.t iPred ab.1 ab.2
       rw [hstrips_eq]

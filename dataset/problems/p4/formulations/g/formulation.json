@@ -96,7 +96,7 @@
     },
     "constraints": [
         {
-            "description": "The maximum number of buses that can be utilized is S.",
+            "description": "The maximum number of buses that can be utilized is $S$.",
             "formulation": "S \\geq h",
             "explicit": true,
             "code": {
@@ -104,7 +104,7 @@
             }
         },
         {
-            "description": "A minimum of J employees need to be transported.",
+            "description": "A minimum of $J$ employees need to be transported.",
             "formulation": "J \\leq m \\times K + h \\times D",
             "explicit": true,
             "code": {
@@ -138,11 +138,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "183",
             "variation_id": "i"
         },
         "notes": [
-            "Re-scale the objective function.",
+            "Transformation of formulation `a`: Re-scale the objective function.",
             "Source was missing objective re-scaling; applied arbitrary scaling factor of 2."
         ]
     }

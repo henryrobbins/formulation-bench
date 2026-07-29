@@ -7,7 +7,7 @@
             "shape": []
         },
         "Hf": {
-            "description": "Indicator for each hub: 1 if the hub is fixed and must remain open, 0 otherwise",
+            "description": "Indicator for each hub: $1$ if the hub is fixed and must remain open, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nH"
@@ -54,10 +54,12 @@
     },
     "metadata": {
         "source": {
-            "dataset": "Ferchtandiker2025"
+            "dataset": "Ferchtandiker2025",
+            "citekey": "ferchtandiker2025"
         },
         "notes": [
-            "We add implicit assumptions that all sets are non-empty and $a_c, C_{hc}, t_{hc} \\geq 0$."
+            "We add implicit assumptions that all sets are non-empty and $a_c, C_{hc}, t_{hc} \\geq 0$.",
+            "The original description mentions a hub storage limit and a strict per-delivery time window. Neither is present in the formulation, so we omit them from the problem description."
         ]
     }
 }

@@ -7,21 +7,21 @@
             "shape": []
         },
         "Y": {
-            "description": "The quantity of resource j that is accessible.",
+            "description": "The quantity of resource $j$ that is accessible.",
             "type": "continuous",
             "shape": [
                 "N"
             ]
         },
         "A": {
-            "description": "The quantity of electrical energy generated from trial i",
+            "description": "The quantity of electrical energy generated from trial $i$",
             "type": "continuous",
             "shape": [
                 "M"
             ]
         },
         "I": {
-            "description": "Resource j quantity needed for experiment i.",
+            "description": "Resource $j$ quantity needed for experiment $i$.",
             "type": "continuous",
             "shape": [
                 "N",
@@ -78,14 +78,14 @@
     ],
     "variables": {
         "j1": {
-            "description": "Part 1 of variable j: The frequency at which each experiment is performed.",
+            "description": "Part 1 of variable $j$: The frequency at which each experiment is performed.",
             "type": "integer",
             "shape": [
                 "M"
             ]
         },
         "j2": {
-            "description": "Part 2 of variable j: The frequency at which each experiment is performed.",
+            "description": "Part 2 of variable $j$: The frequency at which each experiment is performed.",
             "type": "integer",
             "shape": [
                 "M"
@@ -128,11 +128,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "74",
             "variation_id": "h"
         },
         "notes": [
-            "Splits variables."
+            "Transformation of formulation `a`: Splits variables."
         ]
     }
 }

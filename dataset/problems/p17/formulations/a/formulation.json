@@ -12,7 +12,7 @@
             "shape": []
         },
         "c": {
-            "description": "Net Present Value (NPV) of mining block i in period tau",
+            "description": "Net Present Value (NPV) of mining block $i$ in period $\\tau$",
             "type": "continuous",
             "shape": [
                 "n",
@@ -71,7 +71,7 @@
             "shape": []
         },
         "P": {
-            "description": "Precedence matrix: P[i][j] = 1 if block i must be mined before block j",
+            "description": "Precedence matrix: $P_{ij} = 1$ if block $i$ must be mined before block $j$",
             "type": "binary",
             "shape": [
                 "n",
@@ -113,6 +113,14 @@
             }
         },
         {
+            "description": "Ore grade of each block is at most one (pure-ore blocks have grade equal to $1$).",
+            "formulation": "g_i \\leq 1 \\quad \\forall i \\in I",
+            "explicit": false,
+            "code": {
+                "python": "assert all(g[i] <= 1 for i in range(n))"
+            }
+        },
+        {
             "description": "Ore tonnage of each block is non-negative.",
             "formulation": "O_i \\geq 0 \\quad \\forall i \\in I",
             "explicit": false,
@@ -138,7 +146,7 @@
             }
         },
         "I1": {
-            "description": "Set of block indices with grade equal to 1 (pure-ore blocks relaxed to continuous [0,1])",
+            "description": "Set of block indices with grade equal to 1 (pure-ore blocks relaxed to continuous $[0,1]$)",
             "formulation": "I_1 = \\{ i \\in I : g_i = 1 \\}",
             "code": {
                 "python": "I1 = [i for i in range(n) if g[i] == 1]"
@@ -147,7 +155,7 @@
     },
     "variables": {
         "x": {
-            "description": "Extraction variable: binary for mixed/low-grade blocks (I0), continuous fraction in [0,1] for pure-ore blocks (I1)",
+            "description": "Extraction variable: binary for mixed/low-grade blocks ($I_0$), continuous fraction in $[0,1]$ for pure-ore blocks ($I_1$)",
             "type": "continuous",
             "shape": ["n", "t"]
         }
@@ -162,7 +170,7 @@
             }
         },
         {
-            "description": "Upper grade blending constraint: weighted average ore grade does not exceed G_max in each period.",
+            "description": "Upper grade blending constraint: weighted average ore grade does not exceed $G_{\\max}$ in each period.",
             "formulation": "\\sum_{i \\in I} (g_i - G_{\\max}) O_i x_i^\\tau \\leq 0 \\quad \\forall \\tau \\in T",
             "explicit": true,
             "code": {
@@ -170,7 +178,7 @@
             }
         },
         {
-            "description": "Lower grade blending constraint: weighted average ore grade is at least G_min in each period.",
+            "description": "Lower grade blending constraint: weighted average ore grade is at least $G_{\\min}$ in each period.",
             "formulation": "\\sum_{i \\in I} (g_i - G_{\\min}) O_i x_i^\\tau \\geq 0 \\quad \\forall \\tau \\in T",
             "explicit": true,
             "code": {
@@ -218,12 +226,28 @@
             }
         },
         {
-            "description": "Precedence constraint: block j may be mined in period tau only after all required predecessors i (P[i][j]=1) have been fully mined by period tau.",
+            "description": "Precedence constraint: block $j$ may be mined in period $\\tau$ only after all required predecessors $i$ ($P_{ij} = 1$) have been fully mined by period $\\tau$.",
             "formulation": "\\sum_{\\tau'=1}^{\\tau} x_i^{\\tau'} \\geq x_j^\\tau \\quad \\forall \\tau \\in T,\\; \\forall i,j \\in I \\text{ with } P_{ij}=1",
             "explicit": true,
             "code": {
                 "gurobipy": "model.addConstrs(\n    gp.quicksum(x[i, tau2] for tau2 in range(tau + 1)) >= x[j, tau]\n    for tau in range(t)\n    for i in range(n)\n    for j in range(n)\n    if P[i][j] == 1\n)"
             }
+        },
+        {
+            "description": "Extraction fractions for pure-ore blocks are non-negative.",
+            "formulation": "x_i^\\tau \\ge 0 \\quad \\forall i \\in I_1,\\; \\forall \\tau \\in T",
+            "code": {
+                "gurobipy": "model.addConstrs(x[i, tau] >= 0 for i in I1 for tau in range(t))"
+            },
+            "explicit": true
+        },
+        {
+            "description": "Extraction fractions for pure-ore blocks are at most one.",
+            "formulation": "x_i^\\tau \\le 1 \\quad \\forall i \\in I_1,\\; \\forall \\tau \\in T",
+            "code": {
+                "gurobipy": "model.addConstrs(x[i, tau] <= 1 for i in I1 for tau in range(t))"
+            },
+            "explicit": true
         }
     ],
     "objective": {
@@ -236,10 +260,8 @@
     "metadata": {
         "source": {
             "dataset": "Ferchtandiker2025",
+            "citekey": "ferchtandiker2025",
             "formulation_id": "efficient"
-        },
-        "notes": [
-            "We add all listed implicit assumptions."
-        ]
+        }
     }
 }

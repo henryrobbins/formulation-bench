@@ -9,12 +9,11 @@
     },
     "metadata": {
         "source": {
-            "dataset": "EvoCut"
+            "dataset": "EvoCut",
+            "citekey": "yazdani2025"
         },
         "notes": [
-            "We add an implicit assumption $N \\ge 1$.",
-            "EvoCut arXiv submission `v1` proposes a family of six inequalities used to generate formulations `p7.b-g`.",
-            "EvoCut arXiv submission `v2` proposes two inequalities used to generate formulations `p7.h-i`."
+            "We add an implicit assumption $N \\ge 1$."
         ]
     }
 }

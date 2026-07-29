@@ -7,21 +7,21 @@
             "shape": []
         },
         "Y": {
-            "description": "The quantity of resource j that is accessible.",
+            "description": "The quantity of resource $j$ that is accessible.",
             "type": "continuous",
             "shape": [
                 "N"
             ]
         },
         "A": {
-            "description": "The quantity of electrical energy generated from trial i",
+            "description": "The quantity of electrical energy generated from trial $i$",
             "type": "continuous",
             "shape": [
                 "M"
             ]
         },
         "I": {
-            "description": "Resource j quantity needed for experiment i.",
+            "description": "Resource $j$ quantity needed for experiment $i$.",
             "type": "continuous",
             "shape": [
                 "N",
@@ -92,7 +92,7 @@
     },
     "constraints": [
         {
-            "description": "Constraint defining zed in terms of original variables.",
+            "description": "Constraint defining $\\text{zed}$ in terms of original variables.",
             "formulation": "zed = \\sum_{i=1}^{M} A_i \\times j_i",
             "explicit": true,
             "code": {
@@ -117,7 +117,7 @@
         }
     ],
     "objective": {
-        "description": "Maximize the new variable zed.",
+        "description": "Maximize the new variable $\\text{zed}$.",
         "formulation": "Maximize \\ zed",
         "code": {
             "gurobipy": "model.setObjective(zed, GRB.MAXIMIZE)"
@@ -126,11 +126,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "74",
             "variation_id": "f"
         },
         "notes": [
-            "Substitute the objective function with a new variable and linking constraint."
+            "Transformation of formulation `a`: Substitute the objective function with a new variable and linking constraint."
         ]
     }
 }

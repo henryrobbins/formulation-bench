@@ -34,7 +34,7 @@ class Reformulation:
 
         >>> from formulation_bench import Dataset
         >>> ds = Dataset("dataset")
-        >>> reform = ds.reformulations[80]  # corresponds to p12.a -> p12.b
+        >>> reform = ds.reformulations[73]  # corresponds to p12.a -> p12.b
         >>> reform.a.problem.name
         'Traveling Salesman Problem (TSP)'
         >>> reform.b.problem.name

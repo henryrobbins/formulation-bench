@@ -37,36 +37,39 @@ private lemma strips_covering_both_subset_j (N : ℕ) (j k : Fin N) :
     P7.i.strips_covering_both N j k ⊆ P7.a.strips_covering N j := by
   intro ab hab
   simp only [P7.i.strips_covering_both, P7.a.strips_covering,
-    Finset.mem_filter, Finset.mem_univ, true_and] at hab ⊢
-  refine ⟨?_, ?_⟩
-  · exact le_trans hab.1 (min_le_left _ _)
-  · exact le_trans (le_max_left _ _) hab.2
+    Finset.mem_filter] at hab ⊢
+  refine ⟨hab.1, ?_, ?_⟩
+  · exact le_trans hab.2.1 (min_le_left _ _)
+  · exact le_trans (le_max_left _ _) hab.2.2
 
 private lemma strips_covering_both_subset_k (N : ℕ) (j k : Fin N) :
     P7.i.strips_covering_both N j k ⊆ P7.a.strips_covering N k := by
   intro ab hab
   simp only [P7.i.strips_covering_both, P7.a.strips_covering,
-    Finset.mem_filter, Finset.mem_univ, true_and] at hab ⊢
-  refine ⟨?_, ?_⟩
-  · exact le_trans hab.1 (min_le_right _ _)
-  · exact le_trans (le_max_right _ _) hab.2
+    Finset.mem_filter] at hab ⊢
+  refine ⟨hab.1, ?_, ?_⟩
+  · exact le_trans hab.2.1 (min_le_right _ _)
+  · exact le_trans (le_max_right _ _) hab.2.2
 
 section ForwardHelpers
 
 variable {p : P7.a.Params} {v : P7.a.Vars p} (h : P7.a.Feasible p v)
 include h
 
-private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.t i ab.1 ab.2 := by
-  rcases h.ht_bin i ab with h0 | h1 <;> omega
+  rcases h.ht_bin i ab hab with h0 | h1 <;> omega
 
-private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.s i ab.1 ab.2 := by
-  rcases h.hs_bin i ab with h0 | h1 <;> omega
+  rcases h.hs_bin i ab hab with h0 | h1 <;> omega
 
-private lemma fwd_x_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N) :
+private lemma fwd_x_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
+    (hab : ab ∈ P7.a.I p.N) :
     0 ≤ v.x i ab.1 ab.2 := by
-  rcases h.hx_bin i ab with h0 | h1 <;> omega
+  rcases h.hx_bin i ab hab with h0 | h1 <;> omega
 
 private lemma fwd_h_nn (i : Fin p.N) (j : Fin p.N) :
     0 ≤ v.h i j := by
@@ -88,11 +91,11 @@ private lemma fwd_ec2 (p : P7.a.Params) (v : P7.a.Vars p)
     strips_covering_both_subset_j p.N j k
   have hCjk_sub_Ck : P7.i.strips_covering_both p.N j k ⊆ P7.a.strips_covering p.N k :=
     strips_covering_both_subset_k p.N j k
-  have hflow_pt : ∀ ab : Fin p.N × Fin p.N,
+  have hflow_pt : ∀ ab ∈ P7.a.I p.N,
       v.x i ab.1 ab.2 - v.x iPrev ab.1 ab.2 -
         v.s i ab.1 ab.2 + v.t iPrev ab.1 ab.2 = 0 := by
-    intro ab
-    exact hfeas.hflow i ab hi_pos
+    intro ab hab
+    exact hfeas.hflow i ab hab hi_pos
   have hsum_flow_Cjk :
       (∑ ab ∈ P7.i.strips_covering_both p.N j k, v.x i ab.1 ab.2) -
       (∑ ab ∈ P7.i.strips_covering_both p.N j k, v.x iPrev ab.1 ab.2) -
@@ -103,8 +106,8 @@ private lemma fwd_ec2 (p : P7.a.Params) (v : P7.a.Vars p)
           (v.x i ab.1 ab.2 - v.x iPrev ab.1 ab.2 -
             v.s i ab.1 ab.2 + v.t iPrev ab.1 ab.2) = 0 := by
       apply Finset.sum_eq_zero
-      intro ab _
-      exact hflow_pt ab
+      intro ab hab
+      exact hflow_pt ab (Finset.mem_filter.mp hab).1
     have := hzero
     simp only [Finset.sum_add_distrib, Finset.sum_sub_distrib] at this
     linarith
@@ -118,8 +121,8 @@ private lemma fwd_ec2 (p : P7.a.Params) (v : P7.a.Vars p)
           (v.x i ab.1 ab.2 - v.x iPrev ab.1 ab.2 -
             v.s i ab.1 ab.2 + v.t iPrev ab.1 ab.2) = 0 := by
       apply Finset.sum_eq_zero
-      intro ab _
-      exact hflow_pt ab
+      intro ab hab
+      exact hflow_pt ab (Finset.mem_filter.mp hab).1
     have := hzero
     simp only [Finset.sum_add_distrib, Finset.sum_sub_distrib] at this
     linarith
@@ -151,22 +154,24 @@ private lemma fwd_ec2 (p : P7.a.Params) (v : P7.a.Vars p)
   have hx_Cjk_le_Ck : ∑ ab ∈ P7.i.strips_covering_both p.N j k, v.x i ab.1 ab.2 ≤
       ∑ ab ∈ P7.a.strips_covering p.N k, v.x i ab.1 ab.2 := by
     apply Finset.sum_le_sum_of_subset_of_nonneg hCjk_sub_Ck
-    intro ab _ _; exact fwd_x_nn hfeas i ab
+    intro ab hab _; exact fwd_x_nn hfeas i ab (Finset.mem_filter.mp hab).1
   have hs_Cj_nn : 0 ≤ ∑ ab ∈ P7.a.strips_covering p.N j, v.s i ab.1 ab.2 :=
-    Finset.sum_nonneg (fun ab _ => fwd_s_nn hfeas i ab)
+    Finset.sum_nonneg
+      (fun ab hab => fwd_s_nn hfeas i ab (Finset.mem_filter.mp hab).1)
   have ht_Cj_nn : 0 ≤ ∑ ab ∈ P7.a.strips_covering p.N j, v.t iPrev ab.1 ab.2 :=
-    Finset.sum_nonneg (fun ab _ => fwd_t_nn hfeas iPrev ab)
+    Finset.sum_nonneg
+      (fun ab hab => fwd_t_nn hfeas iPrev ab (Finset.mem_filter.mp hab).1)
   have ht_Cjk_le_Cj :
       ∑ ab ∈ P7.i.strips_covering_both p.N j k, v.t iPrev ab.1 ab.2 ≤
       ∑ ab ∈ P7.a.strips_covering p.N j, v.t iPrev ab.1 ab.2 := by
     apply Finset.sum_le_sum_of_subset_of_nonneg hCjk_sub_Cj
-    intro ab _ _; exact fwd_t_nn hfeas iPrev ab
+    intro ab hab _; exact fwd_t_nn hfeas iPrev ab (Finset.mem_filter.mp hab).1
   have hh_prev_j_nn : 0 ≤ v.h iPrev j := fwd_h_nn hfeas iPrev j
   have hA_prev_le_Cj :
       ∑ ab ∈ P7.i.strips_covering_both p.N j k, v.x iPrev ab.1 ab.2 ≤
       ∑ ab ∈ P7.a.strips_covering p.N j, v.x iPrev ab.1 ab.2 := by
     apply Finset.sum_le_sum_of_subset_of_nonneg hCjk_sub_Cj
-    intro ab _ _; exact fwd_x_nn hfeas iPrev ab
+    intro ab hab _; exact fwd_x_nn hfeas iPrev ab (Finset.mem_filter.mp hab).1
   -- Translate: the goal's `⟨i.val - 1, _⟩` is `iPrev` definitionally.
   show (∑ ab ∈ P7.i.strips_covering_both p.N j k, v.x iPrev ab.1 ab.2 : ℤ) +
         v.h i k - 1 ≤
@@ -185,13 +190,15 @@ private lemma fwd_ec2 (p : P7.a.Params) (v : P7.a.Vars p)
       rw [hk1] at hcov_i_k; linarith
     have hAi_nn : 0 ≤ ∑ ab ∈ P7.i.strips_covering_both p.N j k,
         v.x i ab.1 ab.2 :=
-      Finset.sum_nonneg (fun ab _ => fwd_x_nn hfeas i ab)
+      Finset.sum_nonneg
+        (fun ab hab => fwd_x_nn hfeas i ab (Finset.mem_filter.mp hab).1)
     have hAi_eq_zero :
         ∑ ab ∈ P7.i.strips_covering_both p.N j k, v.x i ab.1 ab.2 = 0 := by
       linarith
     have hs_Cjk_nn : 0 ≤ ∑ ab ∈ P7.i.strips_covering_both p.N j k,
         v.s i ab.1 ab.2 :=
-      Finset.sum_nonneg (fun ab _ => fwd_s_nn hfeas i ab)
+      Finset.sum_nonneg
+        (fun ab hab => fwd_s_nn hfeas i ab (Finset.mem_filter.mp hab).1)
     have hSt_Cjk_ge_Aprev :
         ∑ ab ∈ P7.i.strips_covering_both p.N j k, v.x iPrev ab.1 ab.2 ≤
         ∑ ab ∈ P7.i.strips_covering_both p.N j k, v.t iPrev ab.1 ab.2 := by
@@ -212,13 +219,13 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
   · intro i; exact h.hrow i
   · intro j; exact h.hcol j
   · intro i j; exact h.hcov i j
-  · intro ab; exact h.htop ab
-  · intro i ab hi; exact h.hflow i ab hi
-  · intro ab; exact h.hbot ab
+  · intro ab hab; exact h.htop ab hab
+  · intro i ab hab hi; exact h.hflow i ab hab hi
+  · intro ab hab; exact h.hbot ab hab
   · intro i j; exact h.hh_bin i j
-  · intro i ab; exact h.hx_bin i ab
-  · intro i ab; exact h.hs_bin i ab
-  · intro i ab; exact h.ht_bin i ab
+  · intro i ab hab; exact h.hx_bin i ab hab
+  · intro i ab hab; exact h.hs_bin i ab hab
+  · intro i ab hab; exact h.ht_bin i ab hab
   · intro i j k hi_pos hjk; exact fwd_ec2 p v h i j k hi_pos hjk
 
 -- ============================================================================

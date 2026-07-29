@@ -83,7 +83,7 @@
     },
     "constraints": [
         {
-            "description": "The percentage of topsoil bags should not go beyond K out of all bags.",
+            "description": "The percentage of topsoil bags should not go beyond $K$ out of all bags.",
             "formulation": "K \\times ( d + h ) \\geq d",
             "explicit": true,
             "code": {
@@ -108,7 +108,7 @@
         }
     ],
     "objective": {
-        "description": "The total amount of water needed consists of the combined value of (Z multiplied by the quantity of subsoil bags) and (B multiplied by the quantity of topsoil bags). The aim is to reduce the overall water consumption as much as possible.",
+        "description": "The total amount of water needed consists of the combined value of ($Z$ multiplied by the quantity of subsoil bags) and ($B$ multiplied by the quantity of topsoil bags). The aim is to reduce the overall water consumption as much as possible.",
         "formulation": "Min \\left( B \\times d + Z \\times h \\right )",
         "code": {
             "gurobipy": "model.setObjective(Z * h + B * d, GRB.MINIMIZE)"
@@ -117,11 +117,12 @@
     "metadata": {
         "source": {
             "dataset": "EquivaFormulation",
+            "citekey": "zhai2025a",
             "instance_id": "217",
             "variation_id": "l"
         },
         "notes": [
-            "Arbitrarily remove constraints from the original formulation."
+            "Transformation of formulation `a`: Arbitrarily remove constraints from the original formulation."
         ]
     }
 }

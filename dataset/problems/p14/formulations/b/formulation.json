@@ -22,7 +22,7 @@
             "shape": []
         },
         "T": {
-            "description": "Travel time from candidate DC location i to hospital j",
+            "description": "Travel time from candidate DC location $i$ to hospital $j$",
             "type": "continuous",
             "shape": [
                 "nS",
@@ -31,6 +31,22 @@
         }
     },
     "assumptions": [
+        {
+            "description": "Number of candidate DC locations is positive.",
+            "formulation": "|\\mathcal{S}| > 0",
+            "explicit": false,
+            "code": {
+                "python": "assert nS > 0"
+            }
+        },
+        {
+            "description": "Number of hospital locations is positive.",
+            "formulation": "|\\mathcal{H}| > 0",
+            "explicit": false,
+            "code": {
+                "python": "assert nH > 0"
+            }
+        },
         {
             "description": "Travel times are non-negative.",
             "formulation": "T_{ij} \\geq 0 \\quad \\forall i \\in \\mathcal{S},\\, j \\in \\mathcal{H}",
@@ -58,14 +74,14 @@
     ],
     "variables": {
         "x": {
-            "description": "1 if candidate DC location i is opened, 0 otherwise",
+            "description": "$1$ if candidate DC location $i$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nS"
             ]
         },
         "y": {
-            "description": "1 if hospital j is assigned to DC i, 0 otherwise",
+            "description": "$1$ if hospital $j$ is assigned to DC $i$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nS",
@@ -75,7 +91,7 @@
     },
     "constraints": [
         {
-            "description": "Select exactly n DC locations.",
+            "description": "Select exactly $n$ DC locations.",
             "formulation": "\\sum_{i \\in \\mathcal{S}} x_i = n",
             "explicit": true,
             "code": {
@@ -83,7 +99,7 @@
             }
         },
         {
-            "description": "Hospitals can only be allocated to active DCs, using the loose big-M bound of |H|.",
+            "description": "Hospitals can only be allocated to active DCs, using the loose big-M bound of $|\\mathcal{H}|$.",
             "formulation": "\\sum_{j \\in \\mathcal{H}} y_{ij} \\leq x_i \\times |\\mathcal{H}| \\quad \\forall i \\in \\mathcal{S}",
             "explicit": true,
             "code": {
@@ -117,6 +133,7 @@
     "metadata": {
         "source": {
             "dataset": "Ferchtandiker2025",
+            "citekey": "ferchtandiker2025",
             "formulation_id": "inefficient"
         }
     }

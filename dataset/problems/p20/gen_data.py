@@ -3,8 +3,8 @@ Generate data.json for the World Food Program Food Distribution problem (p20).
 
 Produces a small, reproducible instance (1 supplier, 2 transshipment nodes,
 2 beneficiary camps, 3 food commodities, 3 nutrients) adapted from the
-Ferchtandiker2025 data generator.  All keys required by both
-formulations/a/gen_params.py and formulations/b/gen_params.py are present.
+Ferchtandiker2025 data generator. The output keys are the parameters
+declared in problem.json.
 """
 
 import json
@@ -51,31 +51,6 @@ def generate_data(seed: int = SEED) -> dict:
                     edges[src][tgt] = 1
                     if random.random() < remove_prob:
                         edges[src][tgt] = 0
-
-    # ------------------------------------------------------------------
-    # Paths (S-B, S-T-B, S-T1-T2-B)
-    # ------------------------------------------------------------------
-    paths = []
-    for s in supplier_nodes:
-        for b in beneficiary_nodes:
-            if edges[s][b] == 1:
-                paths.append(f"{s}-{b}")
-    for s in supplier_nodes:
-        for t in transshipment_nodes:
-            for b in beneficiary_nodes:
-                if edges[s][t] == 1 and edges[t][b] == 1:
-                    paths.append(f"{s}-{t}-{b}")
-    for s in supplier_nodes:
-        for t1 in transshipment_nodes:
-            for t2 in transshipment_nodes:
-                if t1 != t2:
-                    for b in beneficiary_nodes:
-                        if (
-                            edges[s][t1] == 1
-                            and edges[t1][t2] == 1
-                            and edges[t2][b] == 1
-                        ):
-                            paths.append(f"{s}-{t1}-{t2}-{b}")
 
     # ------------------------------------------------------------------
     # Parameters
@@ -127,47 +102,29 @@ def generate_data(seed: int = SEED) -> dict:
                     base = 1.5
                 edge_costs[i][j][k] = round(base + random.uniform(0.2, 0.5), 2)
 
-    # Path costs: exact sum of edge costs along the path (no perturbation,
-    # so c[p][k] = sum of tc[i][j][k] over edges (i, j) in path p)
-    path_costs = {p: {k: 0.0 for k in foods} for p in paths}
-    for p in paths:
-        path_nodes = p.split("-")
-        for k in foods:
-            path_costs[p][k] = round(
-                sum(
-                    edge_costs[path_nodes[idx]][path_nodes[idx + 1]][k]
-                    for idx in range(len(path_nodes) - 1)
-                ),
-                2,
-            )
-
-    # Path-end indicators: e[j][p] = 1 if path p terminates at beneficiary j
-    path_end_indicators = {
-        j: {p: int(p.split("-")[-1] == j) for p in paths} for j in beneficiary_nodes
-    }
-
     # ------------------------------------------------------------------
     # Assemble
     # ------------------------------------------------------------------
-    data = {
-        "nutrients": nutrients,
-        "foods": foods,
-        "beneficiary_nodes": beneficiary_nodes,
-        "supplier_nodes": supplier_nodes,
-        "transshipment_nodes": transshipment_nodes,
-        "all_nodes": nodes,
-        "edges": edges,
-        "paths": paths,
-        "demand": demand,
-        "nutritional_requirements": nutritional_requirements,
-        "nutritional_values": nutritional_values,
-        "path_costs": path_costs,
-        "path_end_indicators": path_end_indicators,
-        "procurement_costs": procurement_costs,
-        "edge_costs": edge_costs,
-    }
+    SUPPLIER, TRANSSHIPMENT, BENEFICIARY = 0, 1, 2
+    node_type = (
+        [SUPPLIER] * len(supplier_nodes)
+        + [TRANSSHIPMENT] * len(transshipment_nodes)
+        + [BENEFICIARY] * len(beneficiary_nodes)
+    )
 
-    return data
+    return {
+        "nN": len(nodes),
+        "nB": len(beneficiary_nodes),
+        "nK": len(foods),
+        "nL": len(nutrients),
+        "node_type": node_type,
+        "E": [[edges[i][j] for j in nodes] for i in nodes],
+        "dem": [demand[b] for b in beneficiary_nodes],
+        "pc": [procurement_costs[k] for k in foods],
+        "tc": [[[edge_costs[i][j][k] for k in foods] for j in nodes] for i in nodes],
+        "nutreq": [nutritional_requirements[l] for l in nutrients],
+        "nutval": [[nutritional_values[k][l] for l in nutrients] for k in foods],
+    }
 
 
 def main() -> None:

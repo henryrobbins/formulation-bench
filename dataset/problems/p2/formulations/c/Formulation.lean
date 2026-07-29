@@ -28,10 +28,10 @@ structure Vars (p : Params) where
 structure Feasible (p : Params) (v : Vars p) : Prop where
   -- For each resource, total required does not exceed available
   hres : ∀ k : Fin p.N, ∑ i : Fin p.M, p.I k i * ((v.j_0 i : ℝ) + 10 * (v.j_1 i : ℝ)) ≤ p.Y k
+  -- [Implicit Constraints]
   -- Digit bounds
   hj0_hi : ∀ i : Fin p.M, v.j_0 i ≤ 9
   hj1_hi : ∀ i : Fin p.M, v.j_1 i ≤ 9
-  -- [Implicit Constraints]
   hj0_nn : ∀ i : Fin p.M, 0 ≤ v.j_0 i
   hj1_nn : ∀ i : Fin p.M, 0 ≤ v.j_1 i
 

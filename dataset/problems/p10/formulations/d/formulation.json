@@ -15,7 +15,7 @@
       "shape": []
     },
     "d": {
-      "description": "Travel time from job i's return terminal to job j's pickup terminal; d[i][i] is the loaded time (rejection penalty) of job i",
+      "description": "Travel time from job $i$'s return terminal to job $j$'s pickup terminal; $d_{ii}$ is the loaded time (rejection penalty) of job $i$",
       "type": "continuous",
       "shape": [
         "N",
@@ -23,7 +23,7 @@
       ]
     },
     "d0": {
-      "description": "Travel time from the home terminal of truck k to job i's pickup terminal",
+      "description": "Travel time from the home terminal of truck $k$ to job $i$'s pickup terminal",
       "type": "continuous",
       "shape": [
         "K",
@@ -31,7 +31,7 @@
       ]
     },
     "dH": {
-      "description": "Travel time from job i's return terminal to the home terminal of truck k",
+      "description": "Travel time from job $i$'s return terminal to the home terminal of truck $k$",
       "type": "continuous",
       "shape": [
         "K",
@@ -86,7 +86,7 @@
       }
     },
     {
-      "description": "Triangle inequality for depot-to-job travel: going directly to job i is no longer than going via job j first.",
+      "description": "Triangle inequality for depot-to-job travel: going directly to job $i$ is no longer than going via job $j$ first.",
       "formulation": "d^k_{0i} \\leq d^k_{0j} + d_{ji} \\quad \\forall k \\in \\{0,\\dots,K-1\\},\\, i, j \\in \\{0,\\dots,N-1\\}",
       "explicit": false,
       "code": {
@@ -124,6 +124,14 @@
       "code": {
         "python": "assert all(tau_max[i] >= 0 for i in range(N))"
       }
+    },
+    {
+      "description": "Each time window is non-empty: the earliest permissible arrival is no later than the latest.",
+      "formulation": "\\tau^-_i \\leq \\tau^+_i \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
+      "explicit": false,
+      "code": {
+        "python": "assert all(tau_min[i] <= tau_max[i] for i in range(N))"
+      }
     }
   ],
   "definitions": {
@@ -135,37 +143,37 @@
       }
     },
     "A_minus": {
-      "description": "Set of directed job pairs (i,j) where job j cannot follow job i due to time window infeasibility",
+      "description": "Set of directed job pairs $(i,j)$ where job $j$ cannot follow job $i$ due to time window infeasibility",
       "formulation": "\\mathcal{A}^- = \\{(i,j) \\in \\{0,\\dots,N-1\\}^2 : i \\ne j \\wedge \\mathrm{EST}_i + d_{ii} + d_{ij} > \\tau^+_j\\}",
       "code": {
         "python": "A_minus = {(i, j) for i in range(N) for j in range(N) if i != j and EST[i] + d[i][i] + d[i][j] > tau_max[j]}"
       }
     },
     "KC": {
-      "description": "Set of trucks that can feasibly serve at least one job in clique C within its time window",
+      "description": "Set of trucks that can feasibly serve at least one job in clique $C$ within its time window",
       "formulation": "K_C = \\{k \\in \\{0,\\dots,K-1\\} : \\exists\\, i \\in C,\\ v^k + d^k_{0i} \\le \\tau^+_i\\} \\quad \\forall C \\subseteq \\{0,\\dots,N-1\\}",
       "code": {
         "python": "def KC(C): return {k for k in range(K) if any(v[k] + d0[k][i] <= tau_max[i] for i in C)}"
       }
     },
     "C_set": {
-      "description": "Family of cliques in the conflict graph induced by A^-: subsets C of jobs such that every distinct pair (i,j) in C has both (i,j) and (j,i) in A^-",
+      "description": "Family of cliques in the conflict graph induced by $\\mathcal{A}^-$: subsets $C$ of jobs such that every distinct pair $(i,j)$ in $C$ has both $(i,j)$ and $(j,i)$ in $\\mathcal{A}^-$",
       "formulation": "\\mathcal{C} = \\{C \\subseteq \\{0,\\dots,N-1\\} : \\forall i, j \\in C,\\ i \\ne j \\Rightarrow (i,j) \\in \\mathcal{A}^- \\wedge (j,i) \\in \\mathcal{A}^-\\}",
       "code": {
-        "python": "_G = nx.Graph()\n_G.add_nodes_from(range(N))\nfor i in range(N):\n    for j in range(i + 1, N):\n        if (i, j) in A_minus and (j, i) in A_minus:\n            _G.add_edge(i, j)\nC_set = [set(C) for C in nx.find_cliques(_G)]"
+        "python": "_G = nx.Graph()\n_G.add_nodes_from(range(N))\nfor i in range(N):\n    for j in range(i + 1, N):\n        if (i, j) in A_minus and (j, i) in A_minus:\n            _G.add_edge(i, j)\nC_set = [set(C) for C in nx.enumerate_all_cliques(_G)]"
       }
     },
     "M": {
       "description": "Big-M constant for arrival-time propagation: upper bound on any feasible arrival time",
-      "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij}",
+      "formulation": "M = 2 \\max_{i,j \\in \\{0,\\dots,N-1\\}} d_{ij} + \\max_i \\tau^+_i - \\min_j \\tau^-_j",
       "code": {
-        "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N))"
+        "python": "M = 2 * max(d[i][j] for i in range(N) for j in range(N)) + max(tau_max) - min(tau_min)"
       }
     }
   },
   "variables": {
     "x": {
-      "description": "1 if arc (u,v) is selected in the routing cycle cover; x[K+i][K+i]=1 means job i is rejected",
+      "description": "$1$ if arc $(u,v)$ is selected in the routing cycle cover; $x_{K+i,K+i} = 1$ means job $i$ is rejected",
       "type": "binary",
       "shape": [
         "K+N",
@@ -173,7 +181,7 @@
       ]
     },
     "delta": {
-      "description": "Arrival time at job i's pickup terminal",
+      "description": "Arrival time at job $i$'s pickup terminal",
       "type": "continuous",
       "shape": [
         "N"
@@ -198,7 +206,7 @@
       "explicit": true
     },
     {
-      "description": "Arrival time at job i is at least the earliest possible arrival from any truck.",
+      "description": "Arrival time at job $i$ is at least the earliest possible arrival from any truck.",
       "formulation": "\\delta_i - \\sum_{k=0}^{K-1} (d^k_{0i} + v^k)\\,x_{k,K+i} \\ge 0 \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
       "code": {
         "gurobipy": "model.addConstrs(delta[i] - gp.quicksum((d0[k][i] + v[k]) * x[k, K + i] for k in range(K)) >= 0 for i in range(N))"
@@ -222,7 +230,7 @@
       "explicit": true
     },
     {
-      "description": "EC3: For each clique C in the conflict graph, at least |C|-|K_C| jobs in C must be rejected.",
+      "description": "EC3: For each clique $C$ in the conflict graph, at least $|C| - |K_C|$ jobs in $C$ must be rejected.",
       "formulation": "\\sum_{i \\in C} x_{K+i,K+i} \\ge |C| - |K_C| \\quad \\forall C \\in \\mathcal{C}:\\,|C|>|K_C|",
       "code": {
         "gurobipy": "for C in C_set:\n    K_C = KC(C)\n    if len(C) > len(K_C):\n        model.addConstr(gp.quicksum(x[K + i, K + i] for i in C) >= len(C) - len(K_C))"
@@ -239,10 +247,11 @@
   },
   "metadata": {
     "source": {
-      "dataset": "EvoCut"
+      "dataset": "EvoCut",
+      "citekey": "yazdani2025"
     },
     "notes": [
-        "For each clique $C$ in the time-window conflict graph (pairs of jobs that cannot share any truck route), at least $|C| - |K_C|$ jobs in $C$ must be rejected, where $|K_C|$ is the number of trucks that can serve any job in $C$."
+            "This is the PDPTW formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC3."
     ]
   }
 }
