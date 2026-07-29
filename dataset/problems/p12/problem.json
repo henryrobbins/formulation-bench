@@ -20,6 +20,8 @@
             "dataset": "EvoCut",
             "citekey": "yazdani2025"
         },
-        "notes": []
+        "notes": [
+            "The problem implicitly assumes more than two cities ($n > 2$)."
+        ]
     }
 }
