@@ -24,7 +24,8 @@ private def paramMap (p : P14.a.Params) : P14.b.Params :=
     hnS         := p.hnS
     hnH         := p.hnH
     hT_nn       := p.hT_nn
-    hT_limit_nn := p.hT_limit_nn }
+    hT_limit_nn := p.hT_limit_nn
+    hnumDC_le   := p.hnumDC_le }
 
 -- ============================================================================
 -- § Forward Mapping and Feasibility
