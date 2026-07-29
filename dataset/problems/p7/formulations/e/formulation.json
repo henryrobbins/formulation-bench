@@ -150,7 +150,7 @@
             "name": "EC4"
         },
         "notes": [
-            "A hole in the bottom row at column $j$ forces a strip covering column $j$ to terminate in row $N-2$, breaking the column at the hole vertically."
+            "This is the IMO6 formulation from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC4."
         ]
     }
 }

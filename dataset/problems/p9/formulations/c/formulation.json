@@ -248,7 +248,7 @@
             "name": "EC1"
         },
         "notes": [
-            "For every non-trivial node subset $S$, the activated arcs leaving $S$ must provide enough capacity to carry the total demand $D_B$ of all commodities whose source lies in $S$ and destination outside (each arc's capacity is capped at $D_B$ to lift the inequality)."
+            "This is the MCND formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC1."
         ]
     }
 }

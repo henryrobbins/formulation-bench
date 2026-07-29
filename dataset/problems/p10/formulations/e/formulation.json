@@ -241,7 +241,7 @@
       "citekey": "yazdani2025"
     },
     "notes": [
-        "For each triple $(i, k, j)$ where serving $k$ after $i$ and then $j$ after $k$ violates $j$'s time window, at most one of the two arcs $x_{K+i,K+k}$, $x_{K+k,K+j}$, or rejection self-loop $x_{K+k,K+k}$ may be active."
+            "This is the PDPTW formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC4."
     ]
   }
 }

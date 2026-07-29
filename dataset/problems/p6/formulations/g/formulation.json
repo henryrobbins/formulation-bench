@@ -149,7 +149,7 @@
             "name": "EC3"
         },
         "notes": [
-            "Customer $i$ can only be assigned to warehouse $j$ if $j$ is open."
+            "This is the CWLP formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC3."
         ]
     }
 }

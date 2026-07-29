@@ -235,7 +235,7 @@
             "citekey": "yazdani2025"
         },
         "notes": [
-            "This is the MILP formulation given in Section F.2 of EvoCut arXiv submissions `v1`. We make one notational change: EvoCut indexes arcs as pairs $(i,j) \\in A$; we instead index arcs by a single index $a$ with separate `tail` and `head` arrays, to fit the FormulationBench JSON format."
+            "This is the MCND formulation from `v1` of {cite:t}`yazdani2025`. To fit the FormulationBench JSON format, we index arcs by $a$ with separate `tail` and `head` arrays rather than pairs $(i,j) \\in A$."
         ]
     }
 }

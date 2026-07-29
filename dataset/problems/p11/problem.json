@@ -162,9 +162,7 @@
             "citekey": "yazdani2025"
         },
         "notes": [
-            "We add implicit assumptions for non-empty sets, non-negativity of all parameters, and the ordering constraints $P^{\\max}_g \\ge P^{\\min}_g$ and $P^{w,\\max}_{w,t} \\ge P^{w,\\min}_{w,t}$.",
-            "EvoCut arXiv submission `v1` does not include this problem.",
-            "EvoCut arXiv submission `v2` proposes 10 inequalities that only strengthen the formulation when used together. We combine them to form formulation `b`."
+            "We add implicit assumptions for non-empty sets, non-negativity of all parameters, and the ordering constraints $P^{\\max}_g \\ge P^{\\min}_g$ and $P^{w,\\max}_{w,t} \\ge P^{w,\\min}_{w,t}$."
         ]
     }
 }

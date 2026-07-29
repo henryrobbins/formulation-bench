@@ -248,7 +248,7 @@
             "name": "EC2"
         },
         "notes": [
-            "For every non-trivial node subset $S$, the number of activated arcs leaving $S$ must be at least the minimum count of arcs (chosen greedily by largest capacity) needed to cover the total demand $D_B$ crossing $S$."
+            "This is the MCND formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC2."
         ]
     }
 }

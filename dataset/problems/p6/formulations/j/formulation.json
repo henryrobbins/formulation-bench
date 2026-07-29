@@ -149,7 +149,7 @@
             "name": "EC6"
         },
         "notes": [
-            "At most 2 customers with demand exceeding one-third of warehouse $j$'s capacity can be assigned to warehouse $j$."
+            "This is the CWLP formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC6."
         ]
     }
 }

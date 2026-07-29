@@ -245,7 +245,7 @@
             "name": "EC1"
         },
         "notes": [
-            "For each commodity $k$, the incoming arcs to its destination $D_k$ must together provide enough capacity to deliver demand $d_k$. The inequality is a lifted cover inequality on the activation variables of those incoming arcs."
+            "This is the MCND formulation from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC1."
         ]
     }
 }

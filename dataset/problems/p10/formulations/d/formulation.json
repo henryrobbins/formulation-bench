@@ -251,7 +251,7 @@
       "citekey": "yazdani2025"
     },
     "notes": [
-        "For each clique $C$ in the time-window conflict graph (pairs of jobs that cannot share any truck route), at least $|C| - |K_C|$ jobs in $C$ must be rejected, where $|K_C|$ is the number of trucks that can serve any job in $C$."
+            "This is the PDPTW formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC3."
     ]
   }
 }

@@ -127,7 +127,7 @@
             "explicit": true
         },
         {
-            "description": "Horizontal-Left Break (V1 EC1): a hole at $(i,j)$ forces an interval ending at column $j-1$ to terminate at row $i$.",
+            "description": "Horizontal-Left Break (V1 EC1): a hole at $(i,j)$ forces an interval ending at column $j-1$ to terminate at row $i$. This cut is invalid because the tile immediately to the left of a hole may span multiple rows and terminate on a different row.",
             "formulation": "h_{ij} \\le \\sum_{(a,b) \\in I:\\, b=j-1} t_i^{ab} \\quad \\forall i \\in \\{0,\\dots,N-1\\},\\; \\forall j \\in \\{1,\\dots,N-1\\}",
             "code": {
                 "gurobipy": "model.addConstrs(h[i, j] <= gp.quicksum(t[i, a, b] for (a, b) in I if b == j - 1) for i in R for j in range(1, N))"
@@ -150,8 +150,7 @@
             "name": "EC1"
         },
         "notes": [
-            "A hole at $(i,j)$ forces an interval ending at column $j-1$ to terminate on row $i$.",
-            "This cut was identified by `FLARE` to be invalid. The tile immediately to the left of a hole may span multiple rows and thus terminate on different row."
+            "This is the IMO6 formulation from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC1."
         ]
     }
 }

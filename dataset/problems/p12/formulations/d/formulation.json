@@ -100,7 +100,7 @@
             "explicit": false
         },
         {
-            "description": "Two-City Detour Elimination (EC3): eliminates infeasible two-city detours through the depot for any pair of non-depot cities $i$, $j$.",
+            "description": "Two-City Detour Elimination (EC3): eliminates infeasible two-city detours through the depot for any pair of non-depot cities $i$, $j$. This cut is invalid because it excludes the feasible $1 \\to 2 \\to 3 \\to 1$ tour when $n=3$.",
             "formulation": "x_{j0} + x_{ji} + u_j - u_i - 1 \\leq (n-1)(2 - x_{0i} - x_{ij}) \\quad \\forall i, j \\in V \\setminus \\{0\\},\\; i \\neq j",
             "code": {
                 "gurobipy": "model.addConstrs(x[j, 0] + x[j, i] + u[j] - u[i] - 1 <= (n - 1) * (2 - x[0, i] - x[i, j]) for i in range(1, n) for j in range(1, n) if i != j)"
@@ -123,8 +123,7 @@
             "name": "EC3"
         },
         "notes": [
-            "Eliminate triangles involving the depot.",
-            "This cut was identified by `FLARE` to be invalid. The inequality prevents the feasible $1 \\to 2 \\to 3 \\to 1$ tour for $n=3$ TSP instances."
+            "This is the MTZ formulation of the TSP from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC3."
         ]
     }
 }

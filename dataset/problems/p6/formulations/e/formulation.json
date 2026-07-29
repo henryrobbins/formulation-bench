@@ -149,7 +149,7 @@
             "name": "EC1"
         },
         "notes": [
-            "The total demand must be satisfied by the total capacity of opened warehouses. This gives a simple lower bound on the number of warehouses that must be opened."
+            "This is the CWLP formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC1."
         ]
     }
 }

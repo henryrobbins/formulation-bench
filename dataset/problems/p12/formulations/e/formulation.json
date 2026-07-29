@@ -100,7 +100,7 @@
             "explicit": false
         },
         {
-            "description": "Arc Symmetry (EC1): both directions of an arc cannot be simultaneously active, eliminating two-city cycles.",
+            "description": "Arc Symmetry (EC1): both directions of an arc cannot be simultaneously active, eliminating two-city cycles. This cut is invalid because it excludes the feasible $1 \\to 2 \\to 1$ tour when $n=2$.",
             "formulation": "x_{ij} + x_{ji} \\leq 1 \\quad \\forall i, j \\in V,\\; i < j",
             "code": {
                 "gurobipy": "model.addConstrs(x[i, j] + x[j, i] <= 1 for i in range(n) for j in range(i + 1, n))"
@@ -123,8 +123,7 @@
             "name": "EC1"
         },
         "notes": [
-            "Eliminate two-city tours.",
-            "This cut was identified by `FLARE` to be invalid. The inequality prevents the feasible $1 \\to 2 \\to 1$ tour for $n=2$ TSP instances."
+            "This is the MTZ formulation of the TSP from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC1."
         ]
     }
 }

@@ -123,7 +123,7 @@
             "name": "EC2"
         },
         "notes": [
-            "If the tour returns to the depot from city $i$, then $i$'s MTZ position $u_i$ must be exactly $n$ (last)."
+            "This is the MTZ formulation of the TSP from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC2."
         ]
     }
 }

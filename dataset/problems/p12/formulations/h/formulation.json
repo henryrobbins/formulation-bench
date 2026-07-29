@@ -123,7 +123,7 @@
             "name": "EC4"
         },
         "notes": [
-            "City $i$'s MTZ position is at least $3 - x_{0i} + (n-3) x_{i0}$, tightening the lower bound using its depot-adjacent arcs."
+            "This is the MTZ formulation of the TSP from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC4."
         ]
     }
 }

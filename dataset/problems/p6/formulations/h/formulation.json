@@ -149,7 +149,7 @@
             "name": "EC4"
         },
         "notes": [
-            "If customer $i$'s demand exceeds warehouse $j$'s capacity, customer $i$ cannot be assigned to warehouse $j$."
+            "This is the CWLP formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC4."
         ]
     }
 }

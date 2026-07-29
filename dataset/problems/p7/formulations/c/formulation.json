@@ -127,7 +127,7 @@
             "explicit": true
         },
         {
-            "description": "Horizontal-Right Break (V1 EC2): a hole at $(i,j)$ forces an interval starting at column $j+1$ to begin at row $i$.",
+            "description": "Horizontal-Right Break (V1 EC2): a hole at $(i,j)$ forces an interval starting at column $j+1$ to begin at row $i$. This cut is invalid because the tile immediately to the right of a hole may span multiple rows and start on a different row.",
             "formulation": "h_{ij} \\le \\sum_{(a,b) \\in I:\\, a=j+1} s_i^{ab} \\quad \\forall i \\in \\{0,\\dots,N-1\\},\\; \\forall j \\in \\{0,\\dots,N-2\\}",
             "code": {
                 "gurobipy": "model.addConstrs(h[i, j] <= gp.quicksum(s[i, a, b] for (a, b) in I if a == j + 1) for i in R for j in range(N - 1))"
@@ -150,8 +150,7 @@
             "name": "EC2"
         },
         "notes": [
-            "A hole at $(i, j)$ forces any tile interval starting at column $j+1$ to begin on row $i$.",
-            "This cut was identified by `FLARE` to be invalid. The tile immediately to the right of a hole may span multiple rows and thus start on different row."
+            "This is the IMO6 formulation from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC2."
         ]
     }
 }

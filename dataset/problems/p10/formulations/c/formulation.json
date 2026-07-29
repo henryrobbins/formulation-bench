@@ -241,7 +241,7 @@
       "citekey": "yazdani2025"
     },
     "notes": [
-        "For each pair of jobs $(i, j)$ that are individually feasible but where both sequencings can't both occur, at most one of $x_{K+i,K+j}$, $x_{K+j,K+i}$, or rejection self-loop $x_{K+i,K+i}$ may be active."
+            "This is the PDPTW formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC2."
     ]
   }
 }

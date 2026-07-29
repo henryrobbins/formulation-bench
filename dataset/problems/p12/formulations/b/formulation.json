@@ -123,7 +123,7 @@
             "name": "EC1"
         },
         "notes": [
-            "If the tour leaves the depot directly to city $j$, then $j$'s MTZ position $u_j$ must be at most $2$."
+            "This is the MTZ formulation of the TSP from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC1."
         ]
     }
 }

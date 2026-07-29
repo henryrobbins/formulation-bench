@@ -139,7 +139,7 @@
             "citekey": "yazdani2025"
         },
         "notes": [
-            "This is the MILP formulation given in Appendix F.3 of EvoCut arXiv submission `v1`."
+            "This is the CWLP formulation from `v1` of {cite:t}`yazdani2025`."
         ]
     }
 }

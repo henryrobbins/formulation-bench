@@ -150,7 +150,7 @@
             "name": "EC5"
         },
         "notes": [
-            "An interior hole at $(i, j)$ forces a strip covering column $j$ to terminate in row $i-1$, breaking the column at the hole from above."
+            "This is the IMO6 formulation from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC5."
         ]
     }
 }
