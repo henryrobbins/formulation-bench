@@ -85,10 +85,8 @@ private def fwd (p : P11.a.Params) (v : P11.a.Vars p) :
     c_var := v.c_var
     p_wind := v.p_wind
     b := fun g t =>
-      if ht : t.val + 1 < p.nT then
-        v.v g t * v.w g ⟨t.val + 1, ht⟩
-      else
-        0
+      v.v g ⟨t.val, by have := t.isLt; simp only [paramMap] at this; omega⟩ *
+        v.w g ⟨t.val + 1, by have := t.isLt; simp only [paramMap] at this; omega⟩
     P_bar := fun g t =>
       p.P_min g * (v.u g t : ℝ) + v.p g t + v.r g t }
 
@@ -133,55 +131,29 @@ private lemma fwd_feas (p : P11.a.Params) (v : P11.a.Vars p)
       hec3b := ?_
       hec3c := ?_
       hec4 := ?_ }
+  · intro g t
+    have ht : t.val + 1 < p.nT := by
+      have := t.isLt
+      simp only [paramMap] at this
+      omega
+    rcases h.hv_bin g ⟨t.val, by omega⟩ with hv | hv <;>
+      rcases h.hw_bin g ⟨t.val + 1, ht⟩ with hw | hw <;>
+      simp [fwd, hv, hw]
   · intro g t ht
     simp only [paramMap] at ht
-    change
-      (if hnext : t.val + 1 < p.nT then
-        v.v g t * v.w g ⟨t.val + 1, hnext⟩
-      else
-        0) = 0 ∨
-      (if hnext : t.val + 1 < p.nT then
-        v.v g t * v.w g ⟨t.val + 1, hnext⟩
-      else
-        0) = 1
-    rw [dif_pos ht]
     rcases h.hv_bin g t with hv | hv <;>
       rcases h.hw_bin g ⟨t.val + 1, ht⟩ with hw | hw <;>
-      simp [hv, hw]
+      simp [fwd, hv, hw]
   · intro g t ht
     simp only [paramMap] at ht
-    change
-      (if hnext : t.val + 1 < p.nT then
-        v.v g t * v.w g ⟨t.val + 1, hnext⟩
-      else
-        0) ≤ v.v g t
-    rw [dif_pos ht]
     rcases h.hv_bin g t with hv | hv <;>
       rcases h.hw_bin g ⟨t.val + 1, ht⟩ with hw | hw <;>
-      simp [hv, hw]
+      simp [fwd, hv, hw]
   · intro g t ht
     simp only [paramMap] at ht
-    change
-      (if hnext : t.val + 1 < p.nT then
-        v.v g t * v.w g ⟨t.val + 1, hnext⟩
-      else
-        0) ≤ v.w g ⟨t.val + 1, ht⟩
-    rw [dif_pos ht]
     rcases h.hv_bin g t with hv | hv <;>
       rcases h.hw_bin g ⟨t.val + 1, ht⟩ with hw | hw <;>
-      simp [hv, hw]
-  · intro g t ht
-    simp only [paramMap] at ht
-    change
-      v.v g t + v.w g ⟨t.val + 1, ht⟩ - 1 ≤
-        if hnext : t.val + 1 < p.nT then
-          v.v g t * v.w g ⟨t.val + 1, hnext⟩
-        else
-          0
-    rw [dif_pos ht]
-    rcases h.hv_bin g t with hv | hv <;>
-      rcases h.hw_bin g ⟨t.val + 1, ht⟩ with hw | hw <;>
-      simp [hv, hw]
+      simp [fwd, hv, hw]
   · intro g t
     simp only [fwd, paramMap]
     linarith [h.hcap_su g t]
@@ -193,7 +165,6 @@ private lemma fwd_feas (p : P11.a.Params) (v : P11.a.Vars p)
     have hsu := h.hcap_su g t
     have hsd := h.hcap_sd g t ht
     simp only [fwd, paramMap]
-    rw [dif_pos ht]
     rcases h.hv_bin g t with hv | hv <;>
       rcases h.hw_bin g ⟨t.val + 1, ht⟩ with hw | hw
     · simp [hv, hw] at hsu hsd ⊢
