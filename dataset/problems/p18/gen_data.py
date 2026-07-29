@@ -7,7 +7,7 @@ dataset/sources/Ferchtandiker2025/timor_leste/data_generator.py.
 
 The output keys match exactly what formulations a and b gen_params.py consume:
   households, existing_hospitals, candidate_hospitals, all_hospitals,
-  population, distance_indicators, max_new_hospitals.
+  population, travel_distances, max_travel_distance, max_new_hospitals.
 """
 
 import json
@@ -59,13 +59,6 @@ def generate_data(seed: int = 42) -> dict:
             dist = _euclidean(household_coords[i], hospital_coords[j])
             travel_distances[h][hosp] = round(dist + rng.uniform(-5, 5), 2)
 
-    # Distance indicators: 1 if within S, else 0
-    distance_indicators: dict[str, dict[str, int]] = {}
-    for h in households:
-        distance_indicators[h] = {}
-        for hosp in all_hospitals:
-            distance_indicators[h][hosp] = int(travel_distances[h][hosp] <= S)
-
     return {
         "households": households,
         "existing_hospitals": existing_hospitals,
@@ -73,7 +66,6 @@ def generate_data(seed: int = 42) -> dict:
         "all_hospitals": all_hospitals,
         "population": population,
         "travel_distances": travel_distances,
-        "distance_indicators": distance_indicators,
         "max_travel_distance": S,
         "max_new_hospitals": P,
     }

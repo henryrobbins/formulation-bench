@@ -16,8 +16,9 @@ def main(data_path: str, output_path: str) -> None:
 
     v = [data["population"][h] for h in households]
 
-    distance_indicators = data["distance_indicators"]
-    a = [[distance_indicators[h][hosp] for hosp in all_hospitals] for h in households]
+    d = data["travel_distances"]
+    S = data["max_travel_distance"]
+    a = [[int(d[h][hosp] <= S) for hosp in all_hospitals] for h in households]
 
     params = {
         "nI": nI,
