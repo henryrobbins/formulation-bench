@@ -152,7 +152,7 @@
       "description": "Family of cliques in the conflict graph induced by A^-: subsets C of jobs such that every distinct pair (i,j) in C has both (i,j) and (j,i) in A^-",
       "formulation": "\\mathcal{C} = \\{C \\subseteq \\{0,\\dots,N-1\\} : \\forall i, j \\in C,\\ i \\ne j \\Rightarrow (i,j) \\in \\mathcal{A}^- \\wedge (j,i) \\in \\mathcal{A}^-\\}",
       "code": {
-        "python": "_G = nx.Graph()\n_G.add_nodes_from(range(N))\nfor i in range(N):\n    for j in range(i + 1, N):\n        if (i, j) in A_minus and (j, i) in A_minus:\n            _G.add_edge(i, j)\nC_set = [set(C) for C in nx.find_cliques(_G)]"
+        "python": "_G = nx.Graph()\n_G.add_nodes_from(range(N))\nfor i in range(N):\n    for j in range(i + 1, N):\n        if (i, j) in A_minus and (j, i) in A_minus:\n            _G.add_edge(i, j)\nC_set = [set(C) for C in nx.enumerate_all_cliques(_G)]"
       }
     },
     "M": {
