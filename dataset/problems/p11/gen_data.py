@@ -52,7 +52,7 @@ def generate_instance(seed: int, T: int, n_G: int, n_W: int) -> dict:
 
     # --- Thermal generators ---
     P_min, P_max = [], []
-    n_L_list, P_list, C_list, C_fixed = [], [], [], []
+    n_L_list, P_list, C_list = [], [], []
     RU, RD, SU, SD = [], [], [], []
     U_list, D_list, MR = [], [], []
     n_S_list, ell_list, C_su_list = [], [], []
@@ -76,7 +76,6 @@ def generate_instance(seed: int, T: int, n_G: int, n_W: int) -> dict:
         n_L_list.append(n_l)
         P_list.append(p_pts)
         C_list.append(c_pts)
-        C_fixed.append(c_pts[0])
 
         # Ramp limits: 30–70% of range per period
         ramp_frac = rng.uniform(0.30, 0.70)
@@ -134,7 +133,6 @@ def generate_instance(seed: int, T: int, n_G: int, n_W: int) -> dict:
         "n_L": n_L_list,
         "P": P_list,
         "C": C_list,
-        "C_fixed": C_fixed,
         "L": L,
         "R": R,
         "P_min": P_min,
@@ -180,7 +178,6 @@ def parse_instance(fp: Path) -> dict:
 
     n_S, ell, C_su = [], [], []
     n_L, P, C = [], [], []
-    C_fixed_raw = []
     P_min_raw, P_max_raw = [], []
     RU_raw, RD_raw, SU_raw, SD_raw = [], [], [], []
     U_raw, D_raw, MR_raw = [], [], []
@@ -195,7 +192,6 @@ def parse_instance(fp: Path) -> dict:
         n_L.append(len(pw))
         P.append([pt["mw"] for pt in pw])
         C.append([pt["cost"] for pt in pw])
-        C_fixed_raw.append(pw[0]["cost"])
 
         P_min_raw.append(g["power_output_minimum"])
         P_max_raw.append(g["power_output_maximum"])
@@ -224,7 +220,6 @@ def parse_instance(fp: Path) -> dict:
         "n_L": n_L,
         "P": P,
         "C": C,
-        "C_fixed": C_fixed_raw,
         "L": L_raw,
         "R": R_raw,
         "P_min": P_min_raw,

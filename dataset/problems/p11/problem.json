@@ -62,13 +62,6 @@
                 "n_L[n_G]"
             ]
         },
-        "C_fixed": {
-            "description": "Fixed cost incurred when a thermal generator is on during a time period",
-            "type": "continuous",
-            "shape": [
-                "n_G"
-            ]
-        },
         "L": {
             "description": "Demand requirement at each time period",
             "type": "continuous",
