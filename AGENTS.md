@@ -48,8 +48,8 @@ formulation-bench/
 │   ├── _render.py           # Jinja rendering helpers
 │   └── templates/           # Jinja templates
 ├── dataset/                 # the FormulationBench dataset
-├── scripts/                 # dataset validation utilities
 ├── tests/                   # pytest suite
+│   └── dataset/             # dataset content validation (marked `dataset`)
 ├── docs/                    # Sphinx docs (published to Read the Docs)
 │   ├── conf.py
 │   ├── index.md

@@ -17,7 +17,7 @@ jobs:
           cache-dependency-glob: uv.lock
       - run: uv sync
       - name: Lint (ruff check)
-        run: uv run ruff check src tests scripts
+        run: uv run ruff check src tests
 
   format:
     name: Format
@@ -30,7 +30,7 @@ jobs:
           cache-dependency-glob: uv.lock
       - run: uv sync
       - name: Format check (ruff format)
-        run: uv run ruff format --check src tests scripts
+        run: uv run ruff format --check src tests
 
   typecheck:
     name: Type Check

@@ -43,11 +43,11 @@ cov-clean:
 	rm -rf htmlcov coverage.xml .coverage
 
 lint:
-	uv run ruff check src tests scripts
+	uv run ruff check src tests
 
 format:
-	uv run ruff format src tests scripts
-	uv run ruff check --fix src tests scripts
+	uv run ruff format src tests
+	uv run ruff check --fix src tests
 
 typecheck:
 	uv run mypy
