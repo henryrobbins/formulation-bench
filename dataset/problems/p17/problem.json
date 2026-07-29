@@ -71,7 +71,7 @@
             "shape": []
         },
         "P": {
-            "description": "Precedence matrix: P[i][j] = 1 if block i must be mined before block j",
+            "description": "Precedence matrix: $P_{ij} = 1$ if block $i$ must be mined before block $j$",
             "type": "binary",
             "shape": [
                 "n",

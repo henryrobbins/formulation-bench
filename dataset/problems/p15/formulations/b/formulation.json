@@ -32,14 +32,14 @@
             "shape": []
         },
         "cap": {
-            "description": "Number of apartments in configuration v",
+            "description": "Number of apartments in configuration $v$",
             "type": "integer",
             "shape": [
                 "nV"
             ]
         },
         "jApt": {
-            "description": "Area index of apartment a in configuration v (maps (v, a) to an index in 0..nJ-1)",
+            "description": "Area index of apartment $a$ in configuration $v$ (maps $(v, a)$ to an index in 0..nJ-1)",
             "type": "integer",
             "shape": [
                 "nV",
@@ -47,7 +47,7 @@
             ]
         },
         "pProfit": {
-            "description": "Profit per apartment for sector i, area index j, and owner h",
+            "description": "Profit per apartment for sector $i$, area index $j$, and owner $h$",
             "type": "continuous",
             "shape": [
                 "nI",
@@ -56,14 +56,14 @@
             ]
         },
         "area": {
-            "description": "Actual floor area value for area index j",
+            "description": "Actual floor area value for area index $j$",
             "type": "continuous",
             "shape": [
                 "nJ"
             ]
         },
         "m": {
-            "description": "Minimum floor area required for each sector i and owner h",
+            "description": "Minimum floor area required for each sector $i$ and owner $h$",
             "type": "continuous",
             "shape": [
                 "nI",
@@ -71,21 +71,21 @@
             ]
         },
         "b": {
-            "description": "Minimum fraction of total apartments that must belong to each sector i",
+            "description": "Minimum fraction of total apartments that must belong to each sector $i$",
             "type": "continuous",
             "shape": [
                 "nI"
             ]
         },
         "s": {
-            "description": "Minimum average floor area required for apartments in each sector i",
+            "description": "Minimum average floor area required for apartments in each sector $i$",
             "type": "continuous",
             "shape": [
                 "nI"
             ]
         },
         "o": {
-            "description": "Minimum fraction of total apartments that must belong to each owner class h",
+            "description": "Minimum fraction of total apartments that must belong to each owner class $h$",
             "type": "continuous",
             "shape": [
                 "nH"
@@ -226,7 +226,7 @@
     ],
     "variables": {
         "x": {
-            "description": "1 if floor k uses configuration v with owner h, 0 otherwise",
+            "description": "$1$ if floor $k$ uses configuration $v$ with owner $h$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nK",
@@ -235,7 +235,7 @@
             ]
         },
         "y": {
-            "description": "1 if apartment a in configuration v on floor k (with owner h) is assigned to sector i, 0 otherwise",
+            "description": "$1$ if apartment $a$ in configuration $v$ on floor $k$ (with owner $h$) is assigned to sector $i$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nK",
@@ -265,7 +265,7 @@
             }
         },
         {
-            "description": "Minimum fraction of total apartments that must be in sector i.",
+            "description": "Minimum fraction of total apartments that must be in sector $i$.",
             "formulation": "\\sum_{k} \\sum_{v} \\sum_{h} \\sum_{a \\in A_v} y_{kvhia} \\geq b_i \\sum_{k} \\sum_{v} \\sum_{h} \\sum_{i'} \\sum_{a \\in A_v} y_{kvhi'a} \\quad \\forall i \\in I",
             "explicit": true,
             "code": {
@@ -273,7 +273,7 @@
             }
         },
         {
-            "description": "Minimum average floor area for sector i.",
+            "description": "Minimum average floor area for sector $i$.",
             "formulation": "\\sum_{k,v,h,a \\in A_v} \\text{area}_{j_{va}} \\times y_{kvhia} \\geq s_i \\sum_{k,v,h,a \\in A_v} y_{kvhia} \\quad \\forall i \\in I",
             "explicit": true,
             "code": {
@@ -281,7 +281,7 @@
             }
         },
         {
-            "description": "Apartments with area below minimum for (sector i, owner h) must have zero assignment.",
+            "description": "Apartments with area below minimum for (sector $i$, owner $h$) must have zero assignment.",
             "formulation": "y_{kvhia} = 0 \\quad \\forall k,v,h,i,a \\in A_v \\text{ with } \\text{area}_{j_{va}} < m_{ih}",
             "explicit": true,
             "code": {
@@ -297,7 +297,7 @@
             }
         },
         {
-            "description": "Minimum ownership fraction: total apartments assigned to owner h meets o_h times all apartments.",
+            "description": "Minimum ownership fraction: total apartments assigned to owner $h$ meets $o_h$ times all apartments.",
             "formulation": "\\sum_{k,v} x_{kvh} \\times |A_v| \\geq o_h \\sum_{k,v,h'} x_{kvh'} \\times |A_v| \\quad \\forall h \\in H",
             "explicit": true,
             "code": {

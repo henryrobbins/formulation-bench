@@ -12,7 +12,7 @@
             "shape": []
         },
         "d": {
-            "description": "Travel time from job i's return terminal to job j's pickup terminal; d[i][i] is the loaded time (rejection penalty) of job i",
+            "description": "Travel time from job $i$'s return terminal to job $j$'s pickup terminal; $d_{ii}$ is the loaded time (rejection penalty) of job $i$",
             "type": "continuous",
             "shape": [
                 "N",
@@ -20,7 +20,7 @@
             ]
         },
         "d0": {
-            "description": "Travel time from the home terminal of truck k to job i's pickup terminal",
+            "description": "Travel time from the home terminal of truck $k$ to job $i$'s pickup terminal",
             "type": "continuous",
             "shape": [
                 "K",
@@ -28,7 +28,7 @@
             ]
         },
         "dH": {
-            "description": "Travel time from job i's return terminal to the home terminal of truck k",
+            "description": "Travel time from job $i$'s return terminal to the home terminal of truck $k$",
             "type": "continuous",
             "shape": [
                 "K",
@@ -83,7 +83,7 @@
             }
         },
         {
-            "description": "Triangle inequality for depot-to-job travel: going directly to job i is no longer than going via job j first.",
+            "description": "Triangle inequality for depot-to-job travel: going directly to job $i$ is no longer than going via job $j$ first.",
             "formulation": "d^k_{0i} \\leq d^k_{0j} + d_{ji} \\quad \\forall k \\in \\{0,\\dots,K-1\\},\\, i, j \\in \\{0,\\dots,N-1\\}",
             "explicit": false,
             "code": {
@@ -142,7 +142,7 @@
     },
     "variables": {
         "x": {
-            "description": "1 if arc (u,v) is selected in the routing cycle cover; x[K+i][K+i]=1 means job i is rejected",
+            "description": "$1$ if arc $(u,v)$ is selected in the routing cycle cover; $x_{K+i,K+i} = 1$ means job $i$ is rejected",
             "type": "binary",
             "shape": [
                 "K+N",
@@ -150,7 +150,7 @@
             ]
         },
         "delta": {
-            "description": "Arrival time at job i's pickup terminal",
+            "description": "Arrival time at job $i$'s pickup terminal",
             "type": "continuous",
             "shape": [
                 "N"
@@ -175,7 +175,7 @@
             "explicit": true
         },
         {
-            "description": "Arrival time at job i is at least the earliest possible arrival from any truck.",
+            "description": "Arrival time at job $i$ is at least the earliest possible arrival from any truck.",
             "formulation": "\\delta_i - \\sum_{k=0}^{K-1} (d^k_{0i} + v^k)\\,x_{k,K+i} \\ge 0 \\quad \\forall i \\in \\{0,\\dots,N-1\\}",
             "code": {
                 "gurobipy": "model.addConstrs(delta[i] - gp.quicksum((d0[k][i] + v[k]) * x[k, K + i] for k in range(K)) >= 0 for i in range(N))"

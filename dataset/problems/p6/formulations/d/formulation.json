@@ -12,28 +12,28 @@
             "shape": []
         },
         "d": {
-            "description": "Demand of customer i",
+            "description": "Demand of customer $i$",
             "type": "continuous",
             "shape": [
                 "n"
             ]
         },
         "u": {
-            "description": "Capacity of warehouse j",
+            "description": "Capacity of warehouse $j$",
             "type": "continuous",
             "shape": [
                 "m"
             ]
         },
         "f": {
-            "description": "Fixed cost to open warehouse j",
+            "description": "Fixed cost to open warehouse $j$",
             "type": "continuous",
             "shape": [
                 "m"
             ]
         },
         "c": {
-            "description": "Transportation cost if all of customer i's demand is served by warehouse j (already accounts for d_i)",
+            "description": "Transportation cost if all of customer $i$'s demand is served by warehouse $j$ (already accounts for $d_i$)",
             "type": "continuous",
             "shape": [
                 "n",
@@ -100,7 +100,7 @@
             }
         },
         "u_max_small": {
-            "description": "Maximum capacity among non-large (small) warehouses; 0 if all warehouses are large.",
+            "description": "Maximum capacity among non-large (small) warehouses; $0$ if all warehouses are large.",
             "formulation": "u^{\\text{small}}_{\\max} = \\max_{j \\in J \\setminus T} u_j \\;\\text{(} 0 \\text{ if } J \\setminus T = \\emptyset \\text{)}",
             "code": {
                 "python": "u_max_small = max((u[j] for j in range(m) if j not in T), default=0)"
@@ -121,7 +121,7 @@
             }
         },
         "k_T": {
-            "description": "Minimum number of large warehouses whose capacities (taken in non-increasing order) sum to at least D_H. Equals 0 if H is empty.",
+            "description": "Minimum number of large warehouses whose capacities (taken in non-increasing order) sum to at least $D_H$. Equals $0$ if $H$ is empty.",
             "formulation": "k_T = \\min \\Big\\{ k \\geq 0 : \\sum_{\\ell=1}^{k} u_{(\\ell)} \\geq D_H \\Big\\},\\quad u_{(1)} \\geq u_{(2)} \\geq \\cdots \\text{ enumerating } \\{u_j : j \\in T\\}",
             "code": {
                 "python": "k_T = 0\nif H:\n    cs = 0\n    for ui in sorted((u[j] for j in T), reverse=True):\n        cs += ui; k_T += 1\n        if cs >= D_H: break"
@@ -130,7 +130,7 @@
     },
     "variables": {
         "x": {
-            "description": "1 if customer i is assigned to warehouse j, 0 otherwise",
+            "description": "$1$ if customer $i$ is assigned to warehouse $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "n",
@@ -138,7 +138,7 @@
             ]
         },
         "y": {
-            "description": "1 if warehouse j is opened, 0 otherwise",
+            "description": "$1$ if warehouse $j$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "m"
@@ -163,7 +163,7 @@
             "explicit": true
         },
         {
-            "description": "T-Cover Bound (EC3): at least k_T warehouses must be opened.",
+            "description": "$T$-Cover Bound (EC3): at least $k_T$ warehouses must be opened.",
             "formulation": "\\sum_{j \\in J} y_j \\geq k_T",
             "code": {
                 "gurobipy": "model.addConstr(gp.quicksum(y[j] for j in range(m)) >= k_T)"

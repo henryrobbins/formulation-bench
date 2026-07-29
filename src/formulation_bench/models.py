@@ -256,7 +256,7 @@ class Parameter:
         >>> p12 = ds.problems[12]
         >>> p = p12.formulations["a"].parameters["c"]
         >>> p.description
-        'Travel cost from city i to city j'
+        'Travel cost from city $i$ to city $j$'
         >>> p.shape
         Shape(['n', 'n'])
     """
@@ -276,7 +276,7 @@ class Parameter:
 
 @dataclass(frozen=True)
 class Variable:
-    """MILP formulation decision variable.
+    r"""MILP formulation decision variable.
 
     Attributes
     ----------
@@ -340,7 +340,7 @@ class Variable:
 
         >>> p7a = ds.problems[7].formulations["a"]
         >>> p7a.definitions["I"].description
-        'Set of column interval pairs (a, b) with a <= b'
+        'Set of column interval pairs $(a, b)$ with $a \\leq b$'
         >>> x = p7a.variables["x"]
         >>> x.shape
         Shape(['N', '|I|'])

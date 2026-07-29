@@ -7,7 +7,7 @@
             "shape": []
         },
         "c": {
-            "description": "Travel cost from city i to city j",
+            "description": "Travel cost from city $i$ to city $j$",
             "type": "continuous",
             "shape": [
                 "n",

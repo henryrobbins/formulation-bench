@@ -22,7 +22,7 @@
             "shape": []
         },
         "node_type": {
-            "description": "Type of each node: 0 = supplier, 1 = transshipment point, 2 = beneficiary camp",
+            "description": "Type of each node: $0$ = supplier, $1$ = transshipment point, $2$ = beneficiary camp",
             "type": "integer",
             "shape": [
                 "nN"

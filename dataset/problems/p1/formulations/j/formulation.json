@@ -96,7 +96,7 @@
     },
     "constraints": [
         {
-            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass V.",
+            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass $V$.",
             "formulation": "V \\geq r \\times W + s \\times Y",
             "explicit": true,
             "code": {

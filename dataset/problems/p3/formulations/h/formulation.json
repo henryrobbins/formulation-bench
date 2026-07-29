@@ -122,7 +122,7 @@
     },
     "constraints": [
         {
-            "description": "The combined heating time needed to create Regular and Tempered glass panes does not go beyond D.",
+            "description": "The combined heating time needed to create Regular and Tempered glass panes does not go beyond $D$.",
             "formulation": "D \\geq C \\times e + P \\times h",
             "explicit": true,
             "code": {
@@ -130,7 +130,7 @@
             }
         },
         {
-            "description": "The combined time needed to cool both Regular and Tempered glass panels does not go beyond V.",
+            "description": "The combined time needed to cool both Regular and Tempered glass panels does not go beyond $V$.",
             "formulation": "V \\geq L \\times h + S \\times e",
             "explicit": true,
             "code": {
@@ -155,7 +155,7 @@
         }
     ],
     "objective": {
-        "description": "The aim is to increase the overall profit by maximizing the total value obtained from T multiplied by the quantity of Regular panes and H multiplied by the quantity of Tempered panes.",
+        "description": "The aim is to increase the overall profit by maximizing the total value obtained from $T$ multiplied by the quantity of Regular panes and $H$ multiplied by the quantity of Tempered panes.",
         "formulation": "Max \\ H \\times h + T \\times e",
         "code": {
             "gurobipy": "model.setObjective(T * e + H * h, GRB.MAXIMIZE)"

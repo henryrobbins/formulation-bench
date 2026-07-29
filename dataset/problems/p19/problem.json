@@ -7,7 +7,7 @@
             "shape": []
         },
         "Hf": {
-            "description": "Indicator for each hub: 1 if the hub is fixed and must remain open, 0 otherwise",
+            "description": "Indicator for each hub: $1$ if the hub is fixed and must remain open, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nH"

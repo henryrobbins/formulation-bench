@@ -7,21 +7,21 @@
             "shape": []
         },
         "Y": {
-            "description": "The quantity of resource j that is accessible.",
+            "description": "The quantity of resource $j$ that is accessible.",
             "type": "continuous",
             "shape": [
                 "N"
             ]
         },
         "A": {
-            "description": "The quantity of electrical energy generated from trial i",
+            "description": "The quantity of electrical energy generated from trial $i$",
             "type": "continuous",
             "shape": [
                 "M"
             ]
         },
         "I": {
-            "description": "Resource j quantity needed for experiment i.",
+            "description": "Resource $j$ quantity needed for experiment $i$.",
             "type": "continuous",
             "shape": [
                 "N",

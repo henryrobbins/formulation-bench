@@ -19,21 +19,21 @@
     ],
     "definitions": {
         "R": {
-            "description": "Set of row indices {0, ..., N-1}",
+            "description": "Set of row indices $\\{0, \\dots, N-1\\}$",
             "formulation": "R = \\{0, 1, \\dots, N-1\\}",
             "code": {
                 "python": "R = range(N)"
             }
         },
         "C": {
-            "description": "Set of column indices {0, ..., N-1}",
+            "description": "Set of column indices $\\{0, \\dots, N-1\\}$",
             "formulation": "C = \\{0, 1, \\dots, N-1\\}",
             "code": {
                 "python": "C = range(N)"
             }
         },
         "I": {
-            "description": "Set of column interval pairs (a, b) with a <= b",
+            "description": "Set of column interval pairs $(a, b)$ with $a \\leq b$",
             "formulation": "I = \\{(a, b) \\in C \\times C : a \\le b\\}",
             "code": {
                 "python": "I = [(a, b) for a in C for b in range(a, N)]"
@@ -42,7 +42,7 @@
     },
     "variables": {
         "h": {
-            "description": "1 if (i,j) is the unique hole in row i and column j, 0 otherwise",
+            "description": "$1$ if $(i,j)$ is the unique hole in row $i$ and column $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "N",
@@ -50,7 +50,7 @@
             ]
         },
         "x": {
-            "description": "1 if row i, columns a through b are covered by the same tile, 0 otherwise",
+            "description": "$1$ if row $i$, columns $a$ through $b$ are covered by the same tile, $0$ otherwise",
             "type": "binary",
             "indices": "(i, a, b) for i in R for (a, b) in I",
             "shape": [
@@ -59,7 +59,7 @@
             ]
         },
         "s": {
-            "description": "1 if a tile starts at row i for column interval (a,b), 0 otherwise",
+            "description": "$1$ if a tile starts at row $i$ for column interval $(a,b)$, $0$ otherwise",
             "type": "binary",
             "indices": "(i, a, b) for i in R for (a, b) in I",
             "shape": [
@@ -68,7 +68,7 @@
             ]
         },
         "t": {
-            "description": "1 if a tile ends at row i for column interval (a,b), 0 otherwise",
+            "description": "$1$ if a tile ends at row $i$ for column interval $(a,b)$, $0$ otherwise",
             "type": "binary",
             "indices": "(i, a, b) for i in R for (a, b) in I",
             "shape": [
@@ -103,7 +103,7 @@
             "explicit": true
         },
         {
-            "description": "Top-row flow: a tile covering interval (a,b) in row 0 must start there.",
+            "description": "Top-row flow: a tile covering interval $(a,b)$ in row $0$ must start there.",
             "formulation": "x_0^{ab} - s_0^{ab} = 0 \\quad \\forall (a,b) \\in I",
             "code": {
                 "gurobipy": "model.addConstrs(x[0, a, b] - s[0, a, b] == 0 for (a, b) in I)"
@@ -111,7 +111,7 @@
             "explicit": true
         },
         {
-            "description": "Mid-row flow: tile coverage at row i equals coverage from previous row plus new starts minus ends.",
+            "description": "Mid-row flow: tile coverage at row $i$ equals coverage from previous row plus new starts minus ends.",
             "formulation": "x_i^{ab} - x_{i-1}^{ab} - s_i^{ab} + t_{i-1}^{ab} = 0 \\quad \\forall i \\in \\{1,\\dots,N-1\\},\\; \\forall (a,b) \\in I",
             "code": {
                 "gurobipy": "model.addConstrs(x[i, a, b] - x[i-1, a, b] - s[i, a, b] + t[i-1, a, b] == 0 for i in range(1, N) for (a, b) in I)"
@@ -119,7 +119,7 @@
             "explicit": true
         },
         {
-            "description": "Bottom-row flow: a tile covering interval (a,b) in the last row must end there.",
+            "description": "Bottom-row flow: a tile covering interval $(a,b)$ in the last row must end there.",
             "formulation": "x_{N-1}^{ab} - t_{N-1}^{ab} = 0 \\quad \\forall (a,b) \\in I",
             "code": {
                 "gurobipy": "model.addConstrs(x[N-1, a, b] - t[N-1, a, b] == 0 for (a, b) in I)"
@@ -127,7 +127,7 @@
             "explicit": true
         },
         {
-            "description": "Horizontal-Right Break (V1 EC2): a hole at (i,j) forces an interval starting at column j+1 to begin at row i.",
+            "description": "Horizontal-Right Break (V1 EC2): a hole at $(i,j)$ forces an interval starting at column $j+1$ to begin at row $i$.",
             "formulation": "h_{ij} \\le \\sum_{(a,b) \\in I:\\, a=j+1} s_i^{ab} \\quad \\forall i \\in \\{0,\\dots,N-1\\},\\; \\forall j \\in \\{0,\\dots,N-2\\}",
             "code": {
                 "gurobipy": "model.addConstrs(h[i, j] <= gp.quicksum(s[i, a, b] for (a, b) in I if a == j + 1) for i in R for j in range(N - 1))"

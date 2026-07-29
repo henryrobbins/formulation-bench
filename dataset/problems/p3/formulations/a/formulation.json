@@ -94,7 +94,7 @@
   ],
   "variables": {
     "NumBeakersUsed": {
-      "description": "The number of beakers of type i used",
+      "description": "The number of beakers of type $i$ used",
       "type": "integer",
       "shape": [
         "NumBeakers"

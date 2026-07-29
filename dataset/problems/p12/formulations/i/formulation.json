@@ -7,7 +7,7 @@
             "shape": []
         },
         "c": {
-            "description": "Travel cost from city i to city j",
+            "description": "Travel cost from city $i$ to city $j$",
             "type": "continuous",
             "shape": [
                 "n",
@@ -27,7 +27,7 @@
     ],
     "variables": {
         "x": {
-            "description": "1 if the tour goes directly from city i to city j, 0 otherwise",
+            "description": "$1$ if the tour goes directly from city $i$ to city $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "n",
@@ -35,7 +35,7 @@
             ]
         },
         "u": {
-            "description": "MTZ position of city i in the tour",
+            "description": "MTZ position of city $i$ in the tour",
             "type": "continuous",
             "shape": [
                 "n"
@@ -68,7 +68,7 @@
             "explicit": true
         },
         {
-            "description": "Depot position is fixed to 1 to anchor the tour ordering.",
+            "description": "Depot position is fixed to $1$ to anchor the tour ordering.",
             "formulation": "u_0 = 1",
             "code": {
                 "gurobipy": "model.addConstr(u[0] == 1)"
@@ -76,7 +76,7 @@
             "explicit": true
         },
         {
-            "description": "Lower bound on MTZ position: each non-depot city's position is at least 2.",
+            "description": "Lower bound on MTZ position: each non-depot city's position is at least $2$.",
             "formulation": "u_i \\geq 2 \\quad \\forall i \\in V \\setminus \\{0\\}",
             "code": {
                 "gurobipy": "model.addConstrs(u[i] >= 2 for i in range(1, n))"
@@ -84,7 +84,7 @@
             "explicit": true
         },
         {
-            "description": "Upper bound on MTZ position: each city's position is at most n.",
+            "description": "Upper bound on MTZ position: each city's position is at most $n$.",
             "formulation": "u_i \\leq n \\quad \\forall i \\in V",
             "code": {
                 "gurobipy": "model.addConstrs(u[i] <= n for i in range(n))"
@@ -100,7 +100,7 @@
             "explicit": false
         },
         {
-            "description": "Upper MTZ Envelope (EC5): tightens the upper bound on city i's position using its depot-adjacent arcs.",
+            "description": "Upper MTZ Envelope (EC5): tightens the upper bound on city $i$'s position using its depot-adjacent arcs.",
             "formulation": "u_i \\leq (n-1) + x_{i0} - (n-3) x_{0i} \\quad \\forall i \\in V \\setminus \\{0\\}",
             "code": {
                 "gurobipy": "model.addConstrs(u[i] <= (n - 1) + x[i, 0] - (n - 3) * x[0, i] for i in range(1, n))"

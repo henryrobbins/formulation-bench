@@ -32,28 +32,28 @@
             "shape": []
         },
         "S": {
-            "description": "Supplier node indices: S[s] is the index in N of supplier s",
+            "description": "Supplier node indices: $S_s$ is the index in $N$ of supplier $s$",
             "type": "integer",
             "shape": [
                 "nS"
             ]
         },
         "T": {
-            "description": "Transshipment node indices: T[t] is the index in N of transshipment node t",
+            "description": "Transshipment node indices: $T_t$ is the index in $N$ of transshipment node $t$",
             "type": "integer",
             "shape": [
                 "nT"
             ]
         },
         "B": {
-            "description": "Beneficiary camp node indices: B[j] is the index in N of beneficiary camp j",
+            "description": "Beneficiary camp node indices: $B_j$ is the index in $N$ of beneficiary camp $j$",
             "type": "integer",
             "shape": [
                 "nB"
             ]
         },
         "E": {
-            "description": "Adjacency matrix: 1 if a directed edge exists from node i to node j, 0 otherwise",
+            "description": "Adjacency matrix: $1$ if a directed edge exists from node $i$ to node $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nN",
@@ -75,7 +75,7 @@
             ]
         },
         "tc": {
-            "description": "Transportation cost per kg of commodity k along the edge from node i to node j",
+            "description": "Transportation cost per kg of commodity $k$ along the edge from node $i$ to node $j$",
             "type": "continuous",
             "shape": [
                 "nN",
@@ -149,7 +149,7 @@
             }
         },
         {
-            "description": "Each supplier node index is a valid node index (in range [0, nN)).",
+            "description": "Each supplier node index is a valid node index (in range $[0, n_N)$).",
             "formulation": "S_s \\in N \\quad \\forall s \\in N_S",
             "explicit": true,
             "code": {
@@ -157,7 +157,7 @@
             }
         },
         {
-            "description": "Each transshipment node index is a valid node index (in range [0, nN)).",
+            "description": "Each transshipment node index is a valid node index (in range $[0, n_N)$).",
             "formulation": "T_t \\in N \\quad \\forall t \\in N_T",
             "explicit": true,
             "code": {
@@ -165,7 +165,7 @@
             }
         },
         {
-            "description": "Each beneficiary camp node index is a valid node index (in range [0, nN)).",
+            "description": "Each beneficiary camp node index is a valid node index (in range $[0, n_N)$).",
             "formulation": "B_j \\in N \\quad \\forall j \\in N_B",
             "explicit": true,
             "code": {
@@ -173,7 +173,7 @@
             }
         },
         {
-            "description": "The supplier, transshipment, and beneficiary node-class maps partition N (every node belongs to exactly one class).",
+            "description": "The supplier, transshipment, and beneficiary node-class maps partition $N$ (every node belongs to exactly one class).",
             "formulation": "N = N_S \\sqcup N_T \\sqcup N_B",
             "explicit": true,
             "code": {
@@ -231,7 +231,7 @@
     ],
     "variables": {
         "F": {
-            "description": "Amount of commodity k shipped from node i to node j (kg)",
+            "description": "Amount of commodity $k$ shipped from node $i$ to node $j$ (kg)",
             "type": "continuous",
             "shape": [
                 "nN",

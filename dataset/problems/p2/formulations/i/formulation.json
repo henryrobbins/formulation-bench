@@ -96,7 +96,7 @@
     },
     "constraints": [
         {
-            "description": "The combined weight of cat paw treats in both blends should not surpass R kilograms, determined by adding together F multiplied by n and M multiplied by v.",
+            "description": "The combined weight of cat paw treats in both blends should not surpass $R$ kilograms, determined by adding together $F$ multiplied by $n$ and $M$ multiplied by $v$.",
             "formulation": "R \\geq F \\times n + M \\times v",
             "explicit": true,
             "code": {
@@ -104,7 +104,7 @@
             }
         },
         {
-            "description": "The combined weight of gold shark snacks in the two mixes should not go over W kilograms, which is determined as the sum of ((100 - F) multiplied by n) and ((100 - M) multiplied by v).",
+            "description": "The combined weight of gold shark snacks in the two mixes should not go over $W$ kilograms, which is determined as the sum of ($(100 - F)$ multiplied by $n$) and ($(100 - M)$ multiplied by $v$).",
             "formulation": "W \\geq \\frac{(100 - F)}{100} \\times n + \\frac{(100 - M)}{100} \\times v",
             "explicit": true,
             "code": {

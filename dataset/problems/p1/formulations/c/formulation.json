@@ -106,7 +106,7 @@
     },
     "constraints": [
         {
-            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be U.",
+            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be $U$.",
             "formulation": "U \\leq A \\times (s_0*10^0 + s_1*10^1) + K \\times (r_0*10^0 + r_1*10^1)",
             "explicit": true,
             "code": {
@@ -122,7 +122,7 @@
             }
         },
         {
-            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass V.",
+            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass $V$.",
             "formulation": "V \\geq (r_0*10^0 + r_1*10^1) \\times W + (s_0*10^0 + s_1*10^1) \\times Y",
             "explicit": true,
             "code": {
@@ -130,7 +130,7 @@
             }
         },
         {
-            "description": "Digit s_0 must be non-negative.",
+            "description": "Digit $s_0$ must be non-negative.",
             "formulation": "s_0 \\geq 0",
             "explicit": false,
             "code": {
@@ -138,7 +138,7 @@
             }
         },
         {
-            "description": "Digit s_1 must be non-negative.",
+            "description": "Digit $s_1$ must be non-negative.",
             "formulation": "s_1 \\geq 0",
             "explicit": false,
             "code": {
@@ -146,7 +146,7 @@
             }
         },
         {
-            "description": "Digit r_0 must be non-negative.",
+            "description": "Digit $r_0$ must be non-negative.",
             "formulation": "r_0 \\geq 0",
             "explicit": false,
             "code": {
@@ -154,7 +154,7 @@
             }
         },
         {
-            "description": "Digit r_1 must be non-negative.",
+            "description": "Digit $r_1$ must be non-negative.",
             "formulation": "r_1 \\geq 0",
             "explicit": false,
             "code": {
@@ -162,7 +162,7 @@
             }
         },
         {
-            "description": "Digit s_0 must be at most 9.",
+            "description": "Digit $s_0$ must be at most 9.",
             "formulation": "s_0 \\leq 9",
             "explicit": false,
             "code": {
@@ -170,7 +170,7 @@
             }
         },
         {
-            "description": "Digit s_1 must be at most 9.",
+            "description": "Digit $s_1$ must be at most 9.",
             "formulation": "s_1 \\leq 9",
             "explicit": false,
             "code": {
@@ -178,7 +178,7 @@
             }
         },
         {
-            "description": "Digit r_0 must be at most 9.",
+            "description": "Digit $r_0$ must be at most 9.",
             "formulation": "r_0 \\leq 9",
             "explicit": false,
             "code": {
@@ -186,7 +186,7 @@
             }
         },
         {
-            "description": "Digit r_1 must be at most 9.",
+            "description": "Digit $r_1$ must be at most 9.",
             "formulation": "r_1 \\leq 9",
             "explicit": false,
             "code": {

@@ -122,7 +122,7 @@
     },
     "constraints": [
         {
-            "description": "The combined heating time needed to create Regular and Tempered glass panes does not go beyond D.",
+            "description": "The combined heating time needed to create Regular and Tempered glass panes does not go beyond $D$.",
             "formulation": "D \\geq C \\times e + P \\times h",
             "explicit": true,
             "code": {
@@ -130,7 +130,7 @@
             }
         },
         {
-            "description": "The combined time needed to cool both Regular and Tempered glass panels does not go beyond V.",
+            "description": "The combined time needed to cool both Regular and Tempered glass panels does not go beyond $V$.",
             "formulation": "V \\geq L \\times h + S \\times e",
             "explicit": true,
             "code": {

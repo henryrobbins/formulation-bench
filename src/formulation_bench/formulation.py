@@ -256,12 +256,12 @@ class Formulation:
             ### Parameters
             <BLANKLINE>
             - **n** (type: integer, shape: `[]`): Number of cities
-            - **c** (type: continuous, shape: `['n', 'n']`): Travel cost from city i to city j
+            - **c** (type: continuous, shape: `['n', 'n']`): Travel cost from city $i$ to city $j$
             ...
             ### Variables
             <BLANKLINE>
-            - **x** (type: binary, shape: `['n', 'n']`): 1 if the tour goes directly from city i to city j, 0 otherwise
-            - **u** (type: continuous, shape: `['n']`): MTZ position of city i in the tour
+            - **x** (type: binary, shape: `['n', 'n']`): $1$ if the tour goes directly from city $i$ to city $j$, $0$ otherwise
+            - **u** (type: continuous, shape: `['n']`): MTZ position of city $i$ in the tour
             <BLANKLINE>
             ### Constraints
             <BLANKLINE>
@@ -271,11 +271,11 @@ class Formulation:
             $$\sum_{i \in V,\, i \neq j} x_{ij} = 1 \quad \forall j \in V$$
             - MTZ subtour elimination constraint.
             $$u_i - u_j + n \times x_{ij} \leq n - 1 \quad \forall i, j \in V \setminus \{0\},\; i \neq j$$
-            - Depot position is fixed to 1 to anchor the tour ordering.
+            - Depot position is fixed to $1$ to anchor the tour ordering.
             $$u_0 = 1$$
-            - Lower bound on MTZ position: each non-depot city's position is at least 2.
+            - Lower bound on MTZ position: each non-depot city's position is at least $2$.
             $$u_i \geq 2 \quad \forall i \in V \setminus \{0\}$$
-            - Upper bound on MTZ position: each city's position is at most n.
+            - Upper bound on MTZ position: each city's position is at most $n$.
             $$u_i \leq n \quad \forall i \in V$$
             <BLANKLINE>
             ### Objective

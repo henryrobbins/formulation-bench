@@ -12,28 +12,28 @@
             "shape": []
         },
         "d": {
-            "description": "Demand of customer i",
+            "description": "Demand of customer $i$",
             "type": "continuous",
             "shape": [
                 "n"
             ]
         },
         "u": {
-            "description": "Capacity of warehouse j",
+            "description": "Capacity of warehouse $j$",
             "type": "continuous",
             "shape": [
                 "m"
             ]
         },
         "f": {
-            "description": "Fixed cost to open warehouse j",
+            "description": "Fixed cost to open warehouse $j$",
             "type": "continuous",
             "shape": [
                 "m"
             ]
         },
         "c": {
-            "description": "Transportation cost if all of customer i's demand is served by warehouse j (already accounts for d_i)",
+            "description": "Transportation cost if all of customer $i$'s demand is served by warehouse $j$ (already accounts for $d_i$)",
             "type": "continuous",
             "shape": [
                 "n",
@@ -93,7 +93,7 @@
     ],
     "variables": {
         "x": {
-            "description": "1 if customer i is assigned to warehouse j, 0 otherwise",
+            "description": "$1$ if customer $i$ is assigned to warehouse $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "n",
@@ -101,7 +101,7 @@
             ]
         },
         "y": {
-            "description": "1 if warehouse j is opened, 0 otherwise",
+            "description": "$1$ if warehouse $j$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "m"

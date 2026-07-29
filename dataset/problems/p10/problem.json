@@ -12,7 +12,7 @@
             "shape": []
         },
         "d": {
-            "description": "Travel time from job i's return terminal to job j's pickup terminal; d[i][i] is the loaded time (rejection penalty) of job i",
+            "description": "Travel time from job $i$'s return terminal to job $j$'s pickup terminal; $d_{ii}$ is the loaded time (rejection penalty) of job $i$",
             "type": "continuous",
             "shape": [
                 "N",
@@ -20,7 +20,7 @@
             ]
         },
         "d0": {
-            "description": "Travel time from the home terminal of truck k to job i's pickup terminal",
+            "description": "Travel time from the home terminal of truck $k$ to job $i$'s pickup terminal",
             "type": "continuous",
             "shape": [
                 "K",
@@ -28,7 +28,7 @@
             ]
         },
         "dH": {
-            "description": "Travel time from job i's return terminal to the home terminal of truck k",
+            "description": "Travel time from job $i$'s return terminal to the home terminal of truck $k$",
             "type": "continuous",
             "shape": [
                 "K",

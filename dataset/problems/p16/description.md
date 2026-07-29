@@ -13,15 +13,15 @@ The set of potential locations for the hubs is given. Moreover, the number of pe
 When do people not use a hub? 
 There are several reasons why people will not use a hub: 
 
-Commuters do not use a hub when the extra time needed is too much. More precisely, people will not use a hub if the travel time from the junction to the hub plus the biking time from the hub to the POI minus the driving time from the junction to the POI is more than an acceptable extra time Δ.  
+Commuters do not use a hub when the extra time needed is too much. More precisely, people will not use a hub if the travel time from the junction to the hub plus the biking time from the hub to the POI minus the driving time from the junction to the POI is more than an acceptable extra time $\Delta$.  
 
-Commuters do not want to bike too long. More precisely, people will not use a hub if the biking time from the hub to the POI exceeds a certain threshold (T).  
+Commuters do not want to bike too long. More precisely, people will not use a hub if the biking time from the hub to the POI exceeds a certain threshold ($T$).  
 
-Commuters will not use the bike (and therefore will not use the hub) if the distance from the hub to the POI is less than a minimum distance (D).  
+Commuters will not use the bike (and therefore will not use the hub) if the distance from the hub to the POI is less than a minimum distance ($D$).  
 
-Commuters will not use a hub if the number of car kilometers saved is too small. More precisely, people will not use a hub if the distance from a junction to the POI minus the distance from that junction to the hub h is less than τ. 
+Commuters will not use a hub if the number of car kilometers saved is too small. More precisely, people will not use a hub if the distance from a junction to the POI minus the distance from that junction to the hub $h$ is less than $\tau$. 
 
-All these conditions make no value for commuters to use a P&B. It is estimated that r% of the commuters for which at least one hub exists for which the above 4 reasons do not hold, will use a hub. 
+All these conditions make no value for commuters to use a P&B. It is estimated that $r\%$ of the commuters for which at least one hub exists for which the above 4 reasons do not hold, will use a hub. 
 
 Goal 
-The goal is as follows: Develop a model that determines, given that in total N hubs may be opened, at which locations we should open a hub, such that the total number of commuters that will make use of a hub is maximized. 
+The goal is as follows: Develop a model that determines, given that in total $N$ hubs may be opened, at which locations we should open a hub, such that the total number of commuters that will make use of a hub is maximized. 
