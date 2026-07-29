@@ -7,7 +7,7 @@
             "shape": []
         },
         "c": {
-            "description": "Travel cost from city i to city j",
+            "description": "Travel cost from city $i$ to city $j$",
             "type": "continuous",
             "shape": [
                 "n",
@@ -21,8 +21,7 @@
             "citekey": "yazdani2025"
         },
         "notes": [
-            "EvoCut arXiv submission `v1` proposes three inequalities used to generate formulations `p12.b-d`.",
-            "EvoCut arXiv submission `v2` proposes five inequalities used to generate formulations `p12.e-i`."
+            "The problem implicitly assumes more than two cities ($n > 2$)."
         ]
     }
 }

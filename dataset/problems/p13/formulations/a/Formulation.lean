@@ -38,10 +38,8 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
     v.y pl a t =
       v.y pl a ⟨t.val - 1, by omega⟩ +
       ∑ a' : Fin p.nA, v.z pl a' a ⟨t.val - 1, by
-        have h1 : t.val < p.nT := t.isLt
         omega⟩ -
       ∑ a' : Fin p.nA, v.z pl a a' ⟨t.val - 1, by
-        have h1 : t.val < p.nT := t.isLt
         omega⟩
   -- Movements only between adjacent locations
   hadj : ∀ (pl : Fin p.nP) (a a' : Fin p.nA) (t : Fin p.nT),

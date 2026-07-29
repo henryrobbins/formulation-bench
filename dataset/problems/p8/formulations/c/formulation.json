@@ -12,7 +12,7 @@
             "shape": []
         },
         "p": {
-            "description": "Processing time of the k-th operation of job j",
+            "description": "Processing time of the $k$-th operation of job $j$",
             "type": "continuous",
             "shape": [
                 "n",
@@ -20,7 +20,7 @@
             ]
         },
         "Om": {
-            "description": "Machine index assigned to the k-th operation of job j",
+            "description": "Machine index assigned to the $k$-th operation of job $j$",
             "type": "integer",
             "shape": [
                 "n",
@@ -46,7 +46,7 @@
             }
         },
         {
-            "description": "Each operation is assigned to exactly one machine (Om is a total function into machines).",
+            "description": "Each operation is assigned to exactly one machine ($Om$ is a total function into machines).",
             "formulation": "\\forall j,k: \\; \\exists!\\, i: \\; Om_{j,k} = i",
             "explicit": false,
             "code": {
@@ -54,7 +54,7 @@
             }
         },
         {
-            "description": "For each job, its operations visit every machine exactly once (Om[j] is a permutation of the machine set).",
+            "description": "For each job, its operations visit every machine exactly once ($Om_j$ is a permutation of the machine set).",
             "formulation": "\\forall j, i: \\; \\exists!\\, k: \\; Om_{j,k} = i",
             "explicit": false,
             "code": {
@@ -64,7 +64,7 @@
     ],
     "definitions": {
         "P": {
-            "description": "Set of conflict pairs: all ((j1,k1),(j2,k2)) with j1!=j2 or k1!=k2 that share the same machine",
+            "description": "Set of conflict pairs: all $((j_1,k_1),(j_2,k_2))$ with $j_1 \\neq j_2$ or $k_1 \\neq k_2$ that share the same machine",
             "formulation": "\\mathcal{P} = \\{((j_1,k_1),(j_2,k_2)) : Om_{j_1,k_1} = Om_{j_2,k_2},\\; (j_1,k_1) \\prec_{\\mathrm{lex}} (j_2,k_2)\\}",
             "code": {
                 "python": "P = []\nfor machine in range(m):\n    ops = [(j, k) for j in range(n) for k in range(m) if Om[j][k] == machine]\n    for i in range(len(ops)):\n        for j2, k2 in ops[i + 1:]:\n            P.append((ops[i], (j2, k2)))"
@@ -78,21 +78,21 @@
             }
         },
         "O": {
-            "description": "Set of operations assigned to machine i: pairs (j,k) with Om_{j,k} = i",
+            "description": "Set of operations assigned to machine $i$: pairs $(j,k)$ with $Om_{j,k} = i$",
             "formulation": "O_i = \\{ (j,k) : Om_{j,k} = i \\} \\quad \\forall i \\in \\{0, \\dots, m-1\\}",
             "code": {
                 "python": "O = {i: [(j, k) for j in range(n) for k in range(m) if Om[j][k] == i] for i in range(m)}"
             }
         },
         "h": {
-            "description": "Head of operation (j,k): total processing time of earlier operations in job j",
+            "description": "Head of operation $(j,k)$: total processing time of earlier operations in job $j$",
             "formulation": "h_{j,k} = \\sum_{t=0}^{k-1} p_{j,t} \\quad \\forall j, k",
             "code": {
                 "python": "h = [[sum(p[j][t] for t in range(k)) for k in range(m)] for j in range(n)]"
             }
         },
         "tau": {
-            "description": "Tail of operation (j,k): total processing time of later operations in job j",
+            "description": "Tail of operation $(j,k)$: total processing time of later operations in job $j$",
             "formulation": "\\tau_{j,k} = \\sum_{t=k+1}^{m-1} p_{j,t} \\quad \\forall j, k",
             "code": {
                 "python": "tau = [[sum(p[j][t] for t in range(k + 1, m)) for k in range(m)] for j in range(n)]"
@@ -101,7 +101,7 @@
     },
     "variables": {
         "S": {
-            "description": "Start time of the k-th operation of job j",
+            "description": "Start time of the $k$-th operation of job $j$",
             "type": "continuous",
             "shape": [
                 "n",
@@ -109,7 +109,7 @@
             ]
         },
         "y": {
-            "description": "1 if operation (j1,k1) is scheduled before (j2,k2) on their shared machine, 0 otherwise; indexed over conflict pairs P",
+            "description": "$1$ if operation $(j_1,k_1)$ is scheduled before $(j_2,k_2)$ on their shared machine, $0$ otherwise; indexed over conflict pairs $P$",
             "type": "binary",
             "shape": [
                 "|P|"
@@ -132,7 +132,7 @@
             "explicit": true
         },
         {
-            "description": "Machine non-overlap (forward): if y=1, operation (j1,k1) precedes (j2,k2) on their shared machine.",
+            "description": "Machine non-overlap (forward): if $y=1$, operation $(j_1,k_1)$ precedes $(j_2,k_2)$ on their shared machine.",
             "formulation": "S_{j_1,k_1} + p_{j_1,k_1} \\le S_{j_2,k_2} + M(1 - y_{j_1,k_1,j_2,k_2}) \\quad \\forall ((j_1,k_1),(j_2,k_2)) \\in \\mathcal{P}",
             "code": {
                 "gurobipy": "for (j1, k1), (j2, k2) in P:\n    model.addConstr(S[j1, k1] + p[j1][k1] <= S[j2, k2] + M * (1 - y[j1, k1, j2, k2]))"
@@ -140,7 +140,7 @@
             "explicit": true
         },
         {
-            "description": "Machine non-overlap (reverse): if y=0, operation (j2,k2) precedes (j1,k1) on their shared machine.",
+            "description": "Machine non-overlap (reverse): if $y=0$, operation $(j_2,k_2)$ precedes $(j_1,k_1)$ on their shared machine.",
             "formulation": "S_{j_2,k_2} + p_{j_2,k_2} \\le S_{j_1,k_1} + M\\,y_{j_1,k_1,j_2,k_2} \\quad \\forall ((j_1,k_1),(j_2,k_2)) \\in \\mathcal{P}",
             "code": {
                 "gurobipy": "for (j1, k1), (j2, k2) in P:\n    model.addConstr(S[j2, k2] + p[j2][k2] <= S[j1, k1] + M * y[j1, k1, j2, k2])"
@@ -195,8 +195,7 @@
             "name": "EC2"
         },
         "notes": [
-            "For each machine, the makespan is at least the total processing time of operations assigned to it, plus the minimum head (earliest a machine's operation can start within its job) and minimum tail (latest a machine's operation finishes before its job ends) across those operations.",
-            "EC2 is identical in EvoCut arXiv submissions `v1` and `v2` and is included once as this formulation."
+            "This is the JSSP formulation from `v1` of {cite:t}`yazdani2025` augmented with acceleration cut EC2, which is unchanged in `v2`."
         ]
     }
 }

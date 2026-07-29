@@ -101,7 +101,7 @@
     },
     "constraints": [
         {
-            "description": "Constraint defining zed in terms of original variables.",
+            "description": "Constraint defining $\\text{zed}$ in terms of original variables.",
             "formulation": "zed = m * M + h * O",
             "explicit": true,
             "code": {
@@ -109,7 +109,7 @@
             }
         },
         {
-            "description": "The maximum number of buses that can be utilized is S.",
+            "description": "The maximum number of buses that can be utilized is $S$.",
             "formulation": "S \\geq h",
             "explicit": true,
             "code": {
@@ -117,7 +117,7 @@
             }
         },
         {
-            "description": "A minimum of J employees need to be transported.",
+            "description": "A minimum of $J$ employees need to be transported.",
             "formulation": "J \\leq m \\times K + h \\times D",
             "explicit": true,
             "code": {
@@ -142,7 +142,7 @@
         }
     ],
     "objective": {
-        "description": "Minimize the new variable zed.",
+        "description": "Minimize the new variable $\\text{zed}$.",
         "formulation": "Minimize \\ zed",
         "code": {
             "gurobipy": "model.setObjective(zed, GRB.MINIMIZE)"
@@ -156,7 +156,7 @@
             "variation_id": "f"
         },
         "notes": [
-            "Substitute the objective function with a new variable and linking constraint."
+            "Transformation of formulation `a`: Substitute the objective function with a new variable and linking constraint."
         ]
     }
 }

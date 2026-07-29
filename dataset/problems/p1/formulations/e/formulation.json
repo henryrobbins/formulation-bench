@@ -94,7 +94,7 @@
             "shape": []
         },
         "slack_0": {
-            "description": "Slack variable for constraint: The minimum number of individuals handled within an hour by machines accepting both cash and cards must be U.",
+            "description": "Slack variable for constraint: The minimum number of individuals handled within an hour by machines accepting both cash and cards must be $U$.",
             "type": "continuous",
             "shape": []
         },
@@ -104,14 +104,14 @@
             "shape": []
         },
         "slack_2": {
-            "description": "Slack variable for constraint: The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass V.",
+            "description": "Slack variable for constraint: The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass $V$.",
             "type": "continuous",
             "shape": []
         }
     },
     "constraints": [
         {
-            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be U. (Modified to include slack variable slack_0)",
+            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be $U$. (Modified to include slack variable $\\text{slack}_0$)",
             "formulation": "A * s + K * r - slack_0 = U",
             "explicit": true,
             "code": {
@@ -119,7 +119,7 @@
             }
         },
         {
-            "description": "The quantity of machines that only accept cards should not surpass the quantity of machines that accept cash. (Modified to include slack variable slack_1)",
+            "description": "The quantity of machines that only accept cards should not surpass the quantity of machines that accept cash. (Modified to include slack variable $\\text{slack}_1$)",
             "formulation": "r + slack_1 = s",
             "explicit": true,
             "code": {
@@ -127,7 +127,7 @@
             }
         },
         {
-            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass V. (Modified to include slack variable slack_2)",
+            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass $V$. (Modified to include slack variable $\\text{slack}_2$)",
             "formulation": "s * Y + r * W + slack_2 = V",
             "explicit": true,
             "code": {
@@ -151,7 +151,7 @@
             }
         },
         {
-            "description": "Slack variable slack_0 must be non-negative.",
+            "description": "Slack variable $\\text{slack}_0$ must be non-negative.",
             "formulation": "slack_0 \\geq 0",
             "explicit": false,
             "code": {
@@ -159,7 +159,7 @@
             }
         },
         {
-            "description": "Slack variable slack_1 must be non-negative.",
+            "description": "Slack variable $\\text{slack}_1$ must be non-negative.",
             "formulation": "slack_1 \\geq 0",
             "explicit": false,
             "code": {
@@ -167,7 +167,7 @@
             }
         },
         {
-            "description": "Slack variable slack_2 must be non-negative.",
+            "description": "Slack variable $\\text{slack}_2$ must be non-negative.",
             "formulation": "slack_2 \\geq 0",
             "explicit": false,
             "code": {
@@ -190,7 +190,7 @@
             "variation_id": "g"
         },
         "notes": [
-            "Introduce slack variables to convert inequality constraints into equality constraints."
+            "Transformation of formulation `a`: Introduce slack variables to convert inequality constraints into equality constraints."
         ]
     }
 }

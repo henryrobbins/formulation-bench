@@ -17,7 +17,7 @@
             "shape": []
         },
         "adj": {
-            "description": "Adjacency matrix: 1 if location a is adjacent to a', 0 otherwise",
+            "description": "Adjacency matrix: $1$ if location $a$ is adjacent to $a'$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nA",
@@ -25,7 +25,7 @@
             ]
         },
         "r": {
-            "description": "Reward earned for a flight being at location a in time period t",
+            "description": "Reward earned for a flight being at location $a$ in time period $t$",
             "type": "continuous",
             "shape": [
                 "nA",
@@ -33,7 +33,7 @@
             ]
         },
         "cap": {
-            "description": "Capacity of sector a in time period t",
+            "description": "Capacity of sector $a$ in time period $t$",
             "type": "integer",
             "shape": [
                 "nA",

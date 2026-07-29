@@ -23,7 +23,7 @@ Operational Components
 Key Constraints:
 - Location capacities: No more planes than the allowed capacity at any location and time.
 - Unique assignment: Each plane is in exactly one location at each time.
-- Flow preservation: For each plane, the number of times it enters a location at time t must equal the number of times it leaves at time t+1, except at the initial and final time periods. This is enforced by only allowing transitions between adjacent locations.
+- Flow preservation: For each plane, the number of times it enters a location at time $t$ must equal the number of times it leaves at time $t+1$, except at the initial and final time periods. This is enforced by only allowing transitions between adjacent locations.
 
 Objective Function:
 Maximize the total reward, defined as the sum of rewards for all planes, locations, and times, where the reward is location- and time-dependent (constant for sectors, location-dependent for airports).

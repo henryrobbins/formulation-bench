@@ -81,24 +81,24 @@
             "shape": []
         },
         "slack_0": {
-            "description": "Slack variable for constraint: The percentage of topsoil bags should not go beyond K out of all bags.",
+            "description": "Slack variable for constraint: The percentage of topsoil bags should not go beyond $K$ out of all bags.",
             "type": "continuous",
             "shape": []
         },
         "slack_1": {
-            "description": "Slack variable for constraint: The combined amount of subsoil bags and topsoil bags must not surpass D.",
+            "description": "Slack variable for constraint: The combined amount of subsoil bags and topsoil bags must not surpass $D$.",
             "type": "continuous",
             "shape": []
         },
         "slack_2": {
-            "description": "Slack variable for constraint: A minimum of P bags of topsoil is required to be utilized.",
+            "description": "Slack variable for constraint: A minimum of $P$ bags of topsoil is required to be utilized.",
             "type": "continuous",
             "shape": []
         }
     },
     "constraints": [
         {
-            "description": "The percentage of topsoil bags should not go beyond K out of all bags. (Modified to include slack variable slack_0)",
+            "description": "The percentage of topsoil bags should not go beyond $K$ out of all bags. (Modified to include slack variable $\\text{slack}_0$)",
             "formulation": "d + slack_0 = K * (d + h)",
             "explicit": true,
             "code": {
@@ -106,7 +106,7 @@
             }
         },
         {
-            "description": "The combined amount of subsoil bags and topsoil bags must not surpass D. (Modified to include slack variable slack_1)",
+            "description": "The combined amount of subsoil bags and topsoil bags must not surpass $D$. (Modified to include slack variable $\\text{slack}_1$)",
             "formulation": "h + d + slack_1 = D",
             "explicit": true,
             "code": {
@@ -114,7 +114,7 @@
             }
         },
         {
-            "description": "A minimum of P bags of topsoil is required to be utilized. (Modified to include slack variable slack_2)",
+            "description": "A minimum of $P$ bags of topsoil is required to be utilized. (Modified to include slack variable $\\text{slack}_2$)",
             "formulation": "d - slack_2 = P",
             "explicit": true,
             "code": {
@@ -163,7 +163,7 @@
         }
     ],
     "objective": {
-        "description": "The total amount of water needed consists of the combined value of (Z multiplied by the quantity of subsoil bags) and (B multiplied by the quantity of topsoil bags). The aim is to reduce the overall water consumption as much as possible.",
+        "description": "The total amount of water needed consists of the combined value of ($Z$ multiplied by the quantity of subsoil bags) and ($B$ multiplied by the quantity of topsoil bags). The aim is to reduce the overall water consumption as much as possible.",
         "formulation": "Min \\left( B \\times d + Z \\times h \\right )",
         "code": {
             "gurobipy": "model.setObjective(Z * h + B * d, GRB.MINIMIZE)"
@@ -177,7 +177,7 @@
             "variation_id": "g"
         },
         "notes": [
-            "Introduce slack variables to convert inequality constraints into equality constraints."
+            "Transformation of formulation `a`: Introduce slack variables to convert inequality constraints into equality constraints."
         ]
     }
 }

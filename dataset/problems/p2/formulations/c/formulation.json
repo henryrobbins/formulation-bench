@@ -7,21 +7,21 @@
             "shape": []
         },
         "Y": {
-            "description": "The quantity of resource j that is accessible.",
+            "description": "The quantity of resource $j$ that is accessible.",
             "type": "continuous",
             "shape": [
                 "N"
             ]
         },
         "A": {
-            "description": "The quantity of electrical energy generated from trial i",
+            "description": "The quantity of electrical energy generated from trial $i$",
             "type": "continuous",
             "shape": [
                 "M"
             ]
         },
         "I": {
-            "description": "Resource j quantity needed for experiment i.",
+            "description": "Resource $j$ quantity needed for experiment $i$.",
             "type": "continuous",
             "shape": [
                 "N",
@@ -104,7 +104,7 @@
         {
             "description": "The upper bound on digit 0 of each experiment frequency (must be at most 9).",
             "formulation": "j\\_0_i \\leq 9 \\quad \\forall i",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "gurobipy": "model.addConstrs(j_0[i] <= 9 for i in range(M))"
             }
@@ -112,7 +112,7 @@
         {
             "description": "The upper bound on digit 1 of each experiment frequency (must be at most 9).",
             "formulation": "j\\_1_i \\leq 9 \\quad \\forall i",
-            "explicit": true,
+            "explicit": false,
             "code": {
                 "gurobipy": "model.addConstrs(j_1[i] <= 9 for i in range(M))"
             }
@@ -149,7 +149,7 @@
             "variation_id": "d"
         },
         "notes": [
-            "Substitute integer variables with base-10 representations.",
+            "Transformation of formulation `a`: Substitute integer variables with base-10 representations.",
             "This formulation is marked invalid because it is only a reformulation at the instance-level, not the formulation-level.",
             "Source variation was missing the substitution; we applied a 2-digit base-10 substitution."
         ]

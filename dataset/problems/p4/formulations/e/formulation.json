@@ -94,19 +94,19 @@
             "shape": []
         },
         "slack_0": {
-            "description": "Slack variable for constraint: A minimum of J employees need to be transported.",
+            "description": "Slack variable for constraint: A minimum of $J$ employees need to be transported.",
             "type": "continuous",
             "shape": []
         },
         "slack_1": {
-            "description": "Slack variable for constraint: The maximum number of buses that can be utilized is S.",
+            "description": "Slack variable for constraint: The maximum number of buses that can be utilized is $S$.",
             "type": "continuous",
             "shape": []
         }
     },
     "constraints": [
         {
-            "description": "A minimum of J employees need to be transported. (Modified to include slack variable slack_0)",
+            "description": "A minimum of $J$ employees need to be transported. (Modified to include slack variable $\\text{slack}_0$)",
             "formulation": "m \\times K + h \\times D - slack_0 = J",
             "explicit": true,
             "code": {
@@ -114,7 +114,7 @@
             }
         },
         {
-            "description": "The maximum number of buses that can be utilized is S. (Modified to include slack variable slack_1)",
+            "description": "The maximum number of buses that can be utilized is $S$. (Modified to include slack variable $\\text{slack}_1$)",
             "formulation": "h + slack_1 = S",
             "explicit": true,
             "code": {
@@ -169,7 +169,7 @@
             "variation_id": "g"
         },
         "notes": [
-            "Introduce slack variables to convert inequality constraints into equality constraints.",
+            "Transformation of formulation `a`: Introduce slack variables to convert inequality constraints into equality constraints.",
             "The $S$ bus constraint upper bound was absent from the source; we add an explicit constraint with slack variable."
         ]
     }

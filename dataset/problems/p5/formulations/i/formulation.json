@@ -83,7 +83,7 @@
     },
     "constraints": [
         {
-            "description": "The quantity of standard bottles must be a minimum of O times the quantity of vintage bottles.",
+            "description": "The quantity of standard bottles must be a minimum of $O$ times the quantity of vintage bottles.",
             "formulation": "O \\times g \\leq z",
             "explicit": true,
             "code": {
@@ -91,7 +91,7 @@
             }
         },
         {
-            "description": "A minimum of Q bottles with a vintage must be manufactured.",
+            "description": "A minimum of $Q$ bottles with a vintage must be manufactured.",
             "formulation": "Q \\leq g",
             "explicit": true,
             "code": {
@@ -99,7 +99,7 @@
             }
         },
         {
-            "description": "The combined quantity of vine used in vintage and regular bottles should not surpass A milliliters.",
+            "description": "The combined quantity of vine used in vintage and regular bottles should not surpass $A$ milliliters.",
             "formulation": "A \\geq z \\times J + g \\times D",
             "explicit": true,
             "code": {
@@ -138,7 +138,7 @@
             "variation_id": "k"
         },
         "notes": [
-            "Random formulation unrelated to the original problem, with the same optimal objective value as the original problem."
+            "Transformation of formulation `a`: Random formulation unrelated to the original problem, with the same optimal objective value as the original problem."
         ]
     }
 }

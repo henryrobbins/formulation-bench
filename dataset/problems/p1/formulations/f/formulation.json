@@ -84,29 +84,29 @@
     ],
     "variables": {
         "r1": {
-            "description": "Part 1 of variable r: The quantity of machines that exclusively accept cards",
+            "description": "Part 1 of variable $r$: The quantity of machines that exclusively accept cards",
             "type": "integer",
             "shape": []
         },
         "r2": {
-            "description": "Part 2 of variable r: The quantity of machines that exclusively accept cards",
+            "description": "Part 2 of variable $r$: The quantity of machines that exclusively accept cards",
             "type": "integer",
             "shape": []
         },
         "s1": {
-            "description": "Part 1 of variable s: The quantity of machines that operate using cash.",
+            "description": "Part 1 of variable $s$: The quantity of machines that operate using cash.",
             "type": "integer",
             "shape": []
         },
         "s2": {
-            "description": "Part 2 of variable s: The quantity of machines that operate using cash.",
+            "description": "Part 2 of variable $s$: The quantity of machines that operate using cash.",
             "type": "integer",
             "shape": []
         }
     },
     "constraints": [
         {
-            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be U.",
+            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be $U$.",
             "formulation": "U \\leq A (s1 + s2) + K (r1 + r2)",
             "explicit": true,
             "code": {
@@ -122,7 +122,7 @@
             }
         },
         {
-            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass V.",
+            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass $V$.",
             "formulation": "V \\geq (r1 + r2)\\times W + (s1 + s2)\\times Y",
             "explicit": true,
             "code": {
@@ -177,7 +177,7 @@
             "variation_id": "h"
         },
         "notes": [
-            "Splits variables."
+            "Transformation of formulation `a`: Splits variables."
         ]
     }
 }

@@ -17,7 +17,7 @@
             "shape": []
         },
         "adj": {
-            "description": "Adjacency matrix: 1 if a is adjacent to a', 0 otherwise",
+            "description": "Adjacency matrix: $1$ if $a$ is adjacent to $a'$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nA",
@@ -25,7 +25,7 @@
             ]
         },
         "r": {
-            "description": "Reward for being at location a at time t",
+            "description": "Reward for being at location $a$ at time $t$",
             "type": "continuous",
             "shape": [
                 "nA",
@@ -33,7 +33,7 @@
             ]
         },
         "cap": {
-            "description": "Capacity of location a at time t",
+            "description": "Capacity of location $a$ at time $t$",
             "type": "integer",
             "shape": [
                 "nA",
@@ -61,7 +61,7 @@
     ],
     "variables": {
         "n": {
-            "description": "Number of flights at location a at time t",
+            "description": "Number of flights at location $a$ at time $t$",
             "type": "integer",
             "shape": [
                 "nA",
@@ -69,7 +69,7 @@
             ]
         },
         "f": {
-            "description": "Number of flights moving from a at time t to a' at time t+1",
+            "description": "Number of flights moving from $a$ at time $t$ to $a'$ at time $t+1$",
             "type": "integer",
             "shape": [
                 "nA",
@@ -96,7 +96,7 @@
             }
         },
         {
-            "description": "Flow conservation: flights at location a at time t equal those at t-1 plus arrivals minus departures (one-step transitions).",
+            "description": "Flow conservation: flights at location $a$ at time $t$ equal those at $t-1$ plus arrivals minus departures (one-step transitions).",
             "formulation": "n_{a,t} = n_{a,t-1} + \\sum_{a' \\in A} f_{a',a,t-1} - \\sum_{a' \\in A} f_{a,a',t-1} \\quad \\forall a \\in A, t \\in T, t > 0",
             "explicit": true,
             "code": {
@@ -120,7 +120,7 @@
             }
         },
         {
-            "description": "Aggregate departures at time t do not exceed presence at time t (stay-flow non-negativity).",
+            "description": "Aggregate departures at time $t$ do not exceed presence at time $t$ (stay-flow non-negativity).",
             "formulation": "\\sum_{a' \\in A} f_{a,a',t} \\leq n_{a,t} \\quad \\forall a \\in A, t \\in T",
             "explicit": true,
             "code": {
@@ -128,7 +128,7 @@
             }
         },
         {
-            "description": "n is non-negative.",
+            "description": "$n$ is non-negative.",
             "formulation": "n_{a,t} \\geq 0 \\quad \\forall a \\in A, t \\in T",
             "explicit": false,
             "code": {
@@ -136,7 +136,7 @@
             }
         },
         {
-            "description": "f is non-negative.",
+            "description": "$f$ is non-negative.",
             "formulation": "f_{a,a',t} \\geq 0 \\quad \\forall a, a' \\in A, t \\in T",
             "explicit": false,
             "code": {

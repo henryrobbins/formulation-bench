@@ -28,6 +28,7 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hmaxbus : ((v.h_0 + 10 * v.h_1 : ℤ) : ℝ) ≤ p.S
   -- Transport at least J employees
   htransport : p.J ≤ ((v.m_0 + 10 * v.m_1 : ℤ) : ℝ) * (p.K : ℝ) + ((v.h_0 + 10 * v.h_1 : ℤ) : ℝ) * (p.D : ℝ)
+  -- [Implicit Constraints]
   -- Digit bounds
   hm0_nn : 0 ≤ v.m_0
   hm1_nn : 0 ≤ v.m_1

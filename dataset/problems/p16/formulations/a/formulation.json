@@ -2,7 +2,7 @@
     "valid": true,
     "parameters": {
         "N": {
-            "description": "Number of existing hubs that must remain open (hubs 0..N-1)",
+            "description": "Number of existing hubs that must remain open (hubs $0 \\ldots N-1$)",
             "type": "integer",
             "shape": []
         },
@@ -22,7 +22,7 @@
             "shape": []
         },
         "v": {
-            "description": "Commuter demand from junction s to POI p",
+            "description": "Commuter demand from junction $s$ to POI $p$",
             "type": "continuous",
             "shape": [
                 "nS",
@@ -30,7 +30,7 @@
             ]
         },
         "F": {
-            "description": "Feasibility indicator: 1 iff junction-hub-POI triple is viable for Park and Bike use",
+            "description": "Feasibility indicator: $1$ iff junction-hub-POI triple is viable for Park and Bike use",
             "type": "binary",
             "shape": [
                 "nS",
@@ -96,14 +96,14 @@
     ],
     "variables": {
         "y": {
-            "description": "1 if hub h is opened, 0 otherwise",
+            "description": "$1$ if hub $h$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "M"
             ]
         },
         "z": {
-            "description": "1 if demand from junction s to POI p is covered by at least one open feasible hub, 0 otherwise",
+            "description": "$1$ if demand from junction $s$ to POI $p$ is covered by at least one open feasible hub, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nS",
@@ -113,7 +113,7 @@
     },
     "constraints": [
         {
-            "description": "At most U new hubs (indices N..M-1) may be opened.",
+            "description": "At most $U$ new hubs (indices $N \\ldots M-1$) may be opened.",
             "formulation": "\\sum_{h=N}^{M-1} y_h \\leq U",
             "explicit": true,
             "code": {
@@ -121,7 +121,7 @@
             }
         },
         {
-            "description": "All existing hubs (indices 0..N-1) must remain open.",
+            "description": "All existing hubs (indices $0 \\ldots N-1$) must remain open.",
             "formulation": "\\sum_{h=0}^{N-1} y_h = N",
             "explicit": true,
             "code": {
@@ -129,7 +129,7 @@
             }
         },
         {
-            "description": "Demand from junction s to POI p can only be covered if at least one feasible open hub exists for the pair.",
+            "description": "Demand from junction $s$ to POI $p$ can only be covered if at least one feasible open hub exists for the pair.",
             "formulation": "z_{sp} \\leq \\sum_{h \\in H} F_{shp} \\, y_h \\quad \\forall s \\in S, p \\in P",
             "explicit": true,
             "code": {

@@ -101,7 +101,7 @@
     },
     "constraints": [
         {
-            "description": "Constraint defining zed in terms of original variables.",
+            "description": "Constraint defining $\\text{zed}$ in terms of original variables.",
             "formulation": "zed = s + r",
             "explicit": true,
             "code": {
@@ -109,7 +109,7 @@
             }
         },
         {
-            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be U.",
+            "description": "The minimum number of individuals handled within an hour by machines accepting both cash and cards must be $U$.",
             "formulation": "U \\leq A \\times s + K \\times r",
             "explicit": true,
             "code": {
@@ -125,7 +125,7 @@
             }
         },
         {
-            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass V.",
+            "description": "The combined amount of paper rolls used per hour by machines that accept cash and those that only accept cards should not surpass $V$.",
             "formulation": "V \\geq r \\times W + s \\times Y",
             "explicit": true,
             "code": {
@@ -150,7 +150,7 @@
         }
     ],
     "objective": {
-        "description": "Minimize the new variable zed.",
+        "description": "Minimize the new variable $\\text{zed}$.",
         "formulation": "Minimize \\ zed",
         "code": {
             "gurobipy": "model.setObjective(zed, GRB.MINIMIZE)"
@@ -164,7 +164,7 @@
             "variation_id": "f"
         },
         "notes": [
-            "Substitute the objective function with a new variable and linking constraint."
+            "Transformation of formulation `a`: Substitute the objective function with a new variable and linking constraint."
         ]
     }
 }

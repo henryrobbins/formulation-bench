@@ -12,28 +12,28 @@
             "shape": []
         },
         "d": {
-            "description": "Demand of customer i",
+            "description": "Demand of customer $i$",
             "type": "continuous",
             "shape": [
                 "n"
             ]
         },
         "u": {
-            "description": "Capacity of warehouse j",
+            "description": "Capacity of warehouse $j$",
             "type": "continuous",
             "shape": [
                 "m"
             ]
         },
         "f": {
-            "description": "Fixed cost to open warehouse j",
+            "description": "Fixed cost to open warehouse $j$",
             "type": "continuous",
             "shape": [
                 "m"
             ]
         },
         "c": {
-            "description": "Transportation cost if all of customer i's demand is served by warehouse j (already accounts for d_i)",
+            "description": "Transportation cost if all of customer $i$'s demand is served by warehouse $j$ (already accounts for $d_i$)",
             "type": "continuous",
             "shape": [
                 "n",
@@ -93,7 +93,7 @@
     ],
     "variables": {
         "x": {
-            "description": "1 if customer i is assigned to warehouse j, 0 otherwise",
+            "description": "$1$ if customer $i$ is assigned to warehouse $j$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "n",
@@ -101,7 +101,7 @@
             ]
         },
         "y": {
-            "description": "1 if warehouse j is opened, 0 otherwise",
+            "description": "$1$ if warehouse $j$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "m"
@@ -126,7 +126,7 @@
             "explicit": true
         },
         {
-            "description": "Warehouse Cover Inequality (EC6): at most 2 customers with demand exceeding one-third of warehouse j's capacity can be assigned to warehouse j.",
+            "description": "Warehouse Cover Inequality (EC6): at most 2 customers with demand exceeding one-third of warehouse $j$'s capacity can be assigned to warehouse $j$.",
             "formulation": "\\sum_{i \\in I :\\, d_i > u_j/3} x_{ij} \\leq 2 \\, y_j \\quad \\forall j \\in J",
             "code": {
                 "gurobipy": "model.addConstrs(\n    gp.quicksum(x[i, j] for i in range(n) if d[i] > u[j] / 3) <= 2 * y[j]\n    for j in range(m)\n)"
@@ -149,7 +149,7 @@
             "name": "EC6"
         },
         "notes": [
-            "At most 2 customers with demand exceeding one-third of warehouse j's capacity can be assigned to warehouse j."
+            "This is the CWLP formulation from `v2` of {cite:t}`yazdani2025` augmented with acceleration cut EC6."
         ]
     }
 }

@@ -45,14 +45,14 @@
             "shape": []
         },
         "Hf": {
-            "description": "Indicator for each hub: 1 if the hub is fixed and must remain open, 0 otherwise",
+            "description": "Indicator for each hub: $1$ if the hub is fixed and must remain open, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nH"
             ]
         },
         "M": {
-            "description": "Big-M constant used to link the demand-fraction variable q to the assignment indicator z",
+            "description": "Big-M constant used to link the demand-fraction variable $q$ to the assignment indicator $z$",
             "type": "continuous",
             "shape": []
         }
@@ -109,7 +109,7 @@
     ],
     "variables": {
         "q": {
-            "description": "Fraction of region c's demand served by hub h",
+            "description": "Fraction of region $c$'s demand served by hub $h$",
             "type": "continuous",
             "shape": [
                 "nH",
@@ -117,7 +117,7 @@
             ]
         },
         "z": {
-            "description": "1 if hub h contributes any supply to region c, 0 otherwise",
+            "description": "$1$ if hub $h$ contributes any supply to region $c$, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nH",
@@ -125,7 +125,7 @@
             ]
         },
         "y": {
-            "description": "1 if hub h is opened, 0 otherwise",
+            "description": "$1$ if hub $h$ is opened, $0$ otherwise",
             "type": "binary",
             "shape": [
                 "nH"
@@ -134,7 +134,7 @@
     },
     "constraints": [
         {
-            "description": "Big-M link: the demand fraction from hub h to region c is zero unless z_hc = 1.",
+            "description": "Big-M link: the demand fraction from hub $h$ to region $c$ is zero unless $z_{hc} = 1$.",
             "formulation": "q_{hc} \\leq M \\, z_{hc} \\quad \\forall h \\in H, c \\in C",
             "explicit": true,
             "code": {
@@ -150,7 +150,7 @@
             }
         },
         {
-            "description": "A hub can only be assigned to regions if it is open: total assignments from hub h is at most nC times its open indicator.",
+            "description": "A hub can only be assigned to regions if it is open: total assignments from hub $h$ is at most $nC$ times its open indicator.",
             "formulation": "\\sum_{c \\in C} z_{hc} \\leq |C| \\, y_h \\quad \\forall h \\in H",
             "explicit": true,
             "code": {

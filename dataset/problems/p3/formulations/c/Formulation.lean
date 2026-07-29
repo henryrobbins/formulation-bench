@@ -35,10 +35,10 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hflour  : ∑ i : Fin p.N, p.T i * ((v.n_0 i : ℝ) + 10 * (v.n_1 i : ℝ)) ≤ p.D
   -- Total waste generated does not exceed maximum allowed
   hwaste  : ∑ i : Fin p.N, p.C i * ((v.n_0 i : ℝ) + 10 * (v.n_1 i : ℝ)) ≤ p.E
+  -- [Implicit Constraints]
   -- Digit bounds
   hn0_hi : ∀ i : Fin p.N, v.n_0 i ≤ 9
   hn1_hi : ∀ i : Fin p.N, v.n_1 i ≤ 9
-  -- [Implicit Constraints]
   hn0_nn : ∀ i : Fin p.N, 0 ≤ v.n_0 i
   hn1_nn : ∀ i : Fin p.N, 0 ≤ v.n_1 i
 

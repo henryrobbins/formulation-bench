@@ -114,7 +114,7 @@
     },
     "constraints": [
         {
-            "description": "Canoeers are limited to delivering only a portion, P, of the total mail that is to be delivered.",
+            "description": "Canoeers are limited to delivering only a portion, $P$, of the total mail that is to be delivered.",
             "formulation": "P \\times \\left( p \\times Z + a \\times V \\right) \\geq p \\times Z",
             "explicit": true,
             "code": {
@@ -122,7 +122,7 @@
             }
         },
         {
-            "description": "The combined time devoted to deliveries by both runners and individuals using canoes must not surpass the limit of C hours.",
+            "description": "The combined time devoted to deliveries by both runners and individuals using canoes must not surpass the limit of $C$ hours.",
             "formulation": "C \\geq U \\times a + N \\times p",
             "explicit": true,
             "code": {
@@ -130,7 +130,7 @@
             }
         },
         {
-            "description": "A minimum of E runners are required to carry out the deliveries.",
+            "description": "A minimum of $E$ runners are required to carry out the deliveries.",
             "formulation": "E \\leq e",
             "explicit": true,
             "code": {
@@ -177,7 +177,7 @@
             "variation_id": "k"
         },
         "notes": [
-            "Random formulation unrelated to the original problem, with the same optimal objective value as the original problem."
+            "Transformation of formulation `a`: Random formulation unrelated to the original problem, with the same optimal objective value as the original problem."
         ]
     }
 }

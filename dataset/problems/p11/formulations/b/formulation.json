@@ -352,7 +352,7 @@
     ],
     "variables": {
         "u": {
-            "description": "On status of generator g at time t",
+            "description": "On status of generator $g$ at time $t$",
             "type": "binary",
             "shape": [
                 "n_G",
@@ -360,7 +360,7 @@
             ]
         },
         "v": {
-            "description": "Startup indicator of generator g at time t (1 if started)",
+            "description": "Startup indicator of generator $g$ at time $t$ ($1$ if started)",
             "type": "binary",
             "shape": [
                 "n_G",
@@ -368,7 +368,7 @@
             ]
         },
         "w": {
-            "description": "Shutdown indicator of generator g at time t (1 if shut down)",
+            "description": "Shutdown indicator of generator $g$ at time $t$ ($1$ if shut down)",
             "type": "binary",
             "shape": [
                 "n_G",
@@ -376,7 +376,7 @@
             ]
         },
         "d_su": {
-            "description": "Startup category selection for generator g, category s, at time t (ragged by n_S[g])",
+            "description": "Startup category selection for generator $g$, category $s$, at time $t$ (ragged by $n_{S,g}$)",
             "type": "binary",
             "shape": [
                 "n_G",
@@ -385,7 +385,7 @@
             ]
         },
         "lam": {
-            "description": "Piecewise convex combination weight for generator g, breakpoint l, at time t (ragged by n_L[g])",
+            "description": "Piecewise convex combination weight for generator $g$, breakpoint $l$, at time $t$ (ragged by $n_{L,g}$)",
             "type": "continuous",
             "shape": [
                 "n_G",
@@ -394,7 +394,7 @@
             ]
         },
         "p": {
-            "description": "Thermal output above P_min for generator g at time t",
+            "description": "Thermal output above $P^{\\min}_g$ for generator $g$ at time $t$",
             "type": "continuous",
             "shape": [
                 "n_G",
@@ -402,7 +402,7 @@
             ]
         },
         "r": {
-            "description": "Spinning reserve of generator g at time t",
+            "description": "Spinning reserve of generator $g$ at time $t$",
             "type": "continuous",
             "shape": [
                 "n_G",
@@ -410,7 +410,7 @@
             ]
         },
         "c_var": {
-            "description": "Variable production cost above the cost at the first breakpoint for generator g at time t",
+            "description": "Variable production cost above the cost at the first breakpoint for generator $g$ at time $t$",
             "type": "continuous",
             "shape": [
                 "n_G",
@@ -418,7 +418,7 @@
             ]
         },
         "p_wind": {
-            "description": "Renewable output for wind generator w at time t",
+            "description": "Renewable output for wind generator $w$ at time $t$",
             "type": "continuous",
             "shape": [
                 "n_W",
@@ -426,7 +426,7 @@
             ]
         },
         "b": {
-            "description": "EC1 indicator: 1 if generator g starts at t and shuts down at t+1",
+            "description": "EC1 indicator: $1$ if generator $g$ starts at $t$ and shuts down at $t+1$",
             "type": "binary",
             "shape": [
                 "n_G",
@@ -434,7 +434,7 @@
             ]
         },
         "P_bar": {
-            "description": "Maximum reachable output of generator g at time t",
+            "description": "Maximum reachable output of generator $g$ at time $t$",
             "type": "continuous",
             "shape": [
                 "n_G",
@@ -468,7 +468,7 @@
             "explicit": true
         },
         {
-            "description": "Minimum up time: a generator that starts must remain on for at least U[g] periods.",
+            "description": "Minimum up time: a generator that starts must remain on for at least $U_g$ periods.",
             "formulation": "\\sum_{\\tau=t-U_g+1}^{t} v_{g,\\tau} \\le u_{g,t} \\quad \\forall g, t \\ge U_g - 1",
             "code": {
                 "gurobipy": "for g in range(n_G):\n    for t in range(U[g]-1, T):\n        model.addConstr(gp.quicksum(v[g, tau] for tau in range(t - U[g] + 1, t + 1)) <= u[g, t])"
@@ -476,7 +476,7 @@
             "explicit": true
         },
         {
-            "description": "Minimum down time: a generator that shuts down must remain off for at least D[g] periods.",
+            "description": "Minimum down time: a generator that shuts down must remain off for at least $D_g$ periods.",
             "formulation": "\\sum_{\\tau=t-D_g+1}^{t} w_{g,\\tau} \\le 1 - u_{g,t} \\quad \\forall g, t \\ge D_g - 1",
             "code": {
                 "gurobipy": "for g in range(n_G):\n    for t in range(D[g]-1, T):\n        model.addConstr(gp.quicksum(w[g, tau] for tau in range(t - D[g] + 1, t + 1)) <= 1 - u[g, t])"
@@ -492,7 +492,7 @@
             "explicit": true
         },
         {
-            "description": "Startup category timing: category s can only be selected if the generator was off for the required lag.",
+            "description": "Startup category timing: category $s$ can only be selected if the generator was off for the required lag.",
             "formulation": "d_{g,s,t} \\le \\sum_{i=\\ell_{g,s}}^{\\ell_{g,s+1}-1} w_{g,t-i} \\quad \\forall g, s < |S_g| - 1, t \\ge \\ell_{g,s+1} - 1",
             "code": {
                 "gurobipy": "for g in range(n_G):\n    for s in range(n_S[g] - 1):\n        for t in range(ell[g][s+1] - 1, T):\n            model.addConstr(d_su[g, s, t] <= gp.quicksum(w[g, t - i] for i in range(ell[g][s], ell[g][s+1])))"
@@ -500,7 +500,7 @@
             "explicit": true
         },
         {
-            "description": "Must-run: generators with MR[g]=1 must remain on at all times.",
+            "description": "Must-run: generators with $\\mathrm{MR}_g = 1$ must remain on at all times.",
             "formulation": "u_{g,t} \\ge \\mathrm{MR}_g \\quad \\forall g, t",
             "code": {
                 "gurobipy": "for g in range(n_G):\n    if MR[g] > 0:\n        for t in range(T):\n            model.addConstr(u[g, t] >= MR[g])"
@@ -524,7 +524,7 @@
             "explicit": true
         },
         {
-            "description": "Ramp-up limit: output plus reserve cannot increase by more than RU[g] from the previous period.",
+            "description": "Ramp-up limit: output plus reserve cannot increase by more than $RU_g$ from the previous period.",
             "formulation": "p_{g,t} + r_{g,t} - p_{g,t-1} \\le RU_g \\quad \\forall g, t \\ge 1",
             "code": {
                 "gurobipy": "for g in range(n_G):\n    for t in range(1, T):\n        model.addConstr(p[g, t] + r[g, t] - p[g, t-1] <= RU[g])"
@@ -532,7 +532,7 @@
             "explicit": true
         },
         {
-            "description": "Ramp-down limit: output cannot decrease by more than RD[g] from the previous period.",
+            "description": "Ramp-down limit: output cannot decrease by more than $RD_g$ from the previous period.",
             "formulation": "p_{g,t-1} - p_{g,t} \\le RD_g \\quad \\forall g, t \\ge 1",
             "code": {
                 "gurobipy": "for g in range(n_G):\n    for t in range(1, T):\n        model.addConstr(p[g, t-1] - p[g, t] <= RD[g])"
@@ -713,7 +713,7 @@
             "citekey": "yazdani2025"
         },
         "notes": [
-            "This is the MILP formulation given in Section F.7 of EvoCut arXiv submission `v2`. It introduces auxiliary variables $\\overline{P}_{g,t}$ and $b_{g,t}$ to enforce that demand minus renewable output plus reserve can be met by thermal capacity that is reachable under ramp limits, with derating during startups and shutdowns."
+            "This is the SHUC formulation from `v2` of {cite:t}`yazdani2025` augmented with its ten jointly applied acceleration cuts. It introduces auxiliary variables $\\overline{P}_{g,t}$ and $b_{g,t}$ to enforce that demand minus renewable output plus reserve can be met by thermal capacity that is reachable under ramp limits, with derating during startups and shutdowns"
         ]
     }
 }
