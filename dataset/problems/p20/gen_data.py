@@ -114,11 +114,12 @@ def generate_data(seed: int = SEED) -> dict:
 
     return {
         "nN": len(nodes),
+        "nB": len(beneficiary_nodes),
         "nK": len(foods),
         "nL": len(nutrients),
         "node_type": node_type,
         "E": [[edges[i][j] for j in nodes] for i in nodes],
-        "dem": [demand.get(i, 0) for i in nodes],
+        "dem": [demand[b] for b in beneficiary_nodes],
         "pc": [procurement_costs[k] for k in foods],
         "tc": [[[edge_costs[i][j][k] for k in foods] for j in nodes] for i in nodes],
         "nutreq": [nutritional_requirements[l] for l in nutrients],

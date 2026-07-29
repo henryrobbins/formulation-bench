@@ -17,7 +17,7 @@ jobs:
           cache-dependency-glob: uv.lock
       - run: uv sync
       - name: Lint (ruff check)
-        run: uv run ruff check src tests scripts
+        run: uv run ruff check src tests
 
   format:
     name: Format
@@ -30,7 +30,7 @@ jobs:
           cache-dependency-glob: uv.lock
       - run: uv sync
       - name: Format check (ruff format)
-        run: uv run ruff format --check src tests scripts
+        run: uv run ruff format --check src tests
 
   typecheck:
     name: Type Check
@@ -59,6 +59,22 @@ jobs:
         run: uv run python -c "from formulation_bench import Dataset; Dataset.load()"
       - name: Run tests
         run: uv run pytest
+
+  dataset:
+    name: Dataset
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync
+      # The license bundled with gurobipy on PyPI caps models at 2000 rows and
+      # columns, so 6 of the 20 problems are skipped here; the suite reports
+      # them as such. A full run needs an unrestricted license.
+      - name: Validate dataset
+        run: make test-dataset
 
   coverage:
     name: Coverage

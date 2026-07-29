@@ -242,7 +242,7 @@
                 "nV",
                 "nH",
                 "nI",
-                "|A_v|"
+                "cap[nV]"
             ],
             "indices": "(k, v, h, i, a) for k in range(nK) for v in range(nV) for h in range(nH) for i in range(nI) for a in range(cap[v])"
         }

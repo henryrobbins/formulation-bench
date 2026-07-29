@@ -77,4 +77,7 @@ files = ["src/formulation_bench"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "src/formulation_bench"]
-addopts = "--doctest-modules"
+# The dataset tests solve every formulation in the dataset and take minutes;
+# they are opt-in via `make test-dataset`.
+addopts = "--doctest-modules -m 'not dataset'"
+markers = ["dataset: validates dataset content (slow; requires gurobipy)"]

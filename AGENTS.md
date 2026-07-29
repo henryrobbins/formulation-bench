@@ -48,8 +48,8 @@ formulation-bench/
 │   ├── _render.py           # Jinja rendering helpers
 │   └── templates/           # Jinja templates
 ├── dataset/                 # the FormulationBench dataset
-├── scripts/                 # dataset validation utilities
 ├── tests/                   # pytest suite
+│   └── dataset/             # dataset content validation (marked `dataset`)
 ├── docs/                    # Sphinx docs (published to Read the Docs)
 │   ├── conf.py
 │   ├── index.md
@@ -78,6 +78,30 @@ docstring examples are part of the suite — keep them runnable.
 Some doctests instantiate `Dataset("dataset")` with a relative path; this
 resolves against the `dataset/` directory at the repository root, so run
 the tests from there.
+
+### Dataset tests
+
+`tests/dataset/` validates the *content* of `dataset/` rather than the
+package: every formulation is solved with Gurobi and checked against the
+recorded solution. A failure there means a data defect, not a code
+regression. These tests carry the `dataset` marker and are excluded from
+`make test` (and from coverage); run them explicitly:
+
+```bash
+make test-dataset                                  # all problems
+pytest tests/dataset -m dataset --problems 6,12    # restrict to p6 and p12
+```
+
+The recorded-solution feasibility check additionally pins every variable
+to its recorded value, so it only applies to formulations stated over
+those variables (`tests/dataset/_pinning.py`). The rest are filtered out
+at collection time rather than skipped, so the collected count for that
+test is smaller than the number of formulations.
+
+Six problems build models larger than the size-limited license bundled
+with gurobipy on PyPI (2000 rows/columns). Those are skipped rather than
+failed, so CI covers 14 of the 20 problems; a full run needs an
+unrestricted Gurobi license.
 
 ## Coverage
 
