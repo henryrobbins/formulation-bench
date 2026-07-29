@@ -6,6 +6,15 @@ the Ferchtandiker2025 data generator. The output JSON contains block/period
 indices, per-block grades, ore/waste tonnages, NPV values, a precedence
 matrix, and capacity/grade bound parameters — all the fields consumed by
 formulations a and b gen_params.py scripts.
+
+Grades are ore fractions in (0, 1]. The upstream generator instead draws them
+from [0.5, 3.0], which contradicts the model it accompanies: that model
+partitions blocks into I_0 = {g < 1} and I_1 = {g = 1} and gives a domain to
+each part, so any block with g > 1 is left with no domain at all and the MILP
+is unbounded. The problem description resolves the conflict in favor of a
+fraction — "roughly 20% of blocks are completely made up of ore", the
+remainder "contain a fraction of ore" — so I_1 is the pure-ore set, and the
+grade bounds below are scaled into (0, 1] to match.
 """
 
 import json
@@ -20,6 +29,15 @@ NUM_BLOCKS = 10
 NUM_PERIODS = 4
 SEED = 42
 
+# Share of blocks that are entirely ore (grade exactly 1), per the description.
+PURE_ORE_SHARE = 0.2
+
+# Revenue per tonne of contained ore. Raised from the upstream 50.0 to offset
+# the smaller grade range, keeping every block's NPV non-negative as the
+# formulations assume.
+ORE_PRICE = 250.0
+MINING_COST = 10.0
+
 
 def generate_data(seed: int = SEED) -> dict:
     np.random.seed(seed)
@@ -28,8 +46,13 @@ def generate_data(seed: int = SEED) -> dict:
     blocks = list(range(1, NUM_BLOCKS + 1))  # 1-based
     periods = list(range(1, NUM_PERIODS + 1))  # 1-based
 
-    # Per-block grade (float in [0.5, 3.0])
-    grade = {i: float(np.round(np.random.uniform(0.5, 3.0), 2)) for i in blocks}
+    # Per-block ore fraction: exactly 1 for the pure-ore blocks (I_1), a
+    # partial fraction for the rest (I_0)
+    pure_ore = set(random.sample(blocks, round(PURE_ORE_SHARE * NUM_BLOCKS)))
+    grade = {
+        i: 1.0 if i in pure_ore else float(np.round(np.random.uniform(0.2, 0.99), 2))
+        for i in blocks
+    }
 
     # Ore and waste tonnage
     ore_tonnage = {i: float(np.random.randint(1000, 5000)) for i in blocks}
@@ -40,8 +63,8 @@ def generate_data(seed: int = SEED) -> dict:
     for i in blocks:
         npv[i] = {}
         base_value = (
-            grade[i] * ore_tonnage[i] * 50.0
-            - (ore_tonnage[i] + waste_tonnage[i]) * 10.0
+            grade[i] * ore_tonnage[i] * ORE_PRICE
+            - (ore_tonnage[i] + waste_tonnage[i]) * MINING_COST
         )
         for t in periods:
             discount = 1.0 / (1.08 ** (t - 1))
@@ -62,8 +85,8 @@ def generate_data(seed: int = SEED) -> dict:
             precedence[i][j] = 1
 
     # Global capacity and grade bounds
-    grade_min = float(np.round(np.random.uniform(0.7, 1.0), 2))
-    grade_max = float(np.round(np.random.uniform(2.0, 2.5), 2))
+    grade_min = float(np.round(np.random.uniform(0.2, 0.35), 2))
+    grade_max = float(np.round(np.random.uniform(0.7, 0.85), 2))
     total_ore = sum(ore_tonnage[i] for i in blocks)
     total_material = sum(ore_tonnage[i] + waste_tonnage[i] for i in blocks)
     processing_capacity_min = float(np.round(0.7 * total_ore / NUM_PERIODS, 0))

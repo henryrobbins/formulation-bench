@@ -85,7 +85,8 @@
             "citekey": "ferchtandiker2025"
         },
         "notes": [
-            "The efficient formulation `p17.a` is a linear relaxation of the inefficient formulation `p17.b`. Hence, it is not a valid reformulation of `p17.b` by our constructive definition. We include it in the FormulationBench dataset as a negative reformulation example."
+            "The efficient formulation `p17.a` is a linear relaxation of the inefficient formulation `p17.b`. Hence, it is not a valid reformulation of `p17.b` by our constructive definition. We include it in the FormulationBench dataset as a negative reformulation example.",
+            "The efficient formulation from the source defines $I_0 = \\{i : g_i < 1\\}$ and $I_1 = \\{i : g_i = 1\\}$. It is implied that $I_0$ and $I_1$ partition the set of blocks $I$, hence the grade $g_i \\in [0,1]$. However, the source data generator draws grades from $[0.5, 3.0]$. We take the model as authoritative and modify the data generator accordingly."
         ]
     }
 }

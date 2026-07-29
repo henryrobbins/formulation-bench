@@ -29,6 +29,7 @@ structure Params where
   hT : NeZero T
   hc_nn : ∀ i : Fin n, ∀ t : Fin T, 0 ≤ c i t
   hg_nn: ∀ i :  Fin n, 0 ≤ g i
+  hg_le_one : ∀ i : Fin n, g i ≤ 1
   hO_nn : ∀ i : Fin n, 0 ≤ O i
   hW_nn : ∀ i : Fin n, 0 ≤ W i
 

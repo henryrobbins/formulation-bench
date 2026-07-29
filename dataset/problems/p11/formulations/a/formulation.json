@@ -431,6 +431,14 @@
                 "n_G",
                 "T"
             ]
+        },
+        "p_wind": {
+            "description": "Renewable output for wind generator w at time t",
+            "type": "continuous",
+            "shape": [
+                "n_W",
+                "T"
+            ]
         }
     },
     "constraints": [
@@ -438,7 +446,7 @@
             "description": "Demand balance: total thermal and renewable output equals demand at each period.",
             "formulation": "\\sum_{g} (p_{g,t} + P^{\\min}_g u_{g,t}) + \\sum_{w} p^w_{w,t} = L_t \\quad \\forall t",
             "code": {
-                "gurobipy": "for t in range(T):\n    model.addConstr(gp.quicksum(p[g, t] + P_min[g] * u[g, t] for g in range(n_G)) == L[t])"
+                "gurobipy": "for t in range(T):\n    model.addConstr(gp.quicksum(p[g, t] + P_min[g] * u[g, t] for g in range(n_G)) + gp.quicksum(p_wind[wi, t] for wi in range(n_W)) == L[t])"
             },
             "explicit": true
         },
@@ -559,6 +567,22 @@
             "formulation": "\\lambda_{g,l,t} \\le 1 \\quad \\forall g, l, t",
             "code": {
                 "gurobipy": "for g in range(n_G):\n    for l in range(n_L[g]):\n        for t in range(T):\n            model.addConstr(lam[g, l, t] <= 1)"
+            },
+            "explicit": true
+        },
+        {
+            "description": "Renewable output is at least the minimum for each wind generator and time period.",
+            "formulation": "P^{w,\\min}_{w,t} \\le p^w_{w,t} \\quad \\forall w, t",
+            "code": {
+                "gurobipy": "for wi in range(n_W):\n    for t in range(T):\n        model.addConstr(p_wind[wi, t] >= P_wind_min[wi][t])"
+            },
+            "explicit": true
+        },
+        {
+            "description": "Renewable output is at most the maximum for each wind generator and time period.",
+            "formulation": "p^w_{w,t} \\le P^{w,\\max}_{w,t} \\quad \\forall w, t",
+            "code": {
+                "gurobipy": "for wi in range(n_W):\n    for t in range(T):\n        model.addConstr(p_wind[wi, t] <= P_wind_max[wi][t])"
             },
             "explicit": true
         },

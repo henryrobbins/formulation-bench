@@ -113,6 +113,14 @@
             }
         },
         {
+            "description": "Ore grade of each block is at most one (pure-ore blocks have grade equal to 1).",
+            "formulation": "g_i \\leq 1 \\quad \\forall i \\in I",
+            "explicit": false,
+            "code": {
+                "python": "assert all(g[i] <= 1 for i in range(n))"
+            }
+        },
+        {
             "description": "Ore tonnage of each block is non-negative.",
             "formulation": "O_i \\geq 0 \\quad \\forall i \\in I",
             "explicit": false,
