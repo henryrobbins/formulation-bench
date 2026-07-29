@@ -1,12 +1,13 @@
 # Common dev commands for the formulation-bench package.
 # Run from the repository root.
 
-.PHONY: help install test cov cov-open cov-clean lint format typecheck check docs docs-serve docs-clean clean
+.PHONY: help install test test-dataset cov cov-open cov-clean lint format typecheck check docs docs-serve docs-clean clean
 
 help:
 	@echo "Targets:"
 	@echo "  install      Sync deps with uv"
-	@echo "  test         Run pytest"
+	@echo "  test         Run pytest (package tests only)"
+	@echo "  test-dataset Validate the dataset; PROBLEMS=6,12 restricts to problems"
 	@echo "  cov          Run pytest with coverage; writes HTML to htmlcov/ and XML to coverage.xml"
 	@echo "  cov-open     Open the HTML coverage report"
 	@echo "  cov-clean    Remove coverage artifacts"
@@ -24,6 +25,10 @@ install:
 
 test:
 	uv run pytest
+
+test-dataset:
+	uv run pytest tests/dataset -m dataset \
+		$(if $(PROBLEMS),--problems $(PROBLEMS),)
 
 cov:
 	uv run pytest \
