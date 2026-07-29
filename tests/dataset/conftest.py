@@ -7,7 +7,7 @@ marker (see ``make test-dataset``).
 
 Restrict a run to specific problems with ``--problems``::
 
-    make test-dataset PROBLEMS=6,12
+    pytest tests/dataset -m dataset --problems 6,12
 """
 
 from __future__ import annotations

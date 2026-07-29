@@ -88,8 +88,8 @@ regression. These tests carry the `dataset` marker and are excluded from
 `make test` (and from coverage); run them explicitly:
 
 ```bash
-make test-dataset               # all problems
-make test-dataset PROBLEMS=6,12 # restrict to p6 and p12
+make test-dataset                                  # all problems
+pytest tests/dataset -m dataset --problems 6,12    # restrict to p6 and p12
 ```
 
 Six problems build models larger than the size-limited license bundled

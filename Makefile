@@ -7,7 +7,7 @@ help:
 	@echo "Targets:"
 	@echo "  install      Sync deps with uv"
 	@echo "  test         Run pytest (package tests only)"
-	@echo "  test-dataset Validate the dataset; PROBLEMS=6,12 restricts to problems"
+	@echo "  test-dataset Validate the dataset"
 	@echo "  cov          Run pytest with coverage; writes HTML to htmlcov/ and XML to coverage.xml"
 	@echo "  cov-open     Open the HTML coverage report"
 	@echo "  cov-clean    Remove coverage artifacts"
@@ -27,8 +27,7 @@ test:
 	uv run pytest
 
 test-dataset:
-	uv run pytest tests/dataset -m dataset \
-		$(if $(PROBLEMS),--problems $(PROBLEMS),)
+	uv run pytest tests/dataset -m dataset
 
 cov:
 	uv run pytest \
