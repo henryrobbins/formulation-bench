@@ -98,23 +98,21 @@ def test_gen_solve_py_compiles(formulation: Formulation) -> None:
 
 
 @pytest.mark.parametrize("formulation", CODEGEN_FORMULATIONS)
-def test_solve_matches_recorded_objective(
-    formulation: Formulation, tmp_path: Path
-) -> None:
+def test_solve_matches_recorded_objective(formulation: Formulation) -> None:
     """gen_params -> generated solve.py runs and reproduces the recorded objective.
 
-    Artifacts are written under ``tmp_path`` so the dataset tree is never
-    mutated. The objective is only checked for valid formulations; invalid
+    Artifacts are written into the formulation's own directory, where they are
+    gitignored. The objective is only checked for valid formulations; invalid
     formulations are unfaithful by construction, but their generated code must
     still execute.
     """
-    solve_py = tmp_path / "solve.py"
+    solve_py = formulation.path / "solve.py"
     solve_py.write_text(formulation.gen_solve_py())
 
-    params = tmp_path / "parameters.json"
+    params = formulation.path / "parameters.json"
     formulation.run_gen_params(output_path=params)
 
-    solution = tmp_path / "solution.json"
+    solution = formulation.path / "solution.json"
     subprocess.run(
         [sys.executable, str(solve_py), str(params), str(solution)],
         check=True,

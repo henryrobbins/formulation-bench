@@ -7,7 +7,6 @@ import json
 import re
 import subprocess
 import sys
-from pathlib import Path
 
 from formulation_bench.formulation import Formulation
 from formulation_bench.models import DimensionType
@@ -125,15 +124,13 @@ def test_generated_solve_py_is_valid_python(formulation: Formulation) -> None:
     ast.parse(formulation.gen_solve_py())
 
 
-def test_generated_solve_py_defines_every_name(
-    formulation: Formulation, tmp_path: Path
-) -> None:
+def test_generated_solve_py_defines_every_name(formulation: Formulation) -> None:
     """No snippet references a name nothing declares.
 
     Catches parameters used but never declared, definitions referenced before
     they exist, and third-party modules missing from ``imports``.
     """
-    script = tmp_path / "solve.py"
+    script = formulation.path / "solve.py"
     script.write_text(formulation.gen_solve_py())
 
     result = subprocess.run(
@@ -172,16 +169,14 @@ def test_generated_solve_py_includes_every_snippet(formulation: Formulation) -> 
     assert not missing, "not emitted into solve.py:\n" + "\n".join(missing)
 
 
-def test_gen_params_emits_declared_parameters(
-    formulation: Formulation, tmp_path: Path
-) -> None:
+def test_gen_params_emits_declared_parameters(formulation: Formulation) -> None:
     """``gen_params.py`` writes exactly the parameters the formulation declares.
 
     The generated ``solve.py`` reads each declared parameter out of this file by
     name, so a missing key fails the solve and an extra one is dead data.
     """
-    output = tmp_path / "parameters.json"
-    formulation.run_gen_params(output_path=output)
+    formulation.run_gen_params()
+    output = formulation.path / "parameters.json"
     generated = json.loads(output.read_text())
 
     declared, emitted = set(formulation.parameters), set(generated)

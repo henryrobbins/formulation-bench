@@ -2,8 +2,9 @@
 
 For each formulation, ``gen_params.py`` is run and the generated ``solve.py`` is
 executed; valid formulations must reproduce the objective recorded in their
-problem's ``solution.json``. Artifacts are written under ``tmp_path`` so the
-dataset tree is never mutated.
+problem's ``solution.json``. Artifacts are written into the formulation's own
+directory, where they are gitignored, so a test run leaves the tree populated
+with up-to-date generated code.
 
 Matching objectives alone does not pin down the recorded solution: a stored
 variable assignment can be infeasible while the objective it is labelled with is
@@ -42,21 +43,21 @@ SIZE_LIMIT_ERROR = "Model too large for size-limited license"
 
 
 def _run_solve(
-    formulation: Formulation, tmp_path: Path, on_error: str
+    formulation: Formulation, out_dir: Path, on_error: str
 ) -> dict[str, Any]:
-    """Run gen_params -> generated solve.py and return the solution JSON.
+    """Run gen_params -> generated solve.py in ``out_dir`` and return the solution.
 
     An unsolved model fails inside the generated script (it has no solution to
     extract), so ``on_error`` describes what a non-zero exit means to the caller.
     Models the available license is too small for are skipped rather than failed.
     """
-    solve_py = tmp_path / "solve.py"
+    solve_py = out_dir / "solve.py"
     solve_py.write_text(formulation.gen_solve_py())
 
-    params = tmp_path / "parameters.json"
+    params = out_dir / "parameters.json"
     formulation.run_gen_params(output_path=params)
 
-    solution = tmp_path / "solution.json"
+    solution = out_dir / "solution.json"
     result = subprocess.run(
         [sys.executable, str(solve_py), str(params), str(solution)],
         capture_output=True,
@@ -74,16 +75,14 @@ def _label(formulation: Formulation) -> str:
     return f"{formulation.problem.path.name}.{formulation.path.name}"
 
 
-def test_solve_matches_recorded_objective(
-    formulation: Formulation, tmp_path: Path
-) -> None:
+def test_solve_matches_recorded_objective(formulation: Formulation) -> None:
     """The formulation solves, and -- when valid -- attains the recorded objective.
 
     Invalid formulations are unfaithful by construction, so only their generated
     code is required to execute. Formulations in ``OBJECTIVE_SCALE`` are compared
     against the correspondingly scaled objective.
     """
-    solution = _run_solve(formulation, tmp_path, on_error="solve.py failed:")
+    solution = _run_solve(formulation, formulation.path, on_error="solve.py failed:")
 
     if not formulation.valid:
         return
@@ -104,6 +103,10 @@ def test_recorded_solution_is_feasible(
 
     Parametrized over the formulations stated in terms of the recorded variables;
     the rest cannot be checked this way and are not collected.
+
+    The pinned model is a variant of the formulation rather than the formulation
+    itself, so its artifacts go to ``tmp_path``: writing them into the dataset
+    tree would leave the pinned ``solve.py`` there in place of the real one.
     """
     formulation = pinnable_formulation
     recorded = formulation.problem.solution
