@@ -33,6 +33,7 @@ private def pFree : P17.a.Params where
   hT := ⟨by omega⟩
   hc_nn := fun _ _ => le_refl 0
   hg_nn := fun _ => by norm_num
+  hg_le_one := fun _ => by norm_num
   hO_nn := fun _ => le_refl 0
   hW_nn := fun _ => le_refl 0
 
