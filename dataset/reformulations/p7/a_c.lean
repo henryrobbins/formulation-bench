@@ -25,12 +25,12 @@ def paramMapAC (p : P7.a.Params) : P7.c.Params :=
 (where every entry is `0` or `1`) this is injective, so the feasible set embeds
 into a finite type. -/
 private def encode (p : P7.a.Params) (v : P7.a.Vars p) :
-    (Fin p.N → Fin p.N → Bool) × (Fin p.N → Fin p.N → Fin p.N → Bool) ×
-      (Fin p.N → Fin p.N → Fin p.N → Bool) × (Fin p.N → Fin p.N → Fin p.N → Bool) :=
+    (Fin p.N → Fin p.N → Bool) × (Fin p.N → P7.a.Strip p.N → Bool) ×
+      (Fin p.N → P7.a.Strip p.N → Bool) × (Fin p.N → P7.a.Strip p.N → Bool) :=
   (fun i j => decide (v.h i j = 1),
-   fun i a b => decide (v.x i a b = 1),
-   fun i a b => decide (v.s i a b = 1),
-   fun i a b => decide (v.t i a b = 1))
+   fun i ab => decide (v.x i ab = 1),
+   fun i ab => decide (v.s i ab = 1),
+   fun i ab => decide (v.t i ab = 1))
 
 private lemma feasible_finite (p : P7.a.Params) :
     Set.Finite {v : P7.a.Vars p | P7.a.Feasible p v} := by
@@ -47,18 +47,18 @@ private lemma feasible_finite (p : P7.a.Params) :
   congr 1
   · funext i j
     exact hbin _ _ (hv.hh_bin i j) (hw.hh_bin i j) (congrFun (congrFun eh i) j)
-  · funext i a b
-    exact hbin _ _ (hv.hx_bin i (a, b)) (hw.hx_bin i (a, b)) (congrFun (congrFun (congrFun ex i) a) b)
-  · funext i a b
-    exact hbin _ _ (hv.hs_bin i (a, b)) (hw.hs_bin i (a, b)) (congrFun (congrFun (congrFun es i) a) b)
-  · funext i a b
-    exact hbin _ _ (hv.ht_bin i (a, b)) (hw.ht_bin i (a, b)) (congrFun (congrFun (congrFun et i) a) b)
+  · funext i ab
+    exact hbin _ _ (hv.hx_bin i ab) (hw.hx_bin i ab) (congrFun (congrFun ex i) ab)
+  · funext i ab
+    exact hbin _ _ (hv.hs_bin i ab) (hw.hs_bin i ab) (congrFun (congrFun es i) ab)
+  · funext i ab
+    exact hbin _ _ (hv.ht_bin i ab) (hw.ht_bin i ab) (congrFun (congrFun et i) ab)
 
 -- ============================================================================
 -- § Witness Instance
 -- ============================================================================
 
-/-- The degenerate 3-city instance used as the witness (source side). -/
+/-- The 3×3 grid instance used as the witness (source side). -/
 private abbrev p3 : P7.a.Params := ⟨3, ⟨by decide⟩⟩
 
 /-- The target instance `= paramMapAC p3`, definitionally. -/
@@ -88,15 +88,18 @@ private lemma incl_inj : Set.InjOn incl {v | P7.c.Feasible q3 v} := by
 tile starts immediately right of the hole `(1,0)`. -/
 private def wit : P7.a.Vars p3 where
   h := ![![0, 0, 1], ![1, 0, 0], ![0, 1, 0]]
-  x := ![![![1, 0, 0], ![0, 1, 0], ![0, 0, 0]],
-         ![![0, 0, 0], ![0, 1, 0], ![0, 0, 1]],
-         ![![1, 0, 0], ![0, 0, 0], ![0, 0, 1]]]
-  s := ![![![1, 0, 0], ![0, 1, 0], ![0, 0, 0]],
-         ![![0, 0, 0], ![0, 0, 0], ![0, 0, 1]],
-         ![![1, 0, 0], ![0, 0, 0], ![0, 0, 0]]]
-  t := ![![![1, 0, 0], ![0, 0, 0], ![0, 0, 0]],
-         ![![0, 0, 0], ![0, 1, 0], ![0, 0, 0]],
-         ![![1, 0, 0], ![0, 0, 0], ![0, 0, 1]]]
+  x := fun i ab =>
+    ![![![1, 0, 0], ![0, 1, 0], ![0, 0, 0]],
+       ![![0, 0, 0], ![0, 1, 0], ![0, 0, 1]],
+       ![![1, 0, 0], ![0, 0, 0], ![0, 0, 1]]] i ab.val.1 ab.val.2
+  s := fun i ab =>
+    ![![![1, 0, 0], ![0, 1, 0], ![0, 0, 0]],
+       ![![0, 0, 0], ![0, 0, 0], ![0, 0, 1]],
+       ![![1, 0, 0], ![0, 0, 0], ![0, 0, 0]]] i ab.val.1 ab.val.2
+  t := fun i ab =>
+    ![![![1, 0, 0], ![0, 0, 0], ![0, 0, 0]],
+       ![![0, 0, 0], ![0, 1, 0], ![0, 0, 0]],
+       ![![1, 0, 0], ![0, 0, 0], ![0, 0, 1]]] i ab.val.1 ab.val.2
 
 private lemma wit_feasible : P7.a.Feasible p3 wit := by
   refine

@@ -1,6 +1,8 @@
 import Common
 import problems.p7.formulations.a.Formulation
 import problems.p7.formulations.b.Formulation
+import Mathlib.Data.Sym.Card
+import Mathlib.Data.Sym.Sym2.Order
 import Mathlib.Tactic
 
 open BigOperators Finset
@@ -25,12 +27,12 @@ def paramMapAB (p : P7.a.Params) : P7.b.Params :=
 (where every entry is `0` or `1`) this is injective, so the feasible set embeds
 into a finite type. -/
 private def encode (p : P7.a.Params) (v : P7.a.Vars p) :
-    (Fin p.N → Fin p.N → Bool) × (Fin p.N → Fin p.N → Fin p.N → Bool) ×
-      (Fin p.N → Fin p.N → Fin p.N → Bool) × (Fin p.N → Fin p.N → Fin p.N → Bool) :=
+    (Fin p.N → Fin p.N → Bool) × (Fin p.N → P7.a.Strip p.N → Bool) ×
+      (Fin p.N → P7.a.Strip p.N → Bool) × (Fin p.N → P7.a.Strip p.N → Bool) :=
   (fun i j => decide (v.h i j = 1),
-   fun i a b => decide (v.x i a b = 1),
-   fun i a b => decide (v.s i a b = 1),
-   fun i a b => decide (v.t i a b = 1))
+   fun i ab => decide (v.x i ab = 1),
+   fun i ab => decide (v.s i ab = 1),
+   fun i ab => decide (v.t i ab = 1))
 
 private lemma feasible_finite (p : P7.a.Params) :
     Set.Finite {v : P7.a.Vars p | P7.a.Feasible p v} := by
@@ -47,18 +49,18 @@ private lemma feasible_finite (p : P7.a.Params) :
   congr 1
   · funext i j
     exact hbin _ _ (hv.hh_bin i j) (hw.hh_bin i j) (congrFun (congrFun eh i) j)
-  · funext i a b
-    exact hbin _ _ (hv.hx_bin i (a, b)) (hw.hx_bin i (a, b)) (congrFun (congrFun (congrFun ex i) a) b)
-  · funext i a b
-    exact hbin _ _ (hv.hs_bin i (a, b)) (hw.hs_bin i (a, b)) (congrFun (congrFun (congrFun es i) a) b)
-  · funext i a b
-    exact hbin _ _ (hv.ht_bin i (a, b)) (hw.ht_bin i (a, b)) (congrFun (congrFun (congrFun et i) a) b)
+  · funext i ab
+    exact hbin _ _ (hv.hx_bin i ab) (hw.hx_bin i ab) (congrFun (congrFun ex i) ab)
+  · funext i ab
+    exact hbin _ _ (hv.hs_bin i ab) (hw.hs_bin i ab) (congrFun (congrFun es i) ab)
+  · funext i ab
+    exact hbin _ _ (hv.ht_bin i ab) (hw.ht_bin i ab) (congrFun (congrFun et i) ab)
 
 -- ============================================================================
 -- § Witness Instance
 -- ============================================================================
 
-/-- The degenerate 3-city instance used as the witness (source side). -/
+/-- The 3×3 grid instance used as the witness (source side). -/
 private abbrev p3 : P7.a.Params := ⟨3, ⟨by decide⟩⟩
 
 /-- The target instance `= paramMapAB p3`, definitionally. -/
@@ -88,15 +90,15 @@ private lemma incl_inj : Set.InjOn incl {v | P7.b.Feasible q3 v} := by
 past row `0`, so no tile ends immediately left of the hole `(0,1)`. -/
 private def wit : P7.a.Vars p3 where
   h := ![![0, 1, 0], ![0, 0, 1], ![1, 0, 0]]
-  x := ![![![1, 0, 0], ![0, 0, 0], ![0, 0, 1]],
-         ![![1, 0, 0], ![0, 1, 0], ![0, 0, 0]],
-         ![![0, 0, 0], ![0, 0, 1], ![0, 0, 0]]]
-  s := ![![![1, 0, 0], ![0, 0, 0], ![0, 0, 1]],
-         ![![0, 0, 0], ![0, 1, 0], ![0, 0, 0]],
-         ![![0, 0, 0], ![0, 0, 1], ![0, 0, 0]]]
-  t := ![![![0, 0, 0], ![0, 0, 0], ![0, 0, 1]],
-         ![![1, 0, 0], ![0, 1, 0], ![0, 0, 0]],
-         ![![0, 0, 0], ![0, 0, 1], ![0, 0, 0]]]
+  x i ab := ![![![1, 0, 0], ![0, 0, 0], ![0, 0, 1]],
+                ![![1, 0, 0], ![0, 1, 0], ![0, 0, 0]],
+                ![![0, 0, 0], ![0, 0, 1], ![0, 0, 0]]] i ab.val.1 ab.val.2
+  s i ab := ![![![1, 0, 0], ![0, 0, 0], ![0, 0, 1]],
+                ![![0, 0, 0], ![0, 1, 0], ![0, 0, 0]],
+                ![![0, 0, 0], ![0, 0, 1], ![0, 0, 0]]] i ab.val.1 ab.val.2
+  t i ab := ![![![0, 0, 0], ![0, 0, 0], ![0, 0, 1]],
+                ![![1, 0, 0], ![0, 1, 0], ![0, 0, 0]],
+                ![![0, 0, 0], ![0, 0, 1], ![0, 0, 0]]] i ab.val.1 ab.val.2
 
 private lemma wit_feasible : P7.a.Feasible p3 wit := by
   refine
@@ -145,7 +147,7 @@ theorem not_aBReformulation
 
 /-- The integer-valued objective before its coercion to `ℝ`. -/
 private def aStartCount (p : P7.a.Params) (v : P7.a.Vars p) : ℤ :=
-  ∑ i : Fin p.N, ∑ ab : Fin p.N × Fin p.N, v.s i ab.1 ab.2
+  ∑ i : Fin p.N, ∑ ab : P7.a.Strip p.N, v.s i ab
 
 private lemma a_obj_eq_startCount (p : P7.a.Params) (v : P7.a.Vars p) :
     P7.a.obj p v = (aStartCount p v : ℝ) := by
@@ -174,11 +176,11 @@ private lemma forgetEC1_obj (q : P7.b.Params) (v : P7.b.Vars q) :
 /-- Independent off-diagonal zero-flow toggles.  The first coordinate is a
 non-top row; a member `(i,(a,b))` switches on `s i a b` and `t (i-1) a b`. -/
 private def toggleSlots (N : ℕ) :
-    Finset (Fin N × (Fin N × Fin N)) :=
-  univ.filter (fun slot => 0 < slot.1.val ∧ slot.2.1 ≠ slot.2.2)
+    Finset (Fin N × P7.b.Strip N) :=
+  univ.filter (fun slot => 0 < slot.1.val ∧ slot.2.val.1 ≠ slot.2.val.2)
 
 private lemma toggleSlots_card (N : ℕ) (hN : 0 < N) :
-    (toggleSlots N).card = N * (N - 1) ^ 2 := by
+    (toggleSlots N).card = (N - 1) * N.choose 2 := by
   let z : Fin N := ⟨0, hN⟩
   have hpos : univ.filter (fun i : Fin N => 0 < i.val) = univ.erase z := by
     ext i
@@ -196,32 +198,38 @@ private lemma toggleSlots_card (N : ℕ) (hN : 0 < N) :
       apply Fin.ext
       simp [z]
       omega
+  have hstrict :
+      (univ.filter (fun ab : P7.b.Strip N => ab.val.1 ≠ ab.val.2)).card = N.choose 2 := by
+    rw [← Fintype.card_subtype]
+    calc
+      Fintype.card {ab : P7.b.Strip N // ab.val.1 ≠ ab.val.2} =
+          Fintype.card {s : Sym2 (Fin N) // ¬s.IsDiag} := Fintype.card_congr <|
+        (Sym2.sortEquiv.symm).subtypeEquiv (fun ab => by
+          change ab.val.1 ≠ ab.val.2 ↔ ¬Sym2.IsDiag (Sym2.mk ab.val)
+          rw [Sym2.isDiag_iff_proj_eq])
+      _ = (Fintype.card (Fin N)).choose 2 := Sym2.card_subtype_not_diag
+      _ = N.choose 2 := by rw [Fintype.card_fin]
   have hprod : toggleSlots N =
-      (univ.filter (fun i : Fin N => 0 < i.val)) ×ˢ univ.offDiag := by
+      (univ.filter (fun i : Fin N => 0 < i.val)) ×ˢ
+        (univ.filter (fun ab : P7.b.Strip N => ab.val.1 ≠ ab.val.2)) := by
     ext slot
     simp [toggleSlots]
-  rw [hprod, card_product, hpos, card_erase_of_mem (mem_univ z), offDiag_card]
+  rw [hprod, card_product, hpos, card_erase_of_mem (mem_univ z), hstrict]
   simp only [card_univ, Fintype.card_fin]
-  have hdiff : N * N - N = N * (N - 1) := by
-    rw [Nat.mul_sub_left_distrib]
-    simp
-  calc
-    (N - 1) * (N * N - N) = (N - 1) * (N * (N - 1)) := by rw [hdiff]
-    _ = N * (N - 1) ^ 2 := by ring
 
 private def toggleVars (q : P7.b.Params)
-    (S : Finset (Fin q.N × (Fin q.N × Fin q.N))) : P7.b.Vars q where
+    (S : Finset (Fin q.N × P7.b.Strip q.N)) : P7.b.Vars q where
   h i j := if i = j then 1 else 0
-  x i a b := if a = b ∧ i ≠ a then 1 else 0
-  s i a b :=
-    if a = b then (if i ≠ a then 1 else 0)
-    else if (i, (a, b)) ∈ S then 1 else 0
-  t i a b :=
-    if a = b then (if i ≠ a then 1 else 0)
-    else if ∃ k : Fin q.N, k.val = i.val + 1 ∧ (k, (a, b)) ∈ S then 1 else 0
+  x i ab := if ab.val.1 = ab.val.2 ∧ i ≠ ab.val.1 then 1 else 0
+  s i ab :=
+    if ab.val.1 = ab.val.2 then (if i ≠ ab.val.1 then 1 else 0)
+    else if (i, ab) ∈ S then 1 else 0
+  t i ab :=
+    if ab.val.1 = ab.val.2 then (if i ≠ ab.val.1 then 1 else 0)
+    else if ∃ k : Fin q.N, k.val = i.val + 1 ∧ (k, ab) ∈ S then 1 else 0
 
 private lemma toggleVars_feasible (q : P7.b.Params)
-    (S : Finset (Fin q.N × (Fin q.N × Fin q.N)))
+    (S : Finset (Fin q.N × P7.b.Strip q.N))
     (hS : S ⊆ toggleSlots q.N) :
     P7.b.Feasible q (toggleVars q S) := by
   let _ := q.hN
@@ -234,25 +242,26 @@ private lemma toggleVars_feasible (q : P7.b.Params)
     simp [toggleVars]
   · intro i j
     classical
-    rw [Finset.sum_eq_single (j, j)]
-    · by_cases hij : i = j <;> simp [toggleVars, hij]
+    let jj : P7.b.Strip q.N := ⟨(j, j), by simp⟩
+    rw [Finset.sum_eq_single jj]
+    · by_cases hij : i = j <;> simp [toggleVars, hij, jj]
     · intro ab habmem habne
-      have hnotdiag : ab.1 ≠ ab.2 := by
+      have hnotdiag : ab.val.1 ≠ ab.val.2 := by
         intro heq
-        have hc : ab.1.val ≤ j.val ∧ j.val ≤ ab.2.val := by
+        have hc : ab.val.1.val ≤ j.val ∧ j.val ≤ ab.val.2.val := by
           simpa [P7.b.strips_covering] using habmem
-        have hev : ab.1.val = ab.2.val := congrArg Fin.val heq
-        have hleft : ab.1 = j := Fin.ext (by omega)
-        have hright : ab.2 = j := Fin.ext (by omega)
-        have hab_eq : ab = (j, j) := Prod.ext hleft hright
+        have hev : ab.val.1.val = ab.val.2.val := congrArg Fin.val heq
+        have hleft : ab.val.1 = j := Fin.ext (by omega)
+        have hright : ab.val.2 = j := Fin.ext (by omega)
+        have hab_eq : ab = ⟨(j, j), by simp⟩ := Subtype.ext (Prod.ext hleft hright)
         exact habne hab_eq
       simp [toggleVars, hnotdiag]
     · intro hnotmem
       exfalso
       apply hnotmem
-      simp [P7.b.strips_covering]
+      simp [P7.b.strips_covering, jj]
   · intro ab
-    by_cases hab : ab.1 = ab.2
+    by_cases hab : ab.val.1 = ab.val.2
     · simp [toggleVars, hab]
     · have hnmem : ((0 : Fin q.N), ab) ∉ S := by
         intro hm
@@ -260,7 +269,7 @@ private lemma toggleVars_feasible (q : P7.b.Params)
         simp [toggleSlots] at hslt
       simp [toggleVars, hab, hnmem]
   · intro i ab hi
-    by_cases hab : ab.1 = ab.2
+    by_cases hab : ab.val.1 = ab.val.2
     · simp [toggleVars, hab]
     · have hprev : (i.val - 1) + 1 = i.val := by omega
       have hex :
@@ -274,7 +283,7 @@ private lemma toggleVars_feasible (q : P7.b.Params)
           exact ⟨i, hprev.symm, hmem⟩
       simp [toggleVars, hab, hex]
   · intro ab
-    by_cases hab : ab.1 = ab.2
+    by_cases hab : ab.val.1 = ab.val.2
     · simp [toggleVars, hab]
     · have hnex : ¬ ∃ k : Fin q.N,
           k.val = (q.N - 1) + 1 ∧ (k, ab) ∈ S := by
@@ -296,8 +305,8 @@ private lemma toggleVars_feasible (q : P7.b.Params)
     split_ifs <;> simp_all
   · intro i j hj
     classical
-    have ht_nonneg : ∀ ab : Fin q.N × Fin q.N,
-        0 ≤ (toggleVars q S).t i ab.1 ab.2 := by
+    have ht_nonneg : ∀ ab : P7.b.Strip q.N,
+        0 ≤ (toggleVars q S).t i ab := by
       intro ab
       simp only [toggleVars]
       split_ifs <;> omega
@@ -308,69 +317,76 @@ private lemma toggleVars_feasible (q : P7.b.Params)
         apply Fin.ne_of_val_ne
         simp [a]
         omega
-      have haa_mem : (a, a) ∈ P7.b.strips_ending_before q.N j := by
-        simp [P7.b.strips_ending_before, a]
+      let aa : P7.b.Strip q.N := ⟨(a, a), by simp⟩
+      have haa_mem : aa ∈ P7.b.strips_ending_before q.N j := by
+        simp [P7.b.strips_ending_before, a, aa]
       have hsingle :
-          (toggleVars q S).t j a a ≤
+          (toggleVars q S).t j aa ≤
             ∑ ab ∈ P7.b.strips_ending_before q.N j,
-              (toggleVars q S).t j ab.1 ab.2 :=
+              (toggleVars q S).t j ab :=
         Finset.single_le_sum
-          (f := fun ab : Fin q.N × Fin q.N =>
-            (toggleVars q S).t j ab.1 ab.2)
+          (f := fun ab : P7.b.Strip q.N => (toggleVars q S).t j ab)
           (fun ab _ => ht_nonneg ab) haa_mem
-      simpa [toggleVars, hja] using hsingle
+      simpa [toggleVars, aa, hja] using hsingle
     · have hsum_nonneg :
           0 ≤ ∑ ab ∈ P7.b.strips_ending_before q.N j,
-            (toggleVars q S).t i ab.1 ab.2 := by
+            (toggleVars q S).t i ab := by
         exact Finset.sum_nonneg (fun ab _ => ht_nonneg ab)
       simpa [toggleVars, hij] using hsum_nonneg
 
 private lemma toggleVars_obj (q : P7.b.Params)
-    (S : Finset (Fin q.N × (Fin q.N × Fin q.N)))
+    (S : Finset (Fin q.N × P7.b.Strip q.N))
     (hS : S ⊆ toggleSlots q.N) :
     P7.b.obj q (toggleVars q S) = (q.N * (q.N - 1) + S.card : ℕ) := by
   simp only [P7.b.obj, toggleVars]
   norm_cast
-  have hSoff : ∀ z ∈ S, z.2.1 ≠ z.2.2 := by
+  have hSoff : ∀ z ∈ S, z.2.val.1 ≠ z.2.val.2 := by
     intro z hz
-    have hs : 0 < z.1.val ∧ z.2.1 ≠ z.2.2 := by
+    have hs : 0 < z.1.val ∧ z.2.val.1 ≠ z.2.val.2 := by
       simpa only [toggleSlots, mem_filter, mem_univ, true_and] using hS hz
     exact hs.2
-  have hpoint : ∀ (i : Fin q.N) (ab : Fin q.N × Fin q.N),
-      (if ab.1 = ab.2 then (if i ≠ ab.1 then (1 : ℕ) else 0)
+  have hpoint : ∀ (i : Fin q.N) (ab : P7.b.Strip q.N),
+      (if ab.val.1 = ab.val.2 then (if i ≠ ab.val.1 then (1 : ℕ) else 0)
         else if (i, ab) ∈ S then 1 else 0) =
-      (if ab.1 = ab.2 ∧ i ≠ ab.1 then 1 else 0) +
+      (if ab.val.1 = ab.val.2 ∧ i ≠ ab.val.1 then 1 else 0) +
         (if (i, ab) ∈ S then 1 else 0) := by
     intro i ab
-    by_cases hab : ab.1 = ab.2
+    by_cases hab : ab.val.1 = ab.val.2
     · have hnmem : (i, ab) ∉ S := by
         intro hm
         exact hSoff (i, ab) hm hab
       simp [hab, hnmem]
     · simp [hab]
   have hdiag_one (i : Fin q.N) :
-      (∑ ab : Fin q.N × Fin q.N,
-        if ab.1 = ab.2 ∧ i ≠ ab.1 then 1 else 0) = q.N - 1 := by
-    rw [Fintype.sum_prod_type]
-    have hone : ∀ a : Fin q.N,
-        (∑ b : Fin q.N, if a = b ∧ i ≠ a then 1 else 0) =
-          if i ≠ a then 1 else 0 := by
-      intro a
-      by_cases hia : i = a <;> simp [hia, Finset.sum_ite_eq]
-    simp_rw [hone]
+      (∑ ab : P7.b.Strip q.N,
+        if ab.val.1 = ab.val.2 ∧ i ≠ ab.val.1 then 1 else 0) = q.N - 1 := by
     rw [Finset.sum_boole]
-    rw [show univ.filter (fun a : Fin q.N => i ≠ a) = univ.erase i by
-      ext a
-      simp [ne_comm]]
+    let diag : Fin q.N → P7.b.Strip q.N := fun a => ⟨(a, a), by simp⟩
+    have hdiag :
+        univ.filter (fun ab : P7.b.Strip q.N => ab.val.1 = ab.val.2 ∧ i ≠ ab.val.1) =
+          (univ.erase i).map ⟨diag, fun a b h => by
+            apply Fin.ext
+            have hv := congrArg (fun ab : P7.b.Strip q.N => ab.val.1.val) h
+            simpa only [diag] using hv⟩ := by
+      ext ab
+      simp only [mem_filter, mem_univ, true_and, mem_map, mem_erase]
+      constructor
+      · rintro ⟨hab, hi⟩
+        refine ⟨ab.val.1, ⟨ne_comm.mp hi, trivial⟩, ?_⟩
+        apply Subtype.ext
+        exact Prod.ext rfl hab
+      · rintro ⟨a, hia, rfl⟩
+        exact ⟨rfl, ne_comm.mpr hia.1⟩
+    rw [hdiag, card_map]
     simp
   have hSsum :
-      (∑ i : Fin q.N, ∑ ab : Fin q.N × Fin q.N,
+      (∑ i : Fin q.N, ∑ ab : P7.b.Strip q.N,
         if (i, ab) ∈ S then 1 else 0) = S.card := by
     calc
-      (∑ i : Fin q.N, ∑ ab : Fin q.N × Fin q.N,
+      (∑ i : Fin q.N, ∑ ab : P7.b.Strip q.N,
           if (i, ab) ∈ S then 1 else 0) =
           ∑ z ∈ (univ : Finset (Fin q.N)) ×ˢ
-              (univ : Finset (Fin q.N × Fin q.N)),
+              (univ : Finset (P7.b.Strip q.N)),
             if z ∈ S then 1 else 0 := by
               symm
               exact Finset.sum_product _ _ _
@@ -378,10 +394,10 @@ private lemma toggleVars_obj (q : P7.b.Params)
         rw [Finset.sum_boole]
         simp
   calc
-    (∑ i, ∑ ab, if ab.1 = ab.2 then (if i ≠ ab.1 then (1 : ℕ) else 0)
+    (∑ i, ∑ ab, if ab.val.1 = ab.val.2 then (if i ≠ ab.val.1 then (1 : ℕ) else 0)
         else if (i, ab) ∈ S then 1 else 0)
         = ∑ i, ∑ ab,
-            ((if ab.1 = ab.2 ∧ i ≠ ab.1 then 1 else 0) +
+            ((if ab.val.1 = ab.val.2 ∧ i ≠ ab.val.1 then 1 else 0) +
               (if (i, ab) ∈ S then 1 else 0)) := by
           apply Finset.sum_congr rfl
           intro i _
@@ -396,14 +412,14 @@ private lemma toggleVars_obj (q : P7.b.Params)
 private def lowerBand (N : ℕ) : Set ℝ :=
   (fun k : ℤ => (k : ℝ)) ''
     (↑(Finset.Icc ((N * (N - 1) : ℕ) : ℤ)
-      ((N * (N - 1) + N * (N - 1) ^ 2 : ℕ) : ℤ)) : Set ℤ)
+      ((N * (N - 1) + (N - 1) * N.choose 2 : ℕ) : ℤ)) : Set ℤ)
 
 private lemma lowerBand_subset_values (q : P7.b.Params) :
     lowerBand q.N ⊆ P7.b.formulation.values q := by
   rintro value ⟨k, hk, rfl⟩
   simp only [Finset.mem_coe, Finset.mem_Icc] at hk
   let base : ℕ := q.N * (q.N - 1)
-  let width : ℕ := q.N * (q.N - 1) ^ 2
+  let width : ℕ := (q.N - 1) * q.N.choose 2
   let d : ℕ := (k - (base : ℤ)).toNat
   have hd_nonneg : 0 ≤ k - (base : ℤ) := by
     dsimp [base]
@@ -433,19 +449,28 @@ private lemma lowerBand_subset_a_values (p : P7.a.Params) :
       (forgetEC1_obj (paramMapAB p) v).trans hobj⟩
 
 private lemma lowerBand_ncard (N : ℕ) :
-    (lowerBand N).ncard = N * (N - 1) ^ 2 + 1 := by
+    (lowerBand N).ncard = (N - 1) * N.choose 2 + 1 := by
   rw [lowerBand, Set.ncard_image_of_injective _ Int.cast_injective,
     Set.ncard_coe_finset, Int.card_Icc]
   have h :
-      ((N * (N - 1) + N * (N - 1) ^ 2 : ℕ) : ℤ) + 1 -
+      ((N * (N - 1) + (N - 1) * N.choose 2 : ℕ) : ℤ) + 1 -
           ((N * (N - 1) : ℕ) : ℤ) =
-        ((N * (N - 1) ^ 2 + 1 : ℕ) : ℤ) := by
+        (((N - 1) * N.choose 2 + 1 : ℕ) : ℤ) := by
     push_cast
     omega
   rw [h, Int.toNat_natCast]
 
 private def upperBand (N : ℕ) : Set ℝ :=
-  (fun k : ℤ => (k : ℝ)) '' (↑(Finset.Icc 0 ((N ^ 3 : ℕ) : ℤ)) : Set ℤ)
+  (fun k : ℤ => (k : ℝ)) ''
+    (↑(Finset.Icc 0 ((N * (N + 1).choose 2 : ℕ) : ℤ)) : Set ℤ)
+
+private lemma strip_card (N : ℕ) :
+    Fintype.card (P7.a.Strip N) = (N + 1).choose 2 := by
+  calc
+    _ = Fintype.card (Sym2 (Fin N)) :=
+      Fintype.card_congr Sym2.sortEquiv.symm
+    _ = (Fintype.card (Fin N) + 1).choose 2 := Sym2.card
+    _ = (N + 1).choose 2 := by rw [Fintype.card_fin]
 
 private lemma a_values_subset_upperBand (p : P7.a.Params) :
     P7.a.formulation.values p ⊆ upperBand p.N := by
@@ -457,13 +482,14 @@ private lemma a_values_subset_upperBand (p : P7.a.Params) :
       rcases hv.hs_bin i ab with h | h <;> omega
   · calc
       aStartCount p v ≤
-          ∑ _i : Fin p.N, ∑ _ab : Fin p.N × Fin p.N, (1 : ℤ) := by
+          ∑ _i : Fin p.N, ∑ _ab : P7.a.Strip p.N, (1 : ℤ) := by
         apply sum_le_sum
         intro i _
         apply sum_le_sum
         intro ab _
         rcases hv.hs_bin i ab with h | h <;> omega
-      _ = (p.N ^ 3 : ℕ) := by simp; ring
+      _ = (p.N * (p.N + 1).choose 2 : ℕ) := by
+        simp [strip_card]
 
 private lemma b_values_subset_upperBand (q : P7.b.Params) :
     P7.b.formulation.values q ⊆ upperBand q.N := by
@@ -473,53 +499,171 @@ private lemma b_values_subset_upperBand (q : P7.b.Params) :
   simpa only [forgetEC1Params, forgetEC1_obj] using ha
 
 private lemma upperBand_ncard (N : ℕ) :
-    (upperBand N).ncard = N ^ 3 + 1 := by
+    (upperBand N).ncard = N * (N + 1).choose 2 + 1 := by
   rw [upperBand, Set.ncard_image_of_injective _ Int.cast_injective,
     Set.ncard_coe_finset, Int.card_Icc]
-  change (((N ^ 3 : ℕ) : ℤ) + 1).toNat = N ^ 3 + 1
-  rw [show ((N ^ 3 : ℕ) : ℤ) + 1 = ((N ^ 3 + 1 : ℕ) : ℤ) by norm_num,
+  change ((((N * (N + 1).choose 2 : ℕ) : ℤ) + 1).toNat =
+    N * (N + 1).choose 2 + 1)
+  rw [show ((N * (N + 1).choose 2 : ℕ) : ℤ) + 1 =
+      ((N * (N + 1).choose 2 + 1 : ℕ) : ℤ) by norm_num,
     Int.toNat_natCast]
 
 private lemma upperBand_finite (N : ℕ) : (upperBand N).Finite := by
   exact (Finset.finite_toSet _).image _
 
+private lemma a_obj_pos (p : P7.a.Params) (v : P7.a.Vars p)
+    (hv : P7.a.Feasible p v) (hN : 1 < p.N) : 0 < P7.a.obj p v := by
+  let _ := p.hN
+  have hj : ∃ j : Fin p.N, v.h 0 j = 0 := by
+    by_contra h
+    push_neg at h
+    have hall : ∀ j : Fin p.N, v.h 0 j = 1 := by
+      intro j
+      exact (hv.hh_bin 0 j).resolve_left (h j)
+    have hr := hv.hrow 0
+    simp_rw [hall] at hr
+    simp at hr
+    omega
+  obtain ⟨j, hj⟩ := hj
+  have hsum : ∑ ab ∈ P7.a.strips_covering p.N j, v.x 0 ab = 1 := by
+    have := hv.hcov 0 j
+    omega
+  have hex : ∃ ab ∈ P7.a.strips_covering p.N j, v.x 0 ab ≠ 0 := by
+    by_contra h
+    push_neg at h
+    have hz : ∑ ab ∈ P7.a.strips_covering p.N j, v.x 0 ab = 0 := by
+      exact sum_eq_zero fun ab hab => h ab hab
+    omega
+  obtain ⟨ab, habmem, hab⟩ := hex
+  have hx : v.x 0 ab = 1 := (hv.hx_bin 0 ab).resolve_left hab
+  have hs : v.s 0 ab = 1 := by
+    rw [← hv.htop ab]
+    exact hx
+  have hs_nonneg : ∀ i : Fin p.N, ∀ cd : P7.a.Strip p.N, 0 ≤ v.s i cd := by
+    intro i cd
+    rcases hv.hs_bin i cd with h | h <;> omega
+  have hab_le : v.s 0 ab ≤ ∑ cd : P7.a.Strip p.N, v.s 0 cd :=
+    Finset.single_le_sum (fun cd _ => hs_nonneg 0 cd) (mem_univ ab)
+  have hrow_le : (∑ cd : P7.a.Strip p.N, v.s 0 cd) ≤ aStartCount p v :=
+    Finset.single_le_sum
+      (fun i _ => sum_nonneg fun cd _ => hs_nonneg i cd) (mem_univ (0 : Fin p.N))
+  rw [a_obj_eq_startCount]
+  exact_mod_cast hs.symm.le.trans (hab_le.trans hrow_le)
+
+private lemma source_values_card_upper_strict (p : P7.a.Params) (hN : 1 < p.N) :
+    (P7.a.formulation.values p).ncard ≤ p.N * (p.N + 1).choose 2 := by
+  let s := upperBand p.N \ {0}
+  have hsub : P7.a.formulation.values p ⊆ s := by
+    rintro value hv
+    refine ⟨a_values_subset_upperBand p hv, ?_⟩
+    rintro rfl
+    obtain ⟨v, hfeas, hobj⟩ := hv
+    change P7.a.obj p v = 0 at hobj
+    have := a_obj_pos p v hfeas hN
+    linarith
+  have hzero : (0 : ℝ) ∈ upperBand p.N := by
+    refine ⟨0, ?_, by norm_num⟩
+    simp only [Finset.mem_coe, Finset.mem_Icc]
+    constructor <;> positivity
+  calc
+    (P7.a.formulation.values p).ncard ≤ s.ncard :=
+      Set.ncard_le_ncard hsub (upperBand_finite p.N).diff
+    _ = (upperBand p.N).ncard - 1 := Set.ncard_diff_singleton_of_mem hzero
+    _ = p.N * (p.N + 1).choose 2 := by rw [upperBand_ncard]; omega
+
+private lemma target_values_card_upper_strict (q : P7.b.Params) (hN : 1 < q.N) :
+    (P7.b.formulation.values q).ncard ≤ q.N * (q.N + 1).choose 2 := by
+  have hsub : P7.b.formulation.values q ⊆
+      P7.a.formulation.values (forgetEC1Params q) := by
+    rintro value ⟨v, hv, hobj⟩
+    exact ⟨forgetEC1 q v, forgetEC1_feasible q v hv,
+      (forgetEC1_obj q v).trans hobj⟩
+  exact (Set.ncard_le_ncard hsub
+    ((upperBand_finite q.N).subset (a_values_subset_upperBand (forgetEC1Params q)))).trans
+      (source_values_card_upper_strict (forgetEC1Params q) hN)
+
+private lemma source_values_card_one (p : P7.a.Params) (hN : p.N = 1) :
+    (P7.a.formulation.values p).ncard ≤ 1 := by
+  rcases p with ⟨N, hne⟩
+  simp only at hN
+  subst N
+  let p : P7.a.Params := ⟨1, hne⟩
+  let _ := p.hN
+  have hsub : P7.a.formulation.values p ⊆ ({0} : Set ℝ) := by
+    rintro value ⟨v, hv, rfl⟩
+    have hh := hv.hrow (0 : Fin p.N)
+    have hc := hv.hcov (0 : Fin p.N) (0 : Fin p.N)
+    have ht := hv.htop
+      (⟨((0 : Fin p.N), (0 : Fin p.N)), by simp⟩ : P7.a.Strip p.N)
+    simp only [Set.mem_singleton_iff]
+    simp [P7.a.strips_covering, p] at hc
+    let strip0 : P7.a.Strip 1 := ⟨(0, 0), by simp⟩
+    letI : Unique (P7.a.Strip 1) :=
+      { default := strip0
+        uniq := fun ab => by
+          apply Subtype.ext
+          exact Prod.ext (Fin.eq_zero _) (Fin.eq_zero _) }
+    change (∑ i : Fin 1, ∑ ab : P7.a.Strip 1, (v.s i ab : ℝ)) = 0
+    rw [Fin.sum_univ_one, Fintype.sum_unique]
+    have hstrip : (default : P7.a.Strip 1) = strip0 := rfl
+    rw [hstrip]
+    have ht0 : v.x 0 strip0 = v.s 0 strip0 := by simpa [p, strip0] using ht
+    have hh0 : v.h 0 0 = 1 := by simpa [p] using hh
+    rw [Fintype.sum_unique] at hc
+    have hc' : v.x 0 (default : P7.a.Strip 1) = 0 := by omega
+    have hc0 : v.x 0 strip0 = 0 := by simpa [strip0] using hc'
+    rw [← ht0, hc0]
+    norm_num
+  simpa [p] using Set.ncard_le_ncard hsub (Set.finite_singleton 0)
+
+private lemma target_values_card_one (q : P7.b.Params) (hN : q.N = 1) :
+    (P7.b.formulation.values q).ncard ≤ 1 := by
+  have hsub : P7.b.formulation.values q ⊆
+      P7.a.formulation.values (forgetEC1Params q) := by
+    rintro value ⟨v, hv, hobj⟩
+    exact ⟨forgetEC1 q v, forgetEC1_feasible q v hv,
+      (forgetEC1_obj q v).trans hobj⟩
+  exact (Set.ncard_le_ncard hsub
+    ((upperBand_finite q.N).subset (a_values_subset_upperBand (forgetEC1Params q)))).trans
+      (source_values_card_one (forgetEC1Params q) hN)
+
 private lemma source_values_card_upper (p : P7.a.Params) :
-    (P7.a.formulation.values p).ncard ≤ p.N ^ 3 + 1 := by
+    (P7.a.formulation.values p).ncard ≤ p.N * (p.N + 1).choose 2 + 1 := by
   rw [← upperBand_ncard]
   exact Set.ncard_le_ncard (a_values_subset_upperBand p) (upperBand_finite p.N)
 
 private lemma target_values_card_lower (q : P7.b.Params) :
-    q.N * (q.N - 1) ^ 2 + 1 ≤ (P7.b.formulation.values q).ncard := by
+    (q.N - 1) * q.N.choose 2 + 1 ≤ (P7.b.formulation.values q).ncard := by
   rw [← lowerBand_ncard]
   exact Set.ncard_le_ncard (lowerBand_subset_values q)
     ((upperBand_finite q.N).subset (b_values_subset_upperBand q))
 
 private lemma source_values_card_lower (p : P7.a.Params) :
-    p.N * (p.N - 1) ^ 2 + 1 ≤ (P7.a.formulation.values p).ncard := by
+    (p.N - 1) * p.N.choose 2 + 1 ≤ (P7.a.formulation.values p).ncard := by
   rw [← lowerBand_ncard]
   exact Set.ncard_le_ncard (lowerBand_subset_a_values p)
     ((upperBand_finite p.N).subset (a_values_subset_upperBand p))
 
 private lemma target_values_card_upper (q : P7.b.Params) :
-    (P7.b.formulation.values q).ncard ≤ q.N ^ 3 + 1 := by
+    (P7.b.formulation.values q).ncard ≤ q.N * (q.N + 1).choose 2 + 1 := by
   rw [← upperBand_ncard]
   exact Set.ncard_le_ncard (b_values_subset_upperBand q) (upperBand_finite q.N)
 
-private lemma value_card_bands_disjoint {N M : ℕ} (hN : 0 < N) (hNM : N < M) :
-    N ^ 3 + 1 < M * (M - 1) ^ 2 + 1 := by
+private lemma value_card_bands_disjoint {N M : ℕ} (hNM : N < M) :
+    N * (N + 1).choose 2 ≤ (M - 1) * M.choose 2 := by
   have hsub : N ≤ M - 1 := by omega
-  have hsquares : N ^ 2 ≤ (M - 1) ^ 2 := Nat.pow_le_pow_left hsub 2
-  have hpositive : 0 < (M - 1) ^ 2 := pow_pos (by omega) _
+  have hchoose : (N + 1).choose 2 ≤ M.choose 2 :=
+    Nat.choose_le_choose 2 (by omega)
   calc
-    N ^ 3 + 1 = N * N ^ 2 + 1 := by ring
-    _ ≤ N * (M - 1) ^ 2 + 1 := Nat.add_le_add_right (Nat.mul_le_mul_left N hsquares) 1
-    _ < M * (M - 1) ^ 2 + 1 :=
-      Nat.add_lt_add_right (Nat.mul_lt_mul_of_pos_right hNM hpositive) 1
+    N * (N + 1).choose 2 ≤ N * M.choose 2 := Nat.mul_le_mul_left N hchoose
+    _ ≤ (M - 1) * M.choose 2 := Nat.mul_le_mul_right _ hsub
 
 /-- Any section reformulation from `a` to the EC1 augmentation must preserve
-the grid size.  At size `N`, binary starts give at most `N³ + 1` objective
-values.  At size `N + 1`, the independent off-diagonal zero-flow toggles alone
-give `(N + 1)N² + 1 > N³ + 1` values. -/
+the grid size.  For `N > 1`, positivity and binary starts bound the source by
+`N * choose (N + 1) 2` objective values.  At any larger size `M`, independent
+zero-flow toggles on the valid strict strips give
+`(M - 1) * choose M 2 + 1` target values, which is strictly larger.  The
+singleton `N = 1` objective-value set is handled separately. -/
 private lemma paramMap_eq_of_reformulation
     (Φ : MILPReformulation P7.a.formulation P7.b.formulation) :
     Φ.paramMap = paramMapAB := by
@@ -540,20 +684,29 @@ private lemma paramMap_eq_of_reformulation
     by_contra hne
     rcases lt_or_gt_of_ne hne with hpq | hqp
     · have hlower := target_values_card_lower q
-      have hupper := source_values_card_upper p
       rw [← hcard] at hlower
-      have := value_card_bands_disjoint hp_pos hpq
-      omega
-    · have hlower := target_values_card_lower (paramMapAB
-        { N := q.N, hN := q.hN })
-      have hupper := source_values_card_upper
-        { N := q.N, hN := q.hN }
-      clear hlower hupper
-      have hlower := source_values_card_lower p
-      have hupper := target_values_card_upper q
+      by_cases hp1 : p.N = 1
+      · have hupper := source_values_card_one p hp1
+        have hq2 : 2 ≤ q.N := by omega
+        have hwidth : 1 ≤ (q.N - 1) * q.N.choose 2 := by
+          exact Nat.mul_pos (by omega) (Nat.choose_pos hq2)
+        omega
+      · have hp2 : 1 < p.N := by omega
+        have hupper := source_values_card_upper_strict p hp2
+        have hband := value_card_bands_disjoint hpq
+        omega
+    · have hlower := source_values_card_lower p
       rw [hcard] at hlower
-      have := value_card_bands_disjoint hq_pos hqp
-      omega
+      by_cases hq1 : q.N = 1
+      · have hupper := target_values_card_one q hq1
+        have hp2 : 2 ≤ p.N := by omega
+        have hwidth : 1 ≤ (p.N - 1) * p.N.choose 2 := by
+          exact Nat.mul_pos (by omega) (Nat.choose_pos hp2)
+        omega
+      · have hq2 : 1 < q.N := by omega
+        have hupper := target_values_card_upper_strict q hq2
+        have hband := value_card_bands_disjoint hqp
+        omega
   have hqeq : q = paramMapAB p := by
     cases hq : q with
     | mk N h =>
