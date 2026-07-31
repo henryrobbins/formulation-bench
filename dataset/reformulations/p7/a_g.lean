@@ -39,19 +39,15 @@ variable {p : P7.a.Params} {v : P7.a.Vars p} (h : P7.a.Feasible p v)
 include h
 
 private lemma sum_x_eq (i j : Fin p.N) :
-    ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab.1 ab.2 = 1 - v.h i j := by
+    ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab = 1 - v.h i j := by
   have := h.hcov i j
   linarith
 
-private lemma t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
-    (hab : ab ∈ P7.a.I p.N) :
-    0 ≤ v.t i ab.1 ab.2 := by
-  rcases h.ht_bin i ab hab with h0 | h1 <;> omega
+private lemma t_nn (i : Fin p.N) (ab : P7.a.Strip p.N) : 0 ≤ v.t i ab := by
+  rcases h.ht_bin i ab with h0 | h1 <;> omega
 
-private lemma s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
-    (hab : ab ∈ P7.a.I p.N) :
-    0 ≤ v.s i ab.1 ab.2 := by
-  rcases h.hs_bin i ab hab with h0 | h1 <;> omega
+private lemma s_nn (i : Fin p.N) (ab : P7.a.Strip p.N) : 0 ≤ v.s i ab := by
+  rcases h.hs_bin i ab with h0 | h1 <;> omega
 
 private lemma h_nn (i j : Fin p.N) :
     0 ≤ v.h i j := by
@@ -63,45 +59,40 @@ private lemma fwd_ec6 (p : P7.a.Params) (v : P7.a.Vars p)
     (h : P7.a.Feasible p v) :
     ∀ i : Fin p.N, ∀ j : Fin p.N, 0 < i.val → ∀ hi1 : i.val + 1 < p.N,
       v.h i j ≤
-        ∑ ab ∈ P7.g.strips_covering p.N j, v.s ⟨i.val + 1, hi1⟩ ab.1 ab.2 := by
+        ∑ ab ∈ P7.g.strips_covering p.N j, v.s ⟨i.val + 1, hi1⟩ ab := by
   intro i j hi_pos hi_succ_lt
   let ip1 : Fin p.N := ⟨i.val + 1, hi_succ_lt⟩
   have hip1_pos : 0 < ip1.val := by show 0 < i.val + 1; omega
   -- Predecessor of ip1 (Fin p.N) is i, definitionally.
   have hpred_eq : (⟨ip1.val - 1, by omega⟩ : Fin p.N) = i := by
     apply Fin.ext; show i.val + 1 - 1 = i.val; omega
-  have hcov_i : ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab.1 ab.2
+  have hcov_i : ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab
               = 1 - v.h i j := sum_x_eq h i j
-  have hcov_ip1 : ∑ ab ∈ P7.a.strips_covering p.N j, v.x ip1 ab.1 ab.2
+  have hcov_ip1 : ∑ ab ∈ P7.a.strips_covering p.N j, v.x ip1 ab
                 = 1 - v.h ip1 j := sum_x_eq h ip1 j
   have hflow_sum :
       ∑ ab ∈ P7.a.strips_covering p.N j,
-        (v.x ip1 ab.1 ab.2 - v.x i ab.1 ab.2
-         - v.s ip1 ab.1 ab.2 + v.t i ab.1 ab.2) = 0 := by
+        (v.x ip1 ab - v.x i ab - v.s ip1 ab + v.t i ab) = 0 := by
     apply Finset.sum_eq_zero
-    intro ab hab
-    have habI : ab ∈ P7.a.I p.N := (Finset.mem_filter.mp hab).1
-    have hf := h.hflow ip1 ab habI hip1_pos
+    intro ab _
+    have hf := h.hflow ip1 ab hip1_pos
     rw [hpred_eq] at hf
     exact hf
   have hsplit :
-      ∑ ab ∈ P7.a.strips_covering p.N j, v.x ip1 ab.1 ab.2
-      - ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab.1 ab.2
-      - ∑ ab ∈ P7.a.strips_covering p.N j, v.s ip1 ab.1 ab.2
-      + ∑ ab ∈ P7.a.strips_covering p.N j, v.t i ab.1 ab.2 = 0 := by
+      ∑ ab ∈ P7.a.strips_covering p.N j, v.x ip1 ab
+      - ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab
+      - ∑ ab ∈ P7.a.strips_covering p.N j, v.s ip1 ab
+      + ∑ ab ∈ P7.a.strips_covering p.N j, v.t i ab = 0 := by
     rw [← hflow_sum]
     rw [Finset.sum_add_distrib, Finset.sum_sub_distrib, Finset.sum_sub_distrib]
   rw [hcov_i, hcov_ip1] at hsplit
-  have ht_nn_sum : 0 ≤ ∑ ab ∈ P7.a.strips_covering p.N j,
-      v.t i ab.1 ab.2 :=
-    Finset.sum_nonneg (fun ab hab =>
-      t_nn h i ab (Finset.mem_filter.mp hab).1)
+  have ht_nn_sum : 0 ≤ ∑ ab ∈ P7.a.strips_covering p.N j, v.t i ab :=
+    Finset.sum_nonneg (fun ab _ => t_nn h i ab)
   rcases h.hh_bin i j with hhij0 | hhij1
   · -- h i j = 0: RHS ≥ 0
     rw [hhij0]
     rw [strips_covering_eq p.N j] at *
-    exact Finset.sum_nonneg (fun ab hab =>
-      s_nn h ip1 ab (Finset.mem_filter.mp hab).1)
+    exact Finset.sum_nonneg (fun ab _ => s_nn h ip1 ab)
   · -- h i j = 1: must show 1 ≤ ∑ s ip1
     have hcol := h.hcol j
     have hi_ne_ip1 : i ≠ ip1 := by
@@ -129,9 +120,9 @@ private lemma fwd_ec6 (p : P7.a.Params) (v : P7.a.Vars p)
     rw [hhij1]
     -- hsplit : (1 - 0) - (1 - 1) - ∑s + ∑t = 0
     rw [strips_covering_eq p.N j] at ht_nn_sum
-    -- We want: (1 : ℤ) ≤ ∑ ab ∈ g.strips_covering p.N j, v.s ⟨i.val + 1, hi_succ_lt⟩ ab.1 ab.2
+    -- We want: (1 : ℤ) ≤ ∑ ab ∈ g.strips_covering p.N j, v.s ⟨i.val + 1, hi_succ_lt⟩ ab
     -- This is the same as ∑ s ip1 (definitionally).
-    show (1 : ℤ) ≤ ∑ ab ∈ P7.g.strips_covering p.N j, v.s ip1 ab.1 ab.2
+    show (1 : ℤ) ≤ ∑ ab ∈ P7.g.strips_covering p.N j, v.s ip1 ab
     linarith
 
 private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)

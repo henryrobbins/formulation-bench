@@ -9,13 +9,12 @@ open BigOperators Finset
 
 namespace P7.h
 
-/-- Column intervals (a, b) with a ≤ b, for a given grid size N. -/
-def I (N : ℕ) : Finset (Fin N × Fin N) :=
-  univ.filter (fun ab => ab.1.val ≤ ab.2.val)
+/-- A column interval (a, b) with a ≤ b, for a given grid size N. -/
+abbrev Strip (N : ℕ) := {ab : Fin N × Fin N // ab.1.val ≤ ab.2.val}
 
-/-- Column intervals (a, b) with a ≤ j ≤ b, for a given grid size N and column j. -/
-def strips_covering (N : ℕ) (j : Fin N) : Finset (Fin N × Fin N) :=
-  (I N).filter (fun ab => ab.1.val ≤ j.val ∧ j.val ≤ ab.2.val)
+/-- Strips covering column j: those (a, b) with a ≤ j ≤ b. -/
+def strips_covering (N : ℕ) (j : Fin N) : Finset (Strip N) :=
+  univ.filter (fun ab => ab.val.1.val ≤ j.val ∧ j.val ≤ ab.val.2.val)
 
 structure Params where
   N : ℕ -- grid size (number of rows and columns)
@@ -24,9 +23,9 @@ structure Params where
 
 structure Vars (p : Params) where
   h : Fin p.N → Fin p.N → ℤ  -- hole indicator: 1 if (i,j) is the hole in row i
-  x : Fin p.N → Fin p.N → Fin p.N → ℤ  -- strip activation: 1 if row i, columns a..b are covered by same tile
-  s : Fin p.N → Fin p.N → Fin p.N → ℤ  -- strip start: 1 if a tile starts at row i for column interval (a,b)
-  t : Fin p.N → Fin p.N → Fin p.N → ℤ  -- strip end: 1 if a tile ends at row i for column interval (a,b)
+  x : Fin p.N → Strip p.N → ℤ  -- strip activation: 1 if row i, columns a..b are covered by same tile
+  s : Fin p.N → Strip p.N → ℤ  -- strip start: 1 if a tile starts at row i for column interval (a,b)
+  t : Fin p.N → Strip p.N → ℤ  -- strip end: 1 if a tile ends at row i for column interval (a,b)
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
   -- Each row contains exactly one hole
@@ -35,36 +34,32 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
   hcol : ∀ j : Fin p.N, ∑ i : Fin p.N, v.h i j = 1
   -- Each cell is either a hole or covered by exactly one tile interval
   hcov : ∀ i : Fin p.N, ∀ j : Fin p.N,
-    ∑ ab ∈ strips_covering p.N j, v.x i ab.1 ab.2 + v.h i j = 1
+    ∑ ab ∈ strips_covering p.N j, v.x i ab + v.h i j = 1
   -- Top-row flow: strip activity equals strip start at row 0
-  htop : ∀ ab ∈ I p.N,
+  htop : ∀ ab : Strip p.N,
     haveI := p.hN
-    v.x 0 ab.1 ab.2 = v.s 0 ab.1 ab.2
+    v.x 0 ab = v.s 0 ab
   -- Middle-row flow balance
-  hflow : ∀ i : Fin p.N, ∀ ab ∈ I p.N, ∀ hi : 0 < i.val,
-    v.x i ab.1 ab.2 - v.x ⟨i.val - 1, by omega⟩ ab.1 ab.2 -
-    v.s i ab.1 ab.2 + v.t ⟨i.val - 1, by omega⟩ ab.1 ab.2 = 0
+  hflow : ∀ i : Fin p.N, ∀ ab : Strip p.N, ∀ hi : 0 < i.val,
+    v.x i ab - v.x ⟨i.val - 1, by omega⟩ ab -
+    v.s i ab + v.t ⟨i.val - 1, by omega⟩ ab = 0
   -- Bottom-row flow: strip activity equals strip end at last row
-  hbot : ∀ ab ∈ I p.N,
-    v.x ⟨p.N - 1, Nat.sub_lt (Nat.pos_of_ne_zero p.hN.out) Nat.one_pos⟩ ab.1 ab.2 =
-    v.t ⟨p.N - 1, Nat.sub_lt (Nat.pos_of_ne_zero p.hN.out) Nat.one_pos⟩ ab.1 ab.2
+  hbot : ∀ ab : Strip p.N,
+    v.x ⟨p.N - 1, Nat.sub_lt (Nat.pos_of_ne_zero p.hN.out) Nat.one_pos⟩ ab =
+    v.t ⟨p.N - 1, Nat.sub_lt (Nat.pos_of_ne_zero p.hN.out) Nat.one_pos⟩ ab
   hh_bin : ∀ i : Fin p.N, ∀ j : Fin p.N, v.h i j = 0 ∨ v.h i j = 1
-  hx_bin : ∀ i : Fin p.N, ∀ ab ∈ I p.N,
-    v.x i ab.1 ab.2 = 0 ∨ v.x i ab.1 ab.2 = 1
-  hs_bin : ∀ i : Fin p.N, ∀ ab ∈ I p.N,
-    v.s i ab.1 ab.2 = 0 ∨ v.s i ab.1 ab.2 = 1
-  ht_bin : ∀ i : Fin p.N, ∀ ab ∈ I p.N,
-    v.t i ab.1 ab.2 = 0 ∨ v.t i ab.1 ab.2 = 1
+  hx_bin : ∀ i : Fin p.N, ∀ ab : Strip p.N, v.x i ab = 0 ∨ v.x i ab = 1
+  hs_bin : ∀ i : Fin p.N, ∀ ab : Strip p.N, v.s i ab = 0 ∨ v.s i ab = 1
+  ht_bin : ∀ i : Fin p.N, ∀ ab : Strip p.N, v.t i ab = 0 ∨ v.t i ab = 1
   -- EC1 (V2): Vacated Column
   -- If a hole vacates a column between consecutive rows, that column must be covered by a new strip start
   hvacCol : ∀ i : Fin p.N, ∀ j : Fin p.N, ∀ hi : 0 < i.val,
     v.h ⟨i.val - 1, by omega⟩ j - v.h i j ≤
-      ∑ ab ∈ strips_covering p.N j, v.s i ab.1 ab.2
+      ∑ ab ∈ strips_covering p.N j, v.s i ab
 
 -- Minimize the total number of rectangular tiles used (each tile contributes exactly one start)
 def obj (p : Params) (v : Vars p) : ℝ :=
-  ∑ i : Fin p.N, ∑ ab ∈ I p.N,
-    (v.s i ab.1 ab.2 : ℝ)
+  ∑ i : Fin p.N, ∑ ab : Strip p.N, (v.s i ab : ℝ)
 
 def formulation : MILPFormulation where
   Params   := Params
