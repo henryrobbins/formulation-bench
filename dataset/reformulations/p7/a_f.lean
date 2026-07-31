@@ -38,15 +38,11 @@ include h
 private lemma fwd_h_nn (i j : Fin p.N) : 0 ≤ v.h i j := by
   rcases h.hh_bin i j with h0 | h1 <;> omega
 
-private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
-    (hab : ab ∈ P7.a.I p.N) :
-    0 ≤ v.t i ab.1 ab.2 := by
-  rcases h.ht_bin i ab hab with h0 | h1 <;> omega
+private lemma fwd_t_nn (i : Fin p.N) (ab : P7.a.Strip p.N) : 0 ≤ v.t i ab := by
+  rcases h.ht_bin i ab with h0 | h1 <;> omega
 
-private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
-    (hab : ab ∈ P7.a.I p.N) :
-    0 ≤ v.s i ab.1 ab.2 := by
-  rcases h.hs_bin i ab hab with h0 | h1 <;> omega
+private lemma fwd_s_nn (i : Fin p.N) (ab : P7.a.Strip p.N) : 0 ≤ v.s i ab := by
+  rcases h.hs_bin i ab with h0 | h1 <;> omega
 
 -- If there is a hole at (i, j), then for any row i' ≠ i (in Fin p.N),
 -- v.h i' j = 0. Follows from hcol and binarity.
@@ -86,13 +82,13 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
   · intro i; exact h.hrow i
   · intro j; exact h.hcol j
   · intro i j; exact h.hcov i j
-  · intro ab hab; exact h.htop ab hab
-  · intro i ab hab hi; exact h.hflow i ab hab hi
-  · intro ab hab; exact h.hbot ab hab
+  · intro ab; exact h.htop ab
+  · intro i ab hi; exact h.hflow i ab hi
+  · intro ab; exact h.hbot ab
   · intro i j; exact h.hh_bin i j
-  · intro i ab hab; exact h.hx_bin i ab hab
-  · intro i ab hab; exact h.hs_bin i ab hab
-  · intro i ab hab; exact h.ht_bin i ab hab
+  · intro i ab; exact h.hx_bin i ab
+  · intro i ab; exact h.hs_bin i ab
+  · intro i ab; exact h.ht_bin i ab
   · -- hintBreakAbove
     intro i j hi_pos hi_lt
     have hi_lt_p : i.val < p.N := show i.val < (paramMap p).N from i.isLt
@@ -102,19 +98,19 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
     rcases h.hh_bin i j with hij0 | hij1
     · -- v.h i j = 0
       show v.h i j ≤
-          ∑ ab ∈ P7.f.strips_covering (paramMap p).N j, v.t ⟨i.val - 1, _⟩ ab.1 ab.2
+          ∑ ab ∈ P7.f.strips_covering (paramMap p).N j, v.t ⟨i.val - 1, _⟩ ab
       rw [hij0]
       apply Finset.sum_nonneg
-      intro ab hab
-      change 0 ≤ v.t iPred ab.1 ab.2
-      exact fwd_t_nn h iPred ab (Finset.mem_filter.mp hab).1
+      intro ab _
+      change 0 ≤ v.t iPred ab
+      exact fwd_t_nn h iPred ab
     · -- v.h i j = 1
       show v.h i j ≤
-          ∑ ab ∈ P7.f.strips_covering (paramMap p).N j, v.t ⟨i.val - 1, _⟩ ab.1 ab.2
+          ∑ ab ∈ P7.f.strips_covering (paramMap p).N j, v.t ⟨i.val - 1, _⟩ ab
       rw [hij1]
       have hcovi := h.hcov i j
       have hsumx_i :
-          ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab.1 ab.2 = 0 := by
+          ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab = 0 := by
         linarith
       have hne : iPred ≠ i := by
         intro heq
@@ -126,47 +122,39 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
         fwd_hole_unique_in_col (p := p) (v := v) h j i iPred hne hij1
       have hcov_pred := h.hcov iPred j
       have hsumx_pred :
-          ∑ ab ∈ P7.a.strips_covering p.N j,
-            v.x iPred ab.1 ab.2 = 1 := by
+          ∑ ab ∈ P7.a.strips_covering p.N j, v.x iPred ab = 1 := by
         linarith [hcov_pred, hh_pred]
       have hstrips_eq :
           P7.f.strips_covering (paramMap p).N j = P7.a.strips_covering p.N j := rfl
       -- Sum of flow equations over ab ∈ strips_covering p.N j.
       have hsum_t :
-          ∑ ab ∈ P7.a.strips_covering p.N j,
-              v.t iPred ab.1 ab.2 =
-          (∑ ab ∈ P7.a.strips_covering p.N j,
-              v.x iPred ab.1 ab.2)
-          - (∑ ab ∈ P7.a.strips_covering p.N j,
-              v.x i ab.1 ab.2)
-          + (∑ ab ∈ P7.a.strips_covering p.N j,
-              v.s i ab.1 ab.2) := by
+          ∑ ab ∈ P7.a.strips_covering p.N j, v.t iPred ab =
+          (∑ ab ∈ P7.a.strips_covering p.N j, v.x iPred ab)
+          - (∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab)
+          + (∑ ab ∈ P7.a.strips_covering p.N j, v.s i ab) := by
         rw [← Finset.sum_sub_distrib, ← Finset.sum_add_distrib]
         apply Finset.sum_congr rfl
-        intro ab hab
-        have habI : ab ∈ P7.a.I p.N := (Finset.mem_filter.mp hab).1
-        have hflow := h.hflow i ab habI hi_pos
+        intro ab _
+        have hflow := h.hflow i ab hi_pos
         -- hflow uses ⟨i.val - 1, _⟩; that's defeq to iPred.
-        change v.x i ab.1 ab.2 - v.x iPred ab.1 ab.2 -
-            v.s i ab.1 ab.2 + v.t iPred ab.1 ab.2 = 0 at hflow
+        change v.x i ab - v.x iPred ab - v.s i ab + v.t iPred ab = 0 at hflow
         linarith
       have hs_nn :
-          0 ≤ ∑ ab ∈ P7.a.strips_covering p.N j, v.s i ab.1 ab.2 :=
-        Finset.sum_nonneg (fun ab hab =>
-          fwd_s_nn h i ab (Finset.mem_filter.mp hab).1)
+          0 ≤ ∑ ab ∈ P7.a.strips_covering p.N j, v.s i ab :=
+        Finset.sum_nonneg (fun ab _ => fwd_s_nn h i ab)
       change (1 : ℤ) ≤
-          ∑ ab ∈ P7.f.strips_covering (paramMap p).N j, v.t iPred ab.1 ab.2
+          ∑ ab ∈ P7.f.strips_covering (paramMap p).N j, v.t iPred ab
       rw [hstrips_eq]
-      have hxprev : ∑ ab ∈ P7.a.strips_covering p.N j, v.x iPred ab.1 ab.2 = 1 := hsumx_pred
-      have hxi : ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab.1 ab.2 = 0 := hsumx_i
-      have hkey : (1 : ℤ) ≤ ∑ ab ∈ P7.a.strips_covering p.N j, v.t iPred ab.1 ab.2 := by
+      have hxprev : ∑ ab ∈ P7.a.strips_covering p.N j, v.x iPred ab = 1 := hsumx_pred
+      have hxi : ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab = 0 := hsumx_i
+      have hkey : (1 : ℤ) ≤ ∑ ab ∈ P7.a.strips_covering p.N j, v.t iPred ab := by
         calc (1 : ℤ) = 1 + 0 := by ring
-          _ ≤ 1 + ∑ ab ∈ P7.a.strips_covering p.N j, v.s i ab.1 ab.2 := by linarith
-          _ = ∑ ab ∈ P7.a.strips_covering p.N j, v.x iPred ab.1 ab.2
-              - ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab.1 ab.2
-              + ∑ ab ∈ P7.a.strips_covering p.N j, v.s i ab.1 ab.2 := by
+          _ ≤ 1 + ∑ ab ∈ P7.a.strips_covering p.N j, v.s i ab := by linarith
+          _ = ∑ ab ∈ P7.a.strips_covering p.N j, v.x iPred ab
+              - ∑ ab ∈ P7.a.strips_covering p.N j, v.x i ab
+              + ∑ ab ∈ P7.a.strips_covering p.N j, v.s i ab := by
             rw [hxprev, hxi]; ring
-          _ = ∑ ab ∈ P7.a.strips_covering p.N j, v.t iPred ab.1 ab.2 := hsum_t.symm
+          _ = ∑ ab ∈ P7.a.strips_covering p.N j, v.t iPred ab := hsum_t.symm
       exact hkey
 
 -- ============================================================================
