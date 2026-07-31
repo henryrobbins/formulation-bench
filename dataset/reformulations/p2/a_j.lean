@@ -5,11 +5,11 @@ import problems.p2.formulations.j.Formulation
 /-!
 # `j` is not a reformulation of `a`
 
-Formulation `j` relaxes the integer experiment counts to real variables. Its
-feasible set and objective are convex, whereas formulation `a` has an instance
-attaining exactly the two objective values `0` and `-1`. The midpoint of their
-images creates a third attained objective value. This holds for any parameter
-mapping.
+Formulation `j` omits the resource-capacity constraint. Formulation `a` has an
+instance attaining exactly the two objective values `0` and `-1`, while any
+target instance capable of representing both values has an unbounded feasible
+objective ray. Three points on that ray cannot all map back to those two
+strictly ordered objective values. This holds for any parameter mapping.
 -/
 
 namespace P2
@@ -70,74 +70,61 @@ private lemma obj_eq_zero_or_neg_one (v : P2.a.Vars pTwo) (h : P2.a.Feasible pTw
   · rw [hx]
     norm_num
 
-private noncomputable def midpoint {q : P2.j.Params}
-    (x y : P2.j.Vars q) : P2.j.Vars q :=
-  ⟨fun i => (x.j i + y.j i) / 2⟩
+private def targetPoint (q : P2.j.Params) (i : Fin q.M) (n : ℤ) : P2.j.Vars q :=
+  ⟨fun j => if j = i then n else 0⟩
 
-private lemma midpoint_feasible {q : P2.j.Params} {x y : P2.j.Vars q}
-    (hx : P2.j.Feasible q x) (hy : P2.j.Feasible q y) :
-    P2.j.Feasible q (midpoint x y) where
-  hres := by
-    intro k
-    have hxk := hx.hres k
-    have hyk := hy.hres k
-    calc
-      ∑ i, q.I k i * (midpoint x y).j i =
-          (1 / 2 : ℝ) * (∑ i, q.I k i * x.j i) +
-            (1 / 2 : ℝ) * (∑ i, q.I k i * y.j i) := by
-        rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]
-        apply Finset.sum_congr rfl
-        intro i _
-        simp only [midpoint]
-        ring
-      _ = ((∑ i, q.I k i * x.j i) + ∑ i, q.I k i * y.j i) / 2 := by ring
-      _ ≤ q.Y k := by linarith
+private lemma targetPoint_feasible (q : P2.j.Params) (i : Fin q.M) {n : ℤ}
+    (hn : 0 ≤ n) : P2.j.Feasible q (targetPoint q i n) where
   hj_nn := by
-    intro i
-    simp only [midpoint]
-    linarith [hx.hj_nn i, hy.hj_nn i]
+    intro j
+    simp [targetPoint]
+    split_ifs <;> omega
 
-private lemma midpoint_obj {q : P2.j.Params} (x y : P2.j.Vars q) :
-    P2.j.obj q (midpoint x y) = (P2.j.obj q x + P2.j.obj q y) / 2 := by
-  have hsum :
-      (∑ i, q.A i * (midpoint x y).j i) =
-        ((∑ i, q.A i * x.j i) + ∑ i, q.A i * y.j i) / 2 := by
-    calc
-      _ = (1 / 2 : ℝ) * (∑ i, q.A i * x.j i) +
-          (1 / 2 : ℝ) * (∑ i, q.A i * y.j i) := by
-        rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]
-        apply Finset.sum_congr rfl
-        intro i _
-        simp only [midpoint]
-        ring
-      _ = _ := by ring
-  unfold P2.j.obj
-  rw [hsum]
-  ring
+private lemma targetPoint_obj (q : P2.j.Params) (i : Fin q.M) (n : ℤ) :
+    P2.j.obj q (targetPoint q i n) = -q.A i * n := by
+  simp [P2.j.obj, targetPoint]
 
 theorem aJNotReformulation :
     IsEmpty (MILPReformulation P2.a.formulation P2.j.formulation) := by
   refine ⟨fun Φ => ?_⟩
-  let x := Φ.fwd pTwo (point 0)
-  let y := Φ.fwd pTwo (point 1)
-  have hx := Φ.fwd_feas pTwo (point 0) feasible_zero
-  have hy := Φ.fwd_feas pTwo (point 1) feasible_one
-  have hxobj := Φ.fwd_obj pTwo (point 0) feasible_zero
-  have hyobj := Φ.fwd_obj pTwo (point 1) feasible_one
-  change P2.j.obj (Φ.paramMap pTwo) x = Φ.objMap (P2.a.obj pTwo (point 0)) at hxobj
-  change P2.j.obj (Φ.paramMap pTwo) y = Φ.objMap (P2.a.obj pTwo (point 1)) at hyobj
-  rw [obj_zero] at hxobj
-  rw [obj_one] at hyobj
-  have hm := midpoint_feasible hx hy
-  have hb := Φ.bwd_obj pTwo (midpoint x y) hm
-  change P2.j.obj (Φ.paramMap pTwo) (midpoint x y) =
-    Φ.objMap (P2.a.obj pTwo (Φ.bwd pTwo (midpoint x y))) at hb
-  rw [midpoint_obj, hxobj, hyobj] at hb
+  let q := Φ.paramMap pTwo
   have hlt : Φ.objMap (-1) < Φ.objMap 0 := Φ.objMap_mono (by norm_num)
-  rcases obj_eq_zero_or_neg_one _ (Φ.bwd_feas pTwo (midpoint x y) hm) with h | h
-  · rw [h] at hb
+  have hA : ∃ i : Fin q.M, 0 < q.A i := by
+    by_contra h
+    push_neg at h
+    have hobj : ∀ z : P2.j.Vars q, P2.j.obj q z = 0 := by
+      intro z
+      have hzero : ∀ i : Fin q.M, q.A i = 0 := fun i =>
+        le_antisymm (h i) (q.hA_nn i)
+      simp [P2.j.obj, hzero]
+    have hzero := Φ.fwd_obj pTwo (point 0) feasible_zero
+    have hone := Φ.fwd_obj pTwo (point 1) feasible_one
+    change P2.j.obj q (Φ.fwd pTwo (point 0)) = Φ.objMap (P2.a.obj pTwo (point 0)) at hzero
+    change P2.j.obj q (Φ.fwd pTwo (point 1)) = Φ.objMap (P2.a.obj pTwo (point 1)) at hone
+    rw [obj_zero] at hzero
+    rw [obj_one] at hone
+    rw [hobj] at hzero hone
     linarith
-  · rw [h] at hb
-    linarith
+  obtain ⟨i, hi⟩ := hA
+  let z0 := targetPoint q i 0
+  let z1 := targetPoint q i 1
+  let z2 := targetPoint q i 2
+  have hz0 := targetPoint_feasible q i (by omega : (0 : ℤ) ≤ 0)
+  have hz1 := targetPoint_feasible q i (by omega : (0 : ℤ) ≤ 1)
+  have hz2 := targetPoint_feasible q i (by omega : (0 : ℤ) ≤ 2)
+  have hb0 := Φ.bwd_obj pTwo z0 hz0
+  have hb1 := Φ.bwd_obj pTwo z1 hz1
+  have hb2 := Φ.bwd_obj pTwo z2 hz2
+  change P2.j.obj q z0 = Φ.objMap (P2.a.obj pTwo (Φ.bwd pTwo z0)) at hb0
+  change P2.j.obj q z1 = Φ.objMap (P2.a.obj pTwo (Φ.bwd pTwo z1)) at hb1
+  change P2.j.obj q z2 = Φ.objMap (P2.a.obj pTwo (Φ.bwd pTwo z2)) at hb2
+  simp only [z0, targetPoint_obj, Int.cast_zero, mul_zero] at hb0
+  simp only [z1, targetPoint_obj, Int.cast_one, mul_one] at hb1
+  simp only [z2, targetPoint_obj, Int.cast_ofNat] at hb2
+  have hs0 := obj_eq_zero_or_neg_one _ (Φ.bwd_feas pTwo z0 hz0)
+  have hs1 := obj_eq_zero_or_neg_one _ (Φ.bwd_feas pTwo z1 hz1)
+  have hs2 := obj_eq_zero_or_neg_one _ (Φ.bwd_feas pTwo z2 hz2)
+  rcases hs0 with h0 | h0 <;> rcases hs1 with h1 | h1 <;> rcases hs2 with h2 | h2 <;>
+    rw [h0] at hb0 <;> rw [h1] at hb1 <;> rw [h2] at hb2 <;> linarith
 
 end P2

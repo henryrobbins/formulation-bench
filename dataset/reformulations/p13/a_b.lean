@@ -559,12 +559,13 @@ private lemma fwd_obj (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible 
   set D := Classical.choice (build_layers p v h) with hD
   have hy : ∀ pl a t, (fwd p v).y pl a t = if D.loc pl t = a then (1 : ℤ) else 0 := by
     intro pl a t; simp only [fwd, dif_pos h, ← hD]
-  simp only [P13.b.obj, P13.a.obj, hy]
-  rw [Finset.sum_comm]
-  conv_lhs => enter [2, a]; rw [Finset.sum_comm]
+  simp only [P13.b.obj, P13.a.obj, hy, paramMap]
+  rw [sum_comm (s := (univ : Finset (Fin p.nP))) (t := (univ : Finset (Fin p.nA)))]
+  congr 1
   apply Finset.sum_congr rfl; intro a _
+  rw [Finset.sum_comm]
   apply Finset.sum_congr rfl; intro t _
-  have hcnt : (univ.filter (fun pl : Fin (paramMap p).nP => D.loc pl t = a)).card
+  have hcnt : (univ.filter (fun pl : Fin p.nP => D.loc pl t = a)).card
       = (v.n a t).toNat := D.hcount a t
   rw [← Finset.mul_sum]
   congr 1
@@ -636,12 +637,18 @@ private lemma bwd_feas (p : P13.a.Params) (v : P13.b.Vars (paramMap p))
 private lemma bwd_obj (p : P13.a.Params) (v : P13.b.Vars (paramMap p)) :
     P13.b.obj (paramMap p) v = P13.a.obj p (bwd p v) := by
   symm
-  simp only [P13.a.obj, P13.b.obj, bwd]
+  simp only [P13.a.obj, P13.b.obj, bwd, paramMap]
   push_cast
   simp_rw [Finset.mul_sum]
-  conv_lhs => enter [2, x]; rw [Finset.sum_comm]
-  rw [Finset.sum_comm]
-  rfl
+  congr 1
+  calc
+    ∑ a, ∑ t, ∑ pl, p.r a t * (v.y pl a t : ℝ)
+        = ∑ a, ∑ pl, ∑ t, p.r a t * (v.y pl a t : ℝ) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            rw [Finset.sum_comm]
+    _ = ∑ pl, ∑ a, ∑ t, p.r a t * (v.y pl a t : ℝ) := by
+          rw [Finset.sum_comm]
 
 -- ============================================================================
 -- § Round-Trip Identity
