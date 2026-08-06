@@ -295,12 +295,13 @@ private lemma bwd_feas (p : P11.a.Params) (v : P11.b.Vars (paramMap p))
 -- ============================================================================
 
 def aBReformulation : MILPReformulation P11.a.formulation P11.b.formulation where
-  paramMap := paramMap
-  fwd := fwd
-  bwd := bwd
-  fwd_feas := fwd_feas
-  bwd_feas := bwd_feas
-  objMap := id
+  paramMap    := paramMap
+  fwd         := fwd
+  bwd         := bwd
+  fwd_feas    := fwd_feas
+  bwd_feas    := bwd_feas
+  bwd_fwd     := fun _ _ _ => rfl
+  objMap      := id
   objMap_mono := strictMono_id
   fwd_obj p v _ := by
     simp only [P11.a.formulation, P11.b.formulation, P11.a.obj, P11.b.obj,
