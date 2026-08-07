@@ -37,13 +37,13 @@
             }
         },
         "tau_min": {
-            "formulation": "tau_min_{i} = tau_min_{i}",
+            "formulation": "\\tau^-_i = \\tau^-_i",
             "code": {
                 "python": "tau_min = tau_min"
             }
         },
         "tau_max": {
-            "formulation": "tau_max_{i} = tau_max_{i}",
+            "formulation": "\\tau^+_i = \\tau^+_i",
             "code": {
                 "python": "tau_max = tau_max"
             }

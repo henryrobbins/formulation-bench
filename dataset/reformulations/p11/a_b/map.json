@@ -19,115 +19,115 @@
             }
         },
         "n_S": {
-            "formulation": "n_S_{i} = n_S_{i}",
+            "formulation": "n_{S,g} = n_{S,g}",
             "code": {
                 "python": "n_S = n_S"
             }
         },
         "ell": {
-            "formulation": "ell_{ij} = ell_{ij}",
+            "formulation": "\\ell_{g,s} = \\ell_{g,s}",
             "code": {
                 "python": "ell = ell"
             }
         },
         "C_su": {
-            "formulation": "C_su_{ij} = C_su_{ij}",
+            "formulation": "C^{su}_{g,s} = C^{su}_{g,s}",
             "code": {
                 "python": "C_su = C_su"
             }
         },
         "n_L": {
-            "formulation": "n_L_{i} = n_L_{i}",
+            "formulation": "n_{L,g} = n_{L,g}",
             "code": {
                 "python": "n_L = n_L"
             }
         },
         "P": {
-            "formulation": "P_{ij} = P_{ij}",
+            "formulation": "P_{g,l} = P_{g,l}",
             "code": {
                 "python": "P = P"
             }
         },
         "C": {
-            "formulation": "C_{ij} = C_{ij}",
+            "formulation": "C_{g,l} = C_{g,l}",
             "code": {
                 "python": "C = C"
             }
         },
         "L": {
-            "formulation": "L_{i} = L_{i}",
+            "formulation": "L_t = L_t",
             "code": {
                 "python": "L = L"
             }
         },
         "R": {
-            "formulation": "R_{i} = R_{i}",
+            "formulation": "R_t = R_t",
             "code": {
                 "python": "R = R"
             }
         },
         "P_min": {
-            "formulation": "P_min_{i} = P_min_{i}",
+            "formulation": "P^{\\min}_g = P^{\\min}_g",
             "code": {
                 "python": "P_min = P_min"
             }
         },
         "P_max": {
-            "formulation": "P_max_{i} = P_max_{i}",
+            "formulation": "P^{\\max}_g = P^{\\max}_g",
             "code": {
                 "python": "P_max = P_max"
             }
         },
         "P_wind_min": {
-            "formulation": "P_wind_min_{ij} = P_wind_min_{ij}",
+            "formulation": "P^{w,\\min}_{w,t} = P^{w,\\min}_{w,t}",
             "code": {
                 "python": "P_wind_min = P_wind_min"
             }
         },
         "P_wind_max": {
-            "formulation": "P_wind_max_{ij} = P_wind_max_{ij}",
+            "formulation": "P^{w,\\max}_{w,t} = P^{w,\\max}_{w,t}",
             "code": {
                 "python": "P_wind_max = P_wind_max"
             }
         },
         "RU": {
-            "formulation": "RU_{i} = RU_{i}",
+            "formulation": "RU_g = RU_g",
             "code": {
                 "python": "RU = RU"
             }
         },
         "RD": {
-            "formulation": "RD_{i} = RD_{i}",
+            "formulation": "RD_g = RD_g",
             "code": {
                 "python": "RD = RD"
             }
         },
         "SU": {
-            "formulation": "SU_{i} = SU_{i}",
+            "formulation": "SU_g = SU_g",
             "code": {
                 "python": "SU = SU"
             }
         },
         "SD": {
-            "formulation": "SD_{i} = SD_{i}",
+            "formulation": "SD_g = SD_g",
             "code": {
                 "python": "SD = SD"
             }
         },
         "U": {
-            "formulation": "U_{i} = U_{i}",
+            "formulation": "U_g = U_g",
             "code": {
                 "python": "U = U"
             }
         },
         "D": {
-            "formulation": "D_{i} = D_{i}",
+            "formulation": "D_g = D_g",
             "code": {
                 "python": "D = D"
             }
         },
         "MR": {
-            "formulation": "\\mathrm{MR}_{i} = \\mathrm{MR}_{i}",
+            "formulation": "\\mathrm{MR}_g = \\mathrm{MR}_g",
             "code": {
                 "python": "MR = MR"
             }
