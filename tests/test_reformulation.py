@@ -24,10 +24,6 @@ def test_is_reformulation_is_bool(dataset: Dataset) -> None:
         assert isinstance(r.is_reformulation, bool)
 
 
-@pytest.mark.xfail(
-    reason="data drift: p13 has a True pair whose A formulation is invalid",
-    strict=False,
-)
 def test_reformulation_true_when_both_valid(dataset: Dataset) -> None:
     for r in dataset.reformulations:
         if r.is_reformulation:
