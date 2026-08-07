@@ -222,11 +222,8 @@ def _reformulation_section(pid: int, reform: Reformulation) -> str:
     a, b = reform.a.path.name, reform.b.path.name
     a_ref = f"{{ref}}`{a} <{_formulation_target(pid, a)}>`"
     b_ref = f"{{ref}}`{b} <{_formulation_target(pid, b)}>`"
-    verb = "**is**" if reform.is_reformulation else "**is not**"
-    parts = [
-        f"### `{a}` → `{b}`\n",
-        f"Formulation {b_ref} {verb} a reformulation of formulation {a_ref}.\n",
-    ]
+    badge = "valid" if reform.is_reformulation else "invalid"
+    parts = [f"### {a_ref} → {b_ref} ({badge})\n"]
 
     pmap = reform.parameter_map
     if pmap is None:
