@@ -1,0 +1,40 @@
+{
+    "parameters": {
+        "nS": {
+            "formulation": "nS = nS",
+            "code": {
+                "python": "nS = nS"
+            }
+        },
+        "nH": {
+            "formulation": "nH = nH",
+            "code": {
+                "python": "nH = nH"
+            }
+        },
+        "n": {
+            "formulation": "n = n",
+            "code": {
+                "python": "n = n"
+            }
+        },
+        "T_limit": {
+            "formulation": "T_{\\text{limit}} = T_{\\text{limit}}",
+            "code": {
+                "python": "T_limit = T_limit"
+            }
+        },
+        "T": {
+            "formulation": "T_{ij} = T_{ij}",
+            "code": {
+                "python": "T = T"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `b` enforces the travel-time limit directly with $T_{ij} y_{ij} \\leq T_{\\text{limit}}$, so it has no counterpart for the feasibility indicator $\\delta$ of formulation `a`; the map drops it and carries every other parameter across unchanged.",
+            "Dropping $\\delta$ loses no information: formulation `a` assumes $\\delta_{ij} = 1 \\iff T_{ij} \\leq T_{\\text{limit}}$, so $\\delta$ is recoverable from $T$ and $T_{\\text{limit}}$."
+        ]
+    }
+}

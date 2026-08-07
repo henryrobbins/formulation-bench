@@ -1,0 +1,39 @@
+{
+    "parameters": {
+        "P": {
+            "formulation": "P = MinTopsoilBags",
+            "code": {
+                "python": "P = MinTopsoilBags"
+            }
+        },
+        "B": {
+            "formulation": "B = WaterTopsoil",
+            "code": {
+                "python": "B = WaterTopsoil"
+            }
+        },
+        "D": {
+            "formulation": "D = MaxTotalBags",
+            "code": {
+                "python": "D = MaxTotalBags"
+            }
+        },
+        "Z": {
+            "formulation": "Z = WaterSubsoil",
+            "code": {
+                "python": "Z = WaterSubsoil"
+            }
+        },
+        "K": {
+            "formulation": "K = MaxTopsoilProportion",
+            "code": {
+                "python": "K = MaxTopsoilProportion"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `g` renames every parameter of formulation `a`; the values carry over unchanged."
+        ]
+    }
+}

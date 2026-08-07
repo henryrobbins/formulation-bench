@@ -1,0 +1,51 @@
+{
+    "parameters": {
+        "U": {
+            "formulation": "U = 4",
+            "code": {
+                "python": "U = 4"
+            }
+        },
+        "C": {
+            "formulation": "C = 200",
+            "code": {
+                "python": "C = 200"
+            }
+        },
+        "V": {
+            "formulation": "V = 3",
+            "code": {
+                "python": "V = 3"
+            }
+        },
+        "N": {
+            "formulation": "N = 2",
+            "code": {
+                "python": "N = 2"
+            }
+        },
+        "Z": {
+            "formulation": "Z = 10",
+            "code": {
+                "python": "Z = 10"
+            }
+        },
+        "E": {
+            "formulation": "E = 4",
+            "code": {
+                "python": "E = 4"
+            }
+        },
+        "P": {
+            "formulation": "P = 0.33",
+            "code": {
+                "python": "P = 0.33"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `h` is unrelated to formulation `a`: none of its parameters can be derived from `a`'s, so the map assigns each the fixed value the formulation is stated over."
+        ]
+    }
+}

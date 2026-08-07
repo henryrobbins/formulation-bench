@@ -1,0 +1,87 @@
+{
+    "parameters": {
+        "n": {
+            "formulation": "n = n",
+            "code": {
+                "python": "n = n"
+            }
+        },
+        "t": {
+            "formulation": "t = t",
+            "code": {
+                "python": "t = t"
+            }
+        },
+        "c": {
+            "formulation": "c_{ij} = c_{ij}",
+            "code": {
+                "python": "c = c"
+            }
+        },
+        "g": {
+            "formulation": "g_{i} = g_{i}",
+            "code": {
+                "python": "g = g"
+            }
+        },
+        "O": {
+            "formulation": "O_{i} = O_{i}",
+            "code": {
+                "python": "O = O"
+            }
+        },
+        "W": {
+            "formulation": "W_{i} = W_{i}",
+            "code": {
+                "python": "W = W"
+            }
+        },
+        "G_min": {
+            "formulation": "G_min = G_min",
+            "code": {
+                "python": "G_min = G_min"
+            }
+        },
+        "G_max": {
+            "formulation": "G_max = G_max",
+            "code": {
+                "python": "G_max = G_max"
+            }
+        },
+        "PC_min": {
+            "formulation": "PC_min = PC_min",
+            "code": {
+                "python": "PC_min = PC_min"
+            }
+        },
+        "PC_max": {
+            "formulation": "PC_max = PC_max",
+            "code": {
+                "python": "PC_max = PC_max"
+            }
+        },
+        "MC_min": {
+            "formulation": "MC_min = MC_min",
+            "code": {
+                "python": "MC_min = MC_min"
+            }
+        },
+        "MC_max": {
+            "formulation": "MC_max = MC_max",
+            "code": {
+                "python": "MC_max = MC_max"
+            }
+        },
+        "P": {
+            "formulation": "P_{ij} = P_{ij}",
+            "code": {
+                "python": "P = P"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `b` is stated over the same parameters as formulation `a`; the map is the identity."
+        ]
+    }
+}

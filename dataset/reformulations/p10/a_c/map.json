@@ -1,0 +1,57 @@
+{
+    "parameters": {
+        "K": {
+            "formulation": "K = K",
+            "code": {
+                "python": "K = K"
+            }
+        },
+        "N": {
+            "formulation": "N = N",
+            "code": {
+                "python": "N = N"
+            }
+        },
+        "d": {
+            "formulation": "d_{ij} = d_{ij}",
+            "code": {
+                "python": "d = d"
+            }
+        },
+        "d0": {
+            "formulation": "d0_{ij} = d0_{ij}",
+            "code": {
+                "python": "d0 = d0"
+            }
+        },
+        "dH": {
+            "formulation": "dH_{ij} = dH_{ij}",
+            "code": {
+                "python": "dH = dH"
+            }
+        },
+        "v": {
+            "formulation": "v_{i} = v_{i}",
+            "code": {
+                "python": "v = v"
+            }
+        },
+        "tau_min": {
+            "formulation": "tau_min_{i} = tau_min_{i}",
+            "code": {
+                "python": "tau_min = tau_min"
+            }
+        },
+        "tau_max": {
+            "formulation": "tau_max_{i} = tau_max_{i}",
+            "code": {
+                "python": "tau_max = tau_max"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `c` is stated over the same parameters as formulation `a`; the map is the identity."
+        ]
+    }
+}

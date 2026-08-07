@@ -1,0 +1,64 @@
+{
+    "parameters": {
+        "nH": {
+            "formulation": "nH = nH",
+            "code": {
+                "python": "nH = nH"
+            }
+        },
+        "nC": {
+            "formulation": "nC = nC",
+            "code": {
+                "python": "nC = nC"
+            }
+        },
+        "a": {
+            "formulation": "a_c = a_c",
+            "code": {
+                "python": "a = a"
+            }
+        },
+        "C": {
+            "formulation": "C_{hc} = C_{hc}",
+            "code": {
+                "python": "C = C"
+            }
+        },
+        "t": {
+            "formulation": "t_{hc} = t_{hc}",
+            "code": {
+                "python": "t = t"
+            }
+        },
+        "T": {
+            "formulation": "T = T",
+            "code": {
+                "python": "T = T"
+            }
+        },
+        "n": {
+            "formulation": "n = n",
+            "code": {
+                "python": "n = n"
+            }
+        },
+        "Hf": {
+            "formulation": "H^f_h = H^f_h",
+            "code": {
+                "python": "Hf = Hf"
+            }
+        },
+        "M": {
+            "formulation": "M = 1",
+            "code": {
+                "python": "M = 1"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `b` is stated over the same data as formulation `a`, carried across unchanged, and adds the big-M constant $M$ linking the demand-fraction variable $q$ to the assignment indicator $z$.",
+            "$M$ is not derived from the data. Each region's demand fractions are non-negative and sum to one, so $q_{hc} \\leq 1$ at every feasible point; any $M \\geq 1$ is valid, and $M = 1$ is the tightest choice."
+        ]
+    }
+}

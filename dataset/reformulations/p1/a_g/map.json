@@ -1,0 +1,45 @@
+{
+    "parameters": {
+        "A": {
+            "formulation": "A = CashMachineProcessingRate",
+            "code": {
+                "python": "A = CashMachineProcessingRate"
+            }
+        },
+        "K": {
+            "formulation": "K = CardMachineProcessingRate",
+            "code": {
+                "python": "K = CardMachineProcessingRate"
+            }
+        },
+        "Y": {
+            "formulation": "Y = CashMachinePaperRolls",
+            "code": {
+                "python": "Y = CashMachinePaperRolls"
+            }
+        },
+        "W": {
+            "formulation": "W = CardMachinePaperRolls",
+            "code": {
+                "python": "W = CardMachinePaperRolls"
+            }
+        },
+        "U": {
+            "formulation": "U = MinPeopleProcessed",
+            "code": {
+                "python": "U = MinPeopleProcessed"
+            }
+        },
+        "V": {
+            "formulation": "V = MaxPaperRolls",
+            "code": {
+                "python": "V = MaxPaperRolls"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `g` renames every parameter of formulation `a`; the values carry over unchanged."
+        ]
+    }
+}

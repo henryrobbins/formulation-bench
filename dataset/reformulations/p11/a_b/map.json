@@ -1,0 +1,141 @@
+{
+    "parameters": {
+        "T": {
+            "formulation": "T = T",
+            "code": {
+                "python": "T = T"
+            }
+        },
+        "n_G": {
+            "formulation": "n_G = n_G",
+            "code": {
+                "python": "n_G = n_G"
+            }
+        },
+        "n_W": {
+            "formulation": "n_W = n_W",
+            "code": {
+                "python": "n_W = n_W"
+            }
+        },
+        "n_S": {
+            "formulation": "n_S_{i} = n_S_{i}",
+            "code": {
+                "python": "n_S = n_S"
+            }
+        },
+        "ell": {
+            "formulation": "ell_{ij} = ell_{ij}",
+            "code": {
+                "python": "ell = ell"
+            }
+        },
+        "C_su": {
+            "formulation": "C_su_{ij} = C_su_{ij}",
+            "code": {
+                "python": "C_su = C_su"
+            }
+        },
+        "n_L": {
+            "formulation": "n_L_{i} = n_L_{i}",
+            "code": {
+                "python": "n_L = n_L"
+            }
+        },
+        "P": {
+            "formulation": "P_{ij} = P_{ij}",
+            "code": {
+                "python": "P = P"
+            }
+        },
+        "C": {
+            "formulation": "C_{ij} = C_{ij}",
+            "code": {
+                "python": "C = C"
+            }
+        },
+        "L": {
+            "formulation": "L_{i} = L_{i}",
+            "code": {
+                "python": "L = L"
+            }
+        },
+        "R": {
+            "formulation": "R_{i} = R_{i}",
+            "code": {
+                "python": "R = R"
+            }
+        },
+        "P_min": {
+            "formulation": "P_min_{i} = P_min_{i}",
+            "code": {
+                "python": "P_min = P_min"
+            }
+        },
+        "P_max": {
+            "formulation": "P_max_{i} = P_max_{i}",
+            "code": {
+                "python": "P_max = P_max"
+            }
+        },
+        "P_wind_min": {
+            "formulation": "P_wind_min_{ij} = P_wind_min_{ij}",
+            "code": {
+                "python": "P_wind_min = P_wind_min"
+            }
+        },
+        "P_wind_max": {
+            "formulation": "P_wind_max_{ij} = P_wind_max_{ij}",
+            "code": {
+                "python": "P_wind_max = P_wind_max"
+            }
+        },
+        "RU": {
+            "formulation": "RU_{i} = RU_{i}",
+            "code": {
+                "python": "RU = RU"
+            }
+        },
+        "RD": {
+            "formulation": "RD_{i} = RD_{i}",
+            "code": {
+                "python": "RD = RD"
+            }
+        },
+        "SU": {
+            "formulation": "SU_{i} = SU_{i}",
+            "code": {
+                "python": "SU = SU"
+            }
+        },
+        "SD": {
+            "formulation": "SD_{i} = SD_{i}",
+            "code": {
+                "python": "SD = SD"
+            }
+        },
+        "U": {
+            "formulation": "U_{i} = U_{i}",
+            "code": {
+                "python": "U = U"
+            }
+        },
+        "D": {
+            "formulation": "D_{i} = D_{i}",
+            "code": {
+                "python": "D = D"
+            }
+        },
+        "MR": {
+            "formulation": "\\mathrm{MR}_{i} = \\mathrm{MR}_{i}",
+            "code": {
+                "python": "MR = MR"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `b` is stated over the same parameters as formulation `a`; the map is the identity."
+        ]
+    }
+}

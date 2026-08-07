@@ -1,0 +1,39 @@
+{
+    "parameters": {
+        "N": {
+            "formulation": "N = NumResources",
+            "code": {
+                "python": "N = NumResources"
+            }
+        },
+        "Y": {
+            "formulation": "Y = ResourceAvailable",
+            "code": {
+                "python": "Y = ResourceAvailable"
+            }
+        },
+        "A": {
+            "formulation": "A = ElectricityProduced",
+            "code": {
+                "python": "A = ElectricityProduced"
+            }
+        },
+        "I": {
+            "formulation": "I = ResourceRequired",
+            "code": {
+                "python": "I = ResourceRequired"
+            }
+        },
+        "M": {
+            "formulation": "M = NumExperiments",
+            "code": {
+                "python": "M = NumExperiments"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `f` renames every parameter of formulation `a`; the values carry over unchanged."
+        ]
+    }
+}

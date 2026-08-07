@@ -1,0 +1,33 @@
+{
+    "parameters": {
+        "n": {
+            "formulation": "n = n",
+            "code": {
+                "python": "n = n"
+            }
+        },
+        "m": {
+            "formulation": "m = m",
+            "code": {
+                "python": "m = m"
+            }
+        },
+        "p": {
+            "formulation": "p_{ij} = p_{ij}",
+            "code": {
+                "python": "p = p"
+            }
+        },
+        "Om": {
+            "formulation": "Om_{ij} = Om_{ij}",
+            "code": {
+                "python": "Om = Om"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `b` is stated over the same parameters as formulation `a`; the map is the identity."
+        ]
+    }
+}

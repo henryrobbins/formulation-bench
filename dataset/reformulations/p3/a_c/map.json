@@ -1,0 +1,57 @@
+{
+    "parameters": {
+        "C": {
+            "formulation": "C = WasteProducedPerBeaker",
+            "code": {
+                "python": "C = WasteProducedPerBeaker"
+            }
+        },
+        "E": {
+            "formulation": "E = MaxWasteAllowed",
+            "code": {
+                "python": "E = MaxWasteAllowed"
+            }
+        },
+        "N": {
+            "formulation": "N = NumBeakers",
+            "code": {
+                "python": "N = NumBeakers"
+            }
+        },
+        "X": {
+            "formulation": "X = SlimeProducedPerBeaker",
+            "code": {
+                "python": "X = SlimeProducedPerBeaker"
+            }
+        },
+        "T": {
+            "formulation": "T = FlourUsagePerBeaker",
+            "code": {
+                "python": "T = FlourUsagePerBeaker"
+            }
+        },
+        "D": {
+            "formulation": "D = FlourAvailable",
+            "code": {
+                "python": "D = FlourAvailable"
+            }
+        },
+        "V": {
+            "formulation": "V = SpecialLiquidUsagePerBeaker",
+            "code": {
+                "python": "V = SpecialLiquidUsagePerBeaker"
+            }
+        },
+        "Z": {
+            "formulation": "Z = SpecialLiquidAvailable",
+            "code": {
+                "python": "Z = SpecialLiquidAvailable"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `c` renames every parameter of formulation `a`; the values carry over unchanged."
+        ]
+    }
+}

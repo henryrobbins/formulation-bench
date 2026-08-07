@@ -1,0 +1,75 @@
+{
+    "parameters": {
+        "n": {
+            "formulation": "n = n",
+            "code": {
+                "python": "n = n"
+            }
+        },
+        "m": {
+            "formulation": "m = m",
+            "code": {
+                "python": "m = m"
+            }
+        },
+        "K": {
+            "formulation": "K = K",
+            "code": {
+                "python": "K = K"
+            }
+        },
+        "tail": {
+            "formulation": "\\text{tail}_{i} = \\text{tail}_{i}",
+            "code": {
+                "python": "tail = tail"
+            }
+        },
+        "head": {
+            "formulation": "\\text{head}_{i} = \\text{head}_{i}",
+            "code": {
+                "python": "head = head"
+            }
+        },
+        "c": {
+            "formulation": "c_{i} = c_{i}",
+            "code": {
+                "python": "c = c"
+            }
+        },
+        "f": {
+            "formulation": "f_{i} = f_{i}",
+            "code": {
+                "python": "f = f"
+            }
+        },
+        "u": {
+            "formulation": "u_{i} = u_{i}",
+            "code": {
+                "python": "u = u"
+            }
+        },
+        "O": {
+            "formulation": "O_{i} = O_{i}",
+            "code": {
+                "python": "O = O"
+            }
+        },
+        "D": {
+            "formulation": "D_{i} = D_{i}",
+            "code": {
+                "python": "D = D"
+            }
+        },
+        "d": {
+            "formulation": "d_{i} = d_{i}",
+            "code": {
+                "python": "d = d"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `d` is stated over the same parameters as formulation `a`; the map is the identity."
+        ]
+    }
+}
