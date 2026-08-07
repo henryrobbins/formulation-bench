@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from ._render import render_parameter_map as _render_parameter_map
+
 _RAGGED_RE = re.compile(r"^(\w+)\[(\w+)\]$")
 _CARDINALITY_RE = re.compile(r"^\|(.+)\|$")
 
@@ -464,6 +466,45 @@ class ParameterMap:
             },
             metadata=d.get("metadata", {}),
         )
+
+    def render_markdown(self) -> str:
+        r"""Render this parameter map in Markdown.
+
+        The output is produced by rendering the following Jinja template. The
+        ``notes`` passed to this template are the ``metadata.notes`` of the map.
+
+        .. literalinclude:: ../../src/formulation_bench/templates/parameter_map.j2
+           :language: jinja
+
+        Returns
+        -------
+        markdown : str
+            The rendered Markdown string.
+
+        Examples
+        --------
+
+        Render the map carrying formulation ``a`` of :doc:`/problems/p12` to
+        formulation ``b``::
+
+            >>> from formulation_bench import Dataset
+            >>> ds = Dataset("dataset")
+            >>> pmap = ds.reformulations[73].parameter_map
+            >>> print(pmap.render_markdown())
+            # Parameter Map
+            <BLANKLINE>
+            Formulation `b` has the same parameters as formulation `a`; the map is the identity.
+            <BLANKLINE>
+            ## Parameters
+            <BLANKLINE>
+            - **n**
+            $$n = n$$
+            - **c**
+            $$c_{ij} = c_{ij}$$
+            <BLANKLINE>
+
+        """  # noqa: E501
+        return _render_parameter_map(self)
 
 
 @dataclass(frozen=True)
