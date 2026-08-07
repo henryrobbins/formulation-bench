@@ -386,18 +386,22 @@ class Definition:
     """A named derived quantity computed from parameters.
 
     Typically defines sets, constants, etc... that are used by multiple
-    constraints and/or the objective.
+    constraints and/or the objective. Also used for the entries of a
+    :class:`ParameterMap`, each of which computes one parameter of the target
+    formulation from the parameters of the source formulation.
 
     Attributes
     ----------
-    description : str
-        Human-readable description.
     formulation : str
         LaTeX form of the definition.
     code : dict[str, str]
         Per-language source for the definition. The ``"python"`` key is used by
         :meth:`Formulation.gen_solve_py` to generate Python code that computes the
-        definition in the solver script.
+        definition in the solver script, and by
+        :meth:`Reformulation.gen_map_py` for the parameter map.
+    description : str or None
+        Human-readable description. Optional: a parameter map entry whose LaTeX
+        already states the derivation does not need one.
 
     Examples
     --------
@@ -414,16 +418,51 @@ class Definition:
         'M = sum(p[j][k] for j in range(n) for k in range(m))'
     """
 
-    description: str
     code: dict[str, str]
     formulation: str
+    description: str | None = None
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Definition":
         return cls(
-            description=d["description"],
             code=d["code"],
             formulation=d["formulation"],
+            description=d.get("description"),
+        )
+
+
+@dataclass(frozen=True)
+class ParameterMap:
+    """A mapping from one formulation's parameters to another's.
+
+    Loaded from the ``map.json`` of a reformulation pair. See
+    :ref:`parameter-map` for the file schema.
+
+    Attributes
+    ----------
+    parameters : dict[str, Definition]
+        One entry per parameter of the target formulation, computing it from the
+        source formulation's parameters. Ordered: an entry may reference any
+        parameter defined before it.
+    definitions : dict[str, Definition]
+        Optional intermediate quantities computed before the parameters. Used
+        when several parameters share a derivation.
+    metadata : dict[str, Any]
+        Free-form metadata about the map. Typically a ``notes`` field.
+    """
+
+    parameters: dict[str, Definition]
+    definitions: dict[str, Definition]
+    metadata: dict[str, Any]
+
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> "ParameterMap":
+        return cls(
+            parameters={k: Definition.from_dict(v) for k, v in d["parameters"].items()},
+            definitions={
+                k: Definition.from_dict(v) for k, v in d.get("definitions", {}).items()
+            },
+            metadata=d.get("metadata", {}),
         )
 
 

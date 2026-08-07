@@ -98,6 +98,19 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
             ],
         )
 
+    if "mapped_reformulation" in metafunc.fixturenames:
+        metafunc.parametrize(
+            "mapped_reformulation",
+            [
+                pytest.param(
+                    r, id=f"{r.a.problem.path.name}.{r.a.path.name}_{r.b.path.name}"
+                )
+                for r in _DATASET.reformulations
+                if r.parameter_map is not None
+                and (selected is None or int(r.a.problem.path.name[1:]) in selected)
+            ],
+        )
+
     if "evocut_variant" in metafunc.fixturenames:
         metafunc.parametrize(
             "evocut_variant",
