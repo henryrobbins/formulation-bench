@@ -1,0 +1,45 @@
+{
+    "parameters": {
+        "J": {
+            "formulation": "J = MinEmployeesToTransport",
+            "code": {
+                "python": "J = MinEmployeesToTransport"
+            }
+        },
+        "M": {
+            "formulation": "M = CarPollution",
+            "code": {
+                "python": "M = CarPollution"
+            }
+        },
+        "K": {
+            "formulation": "K = CarCapacity",
+            "code": {
+                "python": "K = CarCapacity"
+            }
+        },
+        "D": {
+            "formulation": "D = BusCapacity",
+            "code": {
+                "python": "D = BusCapacity"
+            }
+        },
+        "O": {
+            "formulation": "O = BusPollution",
+            "code": {
+                "python": "O = BusPollution"
+            }
+        },
+        "S": {
+            "formulation": "S = MaxBuses",
+            "code": {
+                "python": "S = MaxBuses"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `e` renames every parameter of formulation `a`."
+        ]
+    }
+}

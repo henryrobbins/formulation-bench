@@ -1,0 +1,51 @@
+{
+    "parameters": {
+        "N": {
+            "formulation": "N = N",
+            "code": {
+                "python": "N = N"
+            }
+        },
+        "M": {
+            "formulation": "M = M",
+            "code": {
+                "python": "M = M"
+            }
+        },
+        "nP": {
+            "formulation": "nP = nP",
+            "code": {
+                "python": "nP = nP"
+            }
+        },
+        "nS": {
+            "formulation": "nS = nS",
+            "code": {
+                "python": "nS = nS"
+            }
+        },
+        "v": {
+            "formulation": "v_{ij} = v_{ij}",
+            "code": {
+                "python": "v = v"
+            }
+        },
+        "F": {
+            "formulation": "F_{ijk} = F_{ijk}",
+            "code": {
+                "python": "F = F"
+            }
+        },
+        "U": {
+            "formulation": "U = U",
+            "code": {
+                "python": "U = U"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `b` has the same parameters as formulation `a`; the map is the identity."
+        ]
+    }
+}

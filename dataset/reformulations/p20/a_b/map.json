@@ -1,0 +1,131 @@
+{
+    "definitions": {
+        "paths": {
+            "formulation": "P = \\{\\text{simple paths } (v_0, \\dots, v_r) \\text{ in } (N, E) : v_0 \\in N_S,\\; v_r \\in N_B\\}",
+            "code": {
+                "python": "def _enumerate_paths(nN, E, S, B):\n    camps = set(B)\n    paths = []\n    def extend(path):\n        i = path[-1]\n        if i in camps:\n            paths.append(list(path))\n            return\n        for j in range(nN):\n            if E[i][j] and j not in path:\n                extend(path + [j])\n    for s in S:\n        extend([s])\n    return paths\npaths = _enumerate_paths(nN, E, S, B)"
+            }
+        }
+    },
+    "parameters": {
+        "nN": {
+            "formulation": "nN = nN",
+            "code": {
+                "python": "nN = nN"
+            }
+        },
+        "nS": {
+            "formulation": "nS = nS",
+            "code": {
+                "python": "nS = nS"
+            }
+        },
+        "nT": {
+            "formulation": "nT = nT",
+            "code": {
+                "python": "nT = nT"
+            }
+        },
+        "nB": {
+            "formulation": "nB = nB",
+            "code": {
+                "python": "nB = nB"
+            }
+        },
+        "nP": {
+            "formulation": "nP = |P|",
+            "code": {
+                "python": "nP = len(paths)"
+            }
+        },
+        "nK": {
+            "formulation": "nK = nK",
+            "code": {
+                "python": "nK = nK"
+            }
+        },
+        "nL": {
+            "formulation": "nL = nL",
+            "code": {
+                "python": "nL = nL"
+            }
+        },
+        "S": {
+            "formulation": "S_s = S_s",
+            "code": {
+                "python": "S = S"
+            }
+        },
+        "T": {
+            "formulation": "T_t = T_t",
+            "code": {
+                "python": "T = T"
+            }
+        },
+        "B": {
+            "formulation": "B_j = B_j",
+            "code": {
+                "python": "B = B"
+            }
+        },
+        "E": {
+            "formulation": "E_{ij} = E_{ij}",
+            "code": {
+                "python": "E = E"
+            }
+        },
+        "pE": {
+            "formulation": "pE_{p,i,j} = 1 \\iff (i, j) \\text{ is an edge of path } p",
+            "code": {
+                "python": "pE = [[[1 if (i, j) in set(zip(path, path[1:])) else 0 for j in range(nN)] for i in range(nN)] for path in paths]"
+            }
+        },
+        "pRank": {
+            "formulation": "pRank_{p,v} = \\text{position of } v \\text{ along path } p\\text{, and } 0 \\text{ if } v \\notin p",
+            "code": {
+                "python": "pRank = [[path.index(v) if v in path else 0 for v in range(nN)] for path in paths]"
+            }
+        },
+        "c": {
+            "formulation": "c_{pk} = \\sum_{(i,j) \\in p} tc_{ijk}",
+            "code": {
+                "python": "c = [[sum(tc[i][j][k] for i, j in zip(path, path[1:])) for k in range(nK)] for path in paths]"
+            }
+        },
+        "q": {
+            "formulation": "q_k = pc_k",
+            "code": {
+                "python": "q = pc"
+            }
+        },
+        "nutval": {
+            "formulation": "\\text{nutval}_{kl} = \\text{nutval}_{kl}",
+            "code": {
+                "python": "nutval = nutval"
+            }
+        },
+        "nutreq": {
+            "formulation": "\\text{nutreq}_l = \\text{nutreq}_l",
+            "code": {
+                "python": "nutreq = nutreq"
+            }
+        },
+        "dem": {
+            "formulation": "\\text{dem}_j = \\text{dem}_j",
+            "code": {
+                "python": "dem = dem"
+            }
+        },
+        "e": {
+            "formulation": "e_{jp} = 1 \\iff \\text{path } p \\text{ ends at } B_j",
+            "code": {
+                "python": "e = [[1 if path[-1] == j else 0 for path in paths] for j in B]"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `a` ships over the arcs of the supply network $(N, E)$; formulation `b` ships along whole supplier-to-camp routes, so the map enumerates the network's simple paths and derives $nP$, $pE$, $pRank$, $c$, and $e$ from them."
+        ]
+    }
+}

@@ -61,7 +61,21 @@ pair with another formulation of the same problem, add an entry to the `reformul
 }
 ```
 
-For positive pairs, create a Lean proof following the {ref}`Reformulation definition <reformulation-definition>`. This should be defined in `reformulations/pN/x_y.lean` where `N` is the common problem and the proof shows `y` is a reformulation of `x`. The file should import `Common` and both formulations:
+Every reformulation pair needs a parameter map in `reformulations/pN/x_y/map.json`, stating how parameters of `x` map to parameters of `y`. See {ref}`parameter-map` for the full schema. Each entry carries a LaTeX `formulation` and a `code.python` snippet;
+the latter is what {meth}`Reformulation.gen_map_py()
+<formulation_bench.reformulation.Reformulation.gen_map_py>` assembles into a
+runnable script. The mapping should agree with each formulations' `gen_params.py` script.
+
+::::{dropdown} `reformulations/p1/a_b/map.json`
+:icon: code
+```{literalinclude} ../../dataset/reformulations/p1/a_b/map.json
+:language: json
+```
+::::
+
+For positive pairs, create a Lean proof following the {ref}`Reformulation definition <reformulation-definition>`. The parameter mapping defined in `paramMap` **must** agree with the one defined in the `map.json` file.
+
+Put the Lean proof in `reformulations/pN/x_y/Reformulation.lean` where `N` is the common problem and the proof shows `y` is a reformulation of `x`. The file should import `Common` and both formulations:
 
 ```lean
 import Common
@@ -73,9 +87,9 @@ The definition `xYReformulation : MILPReformulation PN.x.formulation PN.y.formul
 
 The {github}`FLARE monorepo </>` ships with the `milp-reformulation-autoformalizer` agent which uses the `lean-milp-reformulation` agent skill from {mf}`FLARE </skills.html#lean-milp-reformulation>` to automatically generate the Lean proof.
 
-:::{dropdown} `reformulations/p1/a_b.lean`
+:::{dropdown} `reformulations/p1/a_b/Reformulation.lean`
 :icon: code
-```{literalinclude} ../../dataset/reformulations/p1/a_b.lean
+```{literalinclude} ../../dataset/reformulations/p1/a_b/Reformulation.lean
 :language: lean
 ```
 :::

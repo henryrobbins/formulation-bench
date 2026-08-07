@@ -1,0 +1,57 @@
+{
+    "parameters": {
+        "L": {
+            "formulation": "L = 8",
+            "code": {
+                "python": "L = 8"
+            }
+        },
+        "S": {
+            "formulation": "S = 5",
+            "code": {
+                "python": "S = 5"
+            }
+        },
+        "P": {
+            "formulation": "P = 5",
+            "code": {
+                "python": "P = 5"
+            }
+        },
+        "H": {
+            "formulation": "H = 10",
+            "code": {
+                "python": "H = 10"
+            }
+        },
+        "T": {
+            "formulation": "T = 8",
+            "code": {
+                "python": "T = 8"
+            }
+        },
+        "C": {
+            "formulation": "C = 3",
+            "code": {
+                "python": "C = 3"
+            }
+        },
+        "D": {
+            "formulation": "D = 300",
+            "code": {
+                "python": "D = 300"
+            }
+        },
+        "V": {
+            "formulation": "V = 300",
+            "code": {
+                "python": "V = 300"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `h` is unrelated to formulation `a`, so we arbitrarily assign fixed values to formulation `h`."
+        ]
+    }
+}

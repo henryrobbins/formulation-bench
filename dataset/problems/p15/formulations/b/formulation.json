@@ -144,14 +144,6 @@
             }
         },
         {
-            "description": "Maximum number of apartments across all configurations is positive.",
-            "formulation": "nA > 0",
-            "explicit": false,
-            "code": {
-                "python": "assert nA > 0"
-            }
-        },
-        {
             "description": "cap is non-negative and at most nA for each configuration.",
             "formulation": "0 \\leq \\text{cap}_v \\leq nA \\quad \\forall v \\in V",
             "explicit": false,

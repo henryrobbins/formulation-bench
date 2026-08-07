@@ -1,0 +1,64 @@
+{
+    "parameters": {
+        "nH": {
+            "formulation": "nH = nH",
+            "code": {
+                "python": "nH = nH"
+            }
+        },
+        "nC": {
+            "formulation": "nC = nC",
+            "code": {
+                "python": "nC = nC"
+            }
+        },
+        "a": {
+            "formulation": "a_c = a_c",
+            "code": {
+                "python": "a = a"
+            }
+        },
+        "C": {
+            "formulation": "C_{hc} = C_{hc}",
+            "code": {
+                "python": "C = C"
+            }
+        },
+        "t": {
+            "formulation": "t_{hc} = t_{hc}",
+            "code": {
+                "python": "t = t"
+            }
+        },
+        "T": {
+            "formulation": "T = T",
+            "code": {
+                "python": "T = T"
+            }
+        },
+        "n": {
+            "formulation": "n = n",
+            "code": {
+                "python": "n = n"
+            }
+        },
+        "Hf": {
+            "formulation": "H^f_h = H^f_h",
+            "code": {
+                "python": "Hf = Hf"
+            }
+        },
+        "M": {
+            "formulation": "M = 1",
+            "code": {
+                "python": "M = 1"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `b` has the same parameters as formulation `a`, with the exception of the big-M constant $M$ linking the demand-fraction variable $q$ to the assignment indicator $z$.",
+            "It suffices to set $M = 1$ since the demand-fraction variable $q_{hc}$ is bounded above by $1$ at every feasible point."
+        ]
+    }
+}

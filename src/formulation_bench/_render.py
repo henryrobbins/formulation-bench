@@ -1,4 +1,4 @@
-"""Markdown rendering for :class:`Formulation`."""
+"""Markdown rendering for :class:`Formulation` and :class:`ParameterMap`."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 
 if TYPE_CHECKING:
     from .formulation import Formulation
+    from .models import ParameterMap
 
 _env = Environment(
     loader=FileSystemLoader(Path(__file__).parent / "templates"),
@@ -35,4 +36,13 @@ def render_markdown(formulation: Formulation, include_implicit: bool = True) -> 
         assumptions=assumptions,
         constraints=constraints,
         objective=formulation.objective,
+    )
+
+
+def render_parameter_map(parameter_map: ParameterMap) -> str:
+    tmpl = _env.get_template("parameter_map.j2")
+    return tmpl.render(
+        parameters=parameter_map.parameters,
+        definitions=parameter_map.definitions,
+        notes=parameter_map.metadata.get("notes", []),
     )

@@ -1,0 +1,21 @@
+{
+    "parameters": {
+        "n": {
+            "formulation": "n = n",
+            "code": {
+                "python": "n = n"
+            }
+        },
+        "c": {
+            "formulation": "c_{ij} = c_{ij}",
+            "code": {
+                "python": "c = c"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `i` has the same parameters as formulation `a`; the map is the identity."
+        ]
+    }
+}

@@ -9,6 +9,7 @@ from .models import DimensionType, Shape, Variable, VariableType
 
 if TYPE_CHECKING:
     from .formulation import Formulation
+    from .reformulation import Reformulation
 
 TYPE_MAP = {
     "continuous": "CONTINUOUS",
@@ -259,6 +260,77 @@ def generate(formulation: Formulation) -> str:
     L.append('    parser.add_argument("solution", help="Path to write solution.json")')
     L.append("    args = parser.parse_args()")
     L.append("    main(args.params, args.solution)")
+    L.append("")
+
+    return "\n".join(L)
+
+
+def generate_map(reformulation: Reformulation) -> str:
+    """Return the complete ``map.py`` source for a reformulation pair."""
+    pmap = reformulation.parameter_map
+    assert pmap is not None
+
+    def _emit(code: str, into: list[str]) -> None:
+        for line in code.strip().split("\n"):
+            into.append(f"    {line}" if line.strip() else "")
+
+    L: list[str] = []
+
+    # Imports
+    L.append("import argparse")
+    L.append("import json")
+    L.append("")
+    L.append("")
+
+    # Function
+    L.append("def main(params_path: str, output_path: str) -> None:")
+    L.append('    with open(params_path, "r") as f:')
+    L.append("        data = json.load(f)")
+    L.append("")
+
+    # Source Parameters
+    if reformulation.a.parameters:
+        L.append("    # Source Parameters")
+        for name in reformulation.a.parameters:
+            L.append(f'    {name} = data["{name}"]')
+        L.append("")
+
+    # Definitions
+    if pmap.definitions:
+        L.append("    # Definitions")
+        for d in pmap.definitions.values():
+            _emit(d.code.get("python", ""), L)
+        L.append("")
+
+    # Parameter Map
+    L.append("    # Parameter Map")
+    for spec in pmap.parameters.values():
+        _emit(spec.code.get("python", ""), L)
+    L.append("")
+
+    # Target Parameters
+    L.append("    params = {")
+    for name in pmap.parameters:
+        L.append(f'        "{name}": {name},')
+    L.append("    }")
+    L.append("")
+    L.append('    with open(output_path, "w") as f:')
+    L.append("        json.dump(params, f, indent=4)")
+    L.append("")
+    L.append("")
+
+    # Entry point
+    L.append('if __name__ == "__main__":')
+    L.append("    parser = argparse.ArgumentParser()")
+    L.append(
+        '    parser.add_argument("params", help="Path to the source parameters.json")'
+    )
+    L.append(
+        '    parser.add_argument("output",'
+        ' help="Path to write the target parameters.json")'
+    )
+    L.append("    args = parser.parse_args()")
+    L.append("    main(args.params, args.output)")
     L.append("")
 
     return "\n".join(L)

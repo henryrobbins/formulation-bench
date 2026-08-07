@@ -165,7 +165,7 @@ private noncomputable def paramMap' (p : P15.a.Params) : P15.b.Params :=
     nH       := p.nH
     nI       := p.nI
     nJ       := p.nJ
-    nA       := (∑ v : Fin p.nV, (∑ j : Fin p.nJ, p.R j v).toNat) + 1
+    nA       := univ.sup fun v : Fin p.nV => (∑ j : Fin p.nJ, p.R j v).toNat
     cap      := fun v => (∑ j : Fin p.nJ, p.R j v).toNat
     jApt     := fun v a =>
       haveI := p.hnJ
@@ -187,14 +187,10 @@ private noncomputable def paramMap' (p : P15.a.Params) : P15.b.Params :=
     hnH      := p.hnH
     hnI      := p.hnI
     hnJ      := p.hnJ
-    hnA      := ⟨by omega⟩
     hcap_le  := fun v => by
-      have hle : (∑ j : Fin p.nJ, p.R j v).toNat
-          ≤ ∑ v' : Fin p.nV, (∑ j : Fin p.nJ, p.R j v').toNat :=
-        Finset.single_le_sum
-          (f := fun v' => (∑ j : Fin p.nJ, p.R j v').toNat)
-          (fun _ _ => Nat.zero_le _) (Finset.mem_univ v)
-      omega
+      exact Finset.le_sup
+        (f := fun v' : Fin p.nV => (∑ j : Fin p.nJ, p.R j v').toNat)
+        (Finset.mem_univ v)
     harea_nn := p.harea_nn
     hm_nn    := p.hm_nn
     hb_nn    := p.ha_nn
@@ -211,14 +207,14 @@ private lemma hReq (p : P15.a.Params) : Rcount (paramMap' p) = p.R := by
   -- Abbreviations for the synthesized configuration `v`.
   set N := (∑ j : Fin p.nJ, p.R j v).toNat with hN
   -- The image embedding `Fin N ↪ Fin nA`.
-  have hNlt : N < (∑ v' : Fin p.nV, (∑ j : Fin p.nJ, p.R j v').toNat) + 1 := by
-    have hle : N ≤ ∑ v' : Fin p.nV, (∑ j : Fin p.nJ, p.R j v').toNat :=
-      Finset.single_le_sum
-        (f := fun v' => (∑ j : Fin p.nJ, p.R j v').toNat)
-        (fun _ _ => Nat.zero_le _) (Finset.mem_univ v)
-    omega
-  set nA := (∑ v' : Fin p.nV, (∑ j : Fin p.nJ, p.R j v').toNat) + 1 with hnA
-  let e : Fin N → Fin nA := fun d => ⟨d.val, lt_trans d.isLt hNlt⟩
+  have hNle : N ≤ univ.sup (fun v' : Fin p.nV =>
+      (∑ j : Fin p.nJ, p.R j v').toNat) :=
+    Finset.le_sup
+      (f := fun v' : Fin p.nV => (∑ j : Fin p.nJ, p.R j v').toNat)
+      (Finset.mem_univ v)
+  set nA := univ.sup (fun v' : Fin p.nV =>
+    (∑ j : Fin p.nJ, p.R j v').toNat) with hnA
+  let e : Fin N → Fin nA := fun d => ⟨d.val, lt_of_lt_of_le d.isLt hNle⟩
   have he_inj : Function.Injective e := by
     intro d1 d2 hd; apply Fin.ext; simpa [e] using hd
   -- The `apts`-filter set equals the image of the `gAssign`-fiber under `e`.
@@ -512,7 +508,6 @@ private lemma fwd_feas (p : P15.b.Params) (v : P15.b.Vars p)
   haveI := p.hnH
   haveI := p.hnI
   haveI := p.hnJ
-  haveI := p.hnA
   -- Unpack the B-feasibility hypothesis
   obtain ⟨hfloor, hlink, _hy_outside, hsector_pct, havg_area,
           hmin_area, hno_free_corp, howner_pct, hx_bin, hy_bin⟩ := h
@@ -1416,7 +1411,6 @@ private lemma bwd_feas (p : P15.b.Params) (xa : P15.a.Vars (paramMap p))
   haveI := p.hnH
   haveI := p.hnI
   haveI := p.hnJ
-  haveI := p.hnA
   refine
     { hfloor := ?_
       hlink := ?_
@@ -1617,7 +1611,6 @@ private lemma bwd_obj_eq (p : P15.b.Params) (xa : P15.a.Vars (paramMap p))
   haveI := p.hnH
   haveI := p.hnI
   haveI := p.hnJ
-  haveI := p.hnA
   show -(∑ i : Fin p.nI, ∑ j : Fin p.nJ, ∑ h' : Fin p.nH,
           p.pProfit i j h' * ((xa.y i j h' : ℝ)))
       = -(∑ k : Fin p.nK, ∑ cfg : Fin p.nV, ∑ h' : Fin p.nH, ∑ i : Fin p.nI,

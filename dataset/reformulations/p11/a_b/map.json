@@ -1,0 +1,141 @@
+{
+    "parameters": {
+        "T": {
+            "formulation": "T = T",
+            "code": {
+                "python": "T = T"
+            }
+        },
+        "n_G": {
+            "formulation": "n_G = n_G",
+            "code": {
+                "python": "n_G = n_G"
+            }
+        },
+        "n_W": {
+            "formulation": "n_W = n_W",
+            "code": {
+                "python": "n_W = n_W"
+            }
+        },
+        "n_S": {
+            "formulation": "n_{S,g} = n_{S,g}",
+            "code": {
+                "python": "n_S = n_S"
+            }
+        },
+        "ell": {
+            "formulation": "\\ell_{g,s} = \\ell_{g,s}",
+            "code": {
+                "python": "ell = ell"
+            }
+        },
+        "C_su": {
+            "formulation": "C^{su}_{g,s} = C^{su}_{g,s}",
+            "code": {
+                "python": "C_su = C_su"
+            }
+        },
+        "n_L": {
+            "formulation": "n_{L,g} = n_{L,g}",
+            "code": {
+                "python": "n_L = n_L"
+            }
+        },
+        "P": {
+            "formulation": "P_{g,l} = P_{g,l}",
+            "code": {
+                "python": "P = P"
+            }
+        },
+        "C": {
+            "formulation": "C_{g,l} = C_{g,l}",
+            "code": {
+                "python": "C = C"
+            }
+        },
+        "L": {
+            "formulation": "L_t = L_t",
+            "code": {
+                "python": "L = L"
+            }
+        },
+        "R": {
+            "formulation": "R_t = R_t",
+            "code": {
+                "python": "R = R"
+            }
+        },
+        "P_min": {
+            "formulation": "P^{\\min}_g = P^{\\min}_g",
+            "code": {
+                "python": "P_min = P_min"
+            }
+        },
+        "P_max": {
+            "formulation": "P^{\\max}_g = P^{\\max}_g",
+            "code": {
+                "python": "P_max = P_max"
+            }
+        },
+        "P_wind_min": {
+            "formulation": "P^{w,\\min}_{w,t} = P^{w,\\min}_{w,t}",
+            "code": {
+                "python": "P_wind_min = P_wind_min"
+            }
+        },
+        "P_wind_max": {
+            "formulation": "P^{w,\\max}_{w,t} = P^{w,\\max}_{w,t}",
+            "code": {
+                "python": "P_wind_max = P_wind_max"
+            }
+        },
+        "RU": {
+            "formulation": "RU_g = RU_g",
+            "code": {
+                "python": "RU = RU"
+            }
+        },
+        "RD": {
+            "formulation": "RD_g = RD_g",
+            "code": {
+                "python": "RD = RD"
+            }
+        },
+        "SU": {
+            "formulation": "SU_g = SU_g",
+            "code": {
+                "python": "SU = SU"
+            }
+        },
+        "SD": {
+            "formulation": "SD_g = SD_g",
+            "code": {
+                "python": "SD = SD"
+            }
+        },
+        "U": {
+            "formulation": "U_g = U_g",
+            "code": {
+                "python": "U = U"
+            }
+        },
+        "D": {
+            "formulation": "D_g = D_g",
+            "code": {
+                "python": "D = D"
+            }
+        },
+        "MR": {
+            "formulation": "\\mathrm{MR}_g = \\mathrm{MR}_g",
+            "code": {
+                "python": "MR = MR"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `b` has the same parameters as formulation `a`; the map is the identity."
+        ]
+    }
+}

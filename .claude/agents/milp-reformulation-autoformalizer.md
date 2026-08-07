@@ -30,7 +30,7 @@ Every invocation must supply:
 2. **Formulation B path** — path to the Lean file defining the second
    formulation.
 3. **Output path** — where the reformulation file should be written (e.g.
-   `dataset/reformulations/p7/a_c.lean`).
+   `dataset/reformulations/p7/a_c/Reformulation.lean`).
 
 Optionally the caller may also supply:
 

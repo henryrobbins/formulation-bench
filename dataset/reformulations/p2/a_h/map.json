@@ -1,0 +1,45 @@
+{
+    "parameters": {
+        "F": {
+            "formulation": "F = 20",
+            "code": {
+                "python": "F = 20"
+            }
+        },
+        "S": {
+            "formulation": "S = 12",
+            "code": {
+                "python": "S = 12"
+            }
+        },
+        "R": {
+            "formulation": "R = 20",
+            "code": {
+                "python": "R = 20"
+            }
+        },
+        "Z": {
+            "formulation": "Z = 15",
+            "code": {
+                "python": "Z = 15"
+            }
+        },
+        "W": {
+            "formulation": "W = 50",
+            "code": {
+                "python": "W = 50"
+            }
+        },
+        "M": {
+            "formulation": "M = 35",
+            "code": {
+                "python": "M = 35"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `h` is unrelated to formulation `a`, so we arbitrarily assign fixed values to formulation `h`."
+        ]
+    }
+}

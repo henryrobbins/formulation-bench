@@ -5,7 +5,9 @@ Loads the FormulationBench dataset via :mod:`formulation_bench` and writes
 toctree. Pages render each formulation's parameters, variables,
 assumptions, constraints, and objective from the LaTeX fields in
 ``formulation.json``, and render any ``metadata.notes`` (list of markdown
-strings) as bullets inside a ``{note}`` admonition.
+strings) as bullets inside a ``{note}`` admonition. Each page ends with a
+Reformulations section listing the problem's labelled pairs and their
+parameter maps.
 
 The generated directory is git-ignored; rebuild it with ``sphinx-build``
 (this extension runs on the ``builder-inited`` event).
@@ -19,7 +21,14 @@ from pathlib import Path
 
 from formulation_bench import Dataset
 from formulation_bench.formulation import Formulation
-from formulation_bench.models import Objective, Parameter, Shape, Variable
+from formulation_bench.models import (
+    Definition,
+    Objective,
+    Parameter,
+    Shape,
+    Variable,
+)
+from formulation_bench.reformulation import Reformulation
 
 SOURCE_LINKS = {
     "EquivaFormulation": (
@@ -97,9 +106,17 @@ def _objective_block(obj: Objective) -> str:
     return f"{obj.description}\n\n$$ {obj.formulation} $$\n"
 
 
-def _formulation_section(fid: str, f: Formulation) -> str:
+def _formulation_target(pid: int, fid: str) -> str:
+    return f"p{pid}-f{fid}"
+
+
+def _formulation_section(pid: int, fid: str, f: Formulation) -> str:
     badge = "valid" if f.valid else "invalid"
-    parts = [f"### Formulation `{fid}` ({badge})\n"]
+    parts = [
+        f"({_formulation_target(pid, fid)})=",
+        "",
+        f"### Formulation `{fid}` ({badge})\n",
+    ]
     src = f.metadata.get("source")
     if src:
         parts += [
@@ -192,7 +209,58 @@ def _notes_admonition(notes: object, kind: str = "note") -> str:
     return "\n".join(lines) + "\n"
 
 
-def _problem_page(pid: int, problem) -> str:
+def _map_table(entries: dict[str, Definition], header: str) -> str:
+    rows = [f"| Name | {header} |", "|---|---|"]
+    for name, d in entries.items():
+        # Pipes inside the LaTeX would otherwise break the table column.
+        formula = d.formulation.replace("|", r"\|")
+        rows.append(f"| `{name}` | ${formula}$ |")
+    return "\n".join(rows) + "\n"
+
+
+def _reformulation_section(pid: int, reform: Reformulation) -> str:
+    a, b = reform.a.path.name, reform.b.path.name
+    a_ref = f"{{ref}}`{a} <{_formulation_target(pid, a)}>`"
+    b_ref = f"{{ref}}`{b} <{_formulation_target(pid, b)}>`"
+    badge = "valid" if reform.is_reformulation else "invalid"
+    parts = [f"### {a_ref} → {b_ref} ({badge})\n"]
+
+    pmap = reform.parameter_map
+    if pmap is None:
+        parts.append(f"_No parameter map is recorded for `{a}` → `{b}`._\n")
+        return "\n".join(parts)
+
+    note_block = _notes_admonition(pmap.metadata.get("notes"))
+    if note_block:
+        parts += [note_block, ""]
+    if pmap.definitions:
+        parts += [
+            "**Definitions**\n",
+            _map_table(pmap.definitions, f"Derived from `{a}`'s parameters"),
+            "",
+        ]
+    parts += [
+        "**Parameter map**\n",
+        _map_table(pmap.parameters, f"Definition in terms of `{a}`"),
+        "",
+    ]
+    return "\n".join(parts)
+
+
+def _reformulations_section(pid: int, reforms: list[Reformulation]) -> str:
+    if not reforms:
+        return ""
+    parts = [
+        "## Reformulations\n",
+        "Each entry below pairs two formulations of this problem, records whether "
+        "the second is a reformulation of the first, and gives the parameter map "
+        "carrying the first formulation's parameters to the second's.\n",
+    ]
+    parts += [_reformulation_section(pid, r) for r in reforms]
+    return "\n".join(parts)
+
+
+def _problem_page(pid: int, problem, reforms: list[Reformulation]) -> str:
     header = [
         "---",
         "tocdepth: 3",  # Don't show formulation subsections in the sidebar
@@ -217,8 +285,12 @@ def _problem_page(pid: int, problem) -> str:
         problem.description.strip() + "\n",
         "## Formulations\n",
     ]
-    sections = [_formulation_section(fid, f) for fid, f in problem.formulations.items()]
-    return "\n".join(header) + "\n".join(sections)
+    sections = [
+        _formulation_section(pid, fid, f) for fid, f in problem.formulations.items()
+    ]
+    return (
+        "\n".join(header) + "\n".join(sections) + _reformulations_section(pid, reforms)
+    )
 
 
 def _source_short(src: object) -> str:
@@ -274,8 +346,12 @@ def generate(docs_dir: Path) -> None:
     ds = Dataset(_dataset_root(docs_dir))
     out_dir = docs_dir / "problems"
     out_dir.mkdir(parents=True, exist_ok=True)
+    by_problem: dict[int, list[Reformulation]] = {pid: [] for pid in ds.problems}
+    for reform in ds.reformulations:
+        by_problem[int(reform.a.problem.path.name[1:])].append(reform)
     for pid, problem in ds.problems.items():
-        _write_if_changed(out_dir / f"p{pid}.md", _problem_page(pid, problem))
+        page = _problem_page(pid, problem, by_problem[pid])
+        _write_if_changed(out_dir / f"p{pid}.md", page)
     _write_if_changed(out_dir / "index.md", _index_page(ds.problems))
 
 

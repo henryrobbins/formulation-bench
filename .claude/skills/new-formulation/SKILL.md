@@ -43,7 +43,7 @@ Ensure any added Lean files compile; run the following from the repository root:
 
 ```bash
 lake build problems.pN.formulations.x.Formulation
-lake build reformulations.pN.x_y
+lake build reformulations.pN.x_y.Reformulation
 ```
 
 All of these must pass before the formulation is done.

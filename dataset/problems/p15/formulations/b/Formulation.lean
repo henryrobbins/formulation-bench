@@ -39,7 +39,6 @@ structure Params where
   hnH : NeZero nH
   hnI : NeZero nI
   hnJ : NeZero nJ
-  hnA : NeZero nA
   hcap_le : ∀ cfg : Fin nV, cap cfg ≤ nA
   harea_nn : ∀ j : Fin nJ, 0 ≤ area j
   hm_nn : ∀ (i : Fin nI) (h : Fin nH), 0 ≤ m i h

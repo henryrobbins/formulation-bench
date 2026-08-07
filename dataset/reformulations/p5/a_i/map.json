@@ -1,0 +1,39 @@
+{
+    "parameters": {
+        "Q": {
+            "formulation": "Q = 10",
+            "code": {
+                "python": "Q = 10"
+            }
+        },
+        "D": {
+            "formulation": "D = 500",
+            "code": {
+                "python": "D = 500"
+            }
+        },
+        "O": {
+            "formulation": "O = 4",
+            "code": {
+                "python": "O = 4"
+            }
+        },
+        "J": {
+            "formulation": "J = 750",
+            "code": {
+                "python": "J = 750"
+            }
+        },
+        "A": {
+            "formulation": "A = 100000",
+            "code": {
+                "python": "A = 100000"
+            }
+        }
+    },
+    "metadata": {
+        "notes": [
+            "Formulation `i` is unrelated to formulation `a`, so we arbitrarily assign fixed values to formulation `i`."
+        ]
+    }
+}

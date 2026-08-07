@@ -32,7 +32,9 @@ dataset/
 │   └── ...
 └── reformulations/          # Lean 4 reformulation proofs
     ├── p1/
-    │   ├── a_b.lean         # Proof that formulation b is a reformulation of a
+    │   ├── a_b/
+    │   │   ├── map.json           # Maps formulation a's parameters to b's
+    │   │   └── Reformulation.lean # Proof that b is a reformulation of a
     │   └── ...
     └── ...
 ```
@@ -49,11 +51,15 @@ The root of the dataset directory contains:
 The {class}`Dataset <formulation_bench.dataset.Dataset>` loads in this dataset directory.
 
 :::{note}
-Two files appear inside a formulation directory at runtime but are *not*
-shipped with the dataset: `parameters.json`, written by {meth}`Formulation.run_gen_params()
+Some files appear inside the dataset at runtime but are *not* shipped with it.
+A formulation directory gains `parameters.json`, written by
+{meth}`Formulation.run_gen_params()
 <formulation_bench.formulation.Formulation.run_gen_params>`, and `solve.py`,
 written by {meth}`Formulation.gen_solve_py()
-<formulation_bench.formulation.Formulation.gen_solve_py>`. Both are derived
+<formulation_bench.formulation.Formulation.gen_solve_py>`. A reformulation
+pair directory gains `map.py` and a mapped `parameters.json`, both written by
+{meth}`Reformulation.run_map()
+<formulation_bench.reformulation.Reformulation.run_map>`. All are derived
 from the files above and can be regenerated at any time.
 :::
 
@@ -237,7 +243,8 @@ describes how a formulation is encoded in Lean; the path to this file is exposed
 ## Reformulation Pairs and Proofs
 
 The `reformulations` field of `dataset.json` is a flat list of formulation
-pairs. Each entry names two formulations `a` and `b` and labels whether `b` is a reformulation of `a`:
+pairs. Each entry names two formulations `a` and `b` and labels whether `b` is a reformulation of `a`. Each entry loads into a {class}`Reformulation
+<formulation_bench.reformulation.Reformulation>`.
 
 ```json
 {
@@ -247,15 +254,46 @@ pairs. Each entry names two formulations `a` and `b` and labels whether `b` is a
 }
 ```
 
-Each entry loads into a {class}`Reformulation
-<formulation_bench.reformulation.Reformulation>`. For every *positive* pair
+(parameter-map)=
+### `map.json`
+
+Every pair has a `reformulations/pN/a_b/map.json` stating how
+each parameter of `b` is computed from the parameters of `a`. It defines the
+parameter mapping $\Phi_{\mathrm{p}}$ of the reformulation construction (see
+{ref}`reformulation-definition`), and it loads into a {class}`ParameterMap <formulation_bench.models.ParameterMap>`:
+
+- **`parameters`** — ordered map with one entry per parameter of `b`, each an
+  {class}`Expression <formulation_bench.models.Expression>` with a LaTeX
+  `formulation` and `code.python`. An entry may reference the parameters of
+  `a`, any definition, and any parameter declared before it.
+- **`definitions`** — *(optional)* ordered map of intermediate quantities
+  computed from `a`'s parameters before `parameters`, each an
+  {class}`Expression <formulation_bench.models.Expression>`. Used when several
+  parameters share a derivation.
+- **`metadata`** — freeform; typically a `notes` field with commentary.
+
+The `code.python` snippets are what {meth}`Reformulation.gen_map_py()
+<formulation_bench.reformulation.Reformulation.gen_map_py>` assembles into a
+runnable script mapping `a`'s `parameters.json` to `b`'s.
+
+:::{dropdown} `reformulations/p1/a_b/map.json`
+:icon: code
+```{literalinclude} ../dataset/reformulations/p1/a_b/map.json
+:language: json
+```
+:::
+
+### `Reformulation.lean`
+
+For every *positive* pair
 (`"reformulation": true`) there is a corresponding Lean file
-`reformulations/pN/a_b.lean` constructing a `MILPReformulation` instance (see
+`reformulations/pN/a_b/Reformulation.lean` constructing a `MILPReformulation`
+instance (see
 {ref}`reformulation-definition`). The path to the Lean file is exposed as the `lean_proof_path` attribute. Pairs that are *not* reformulations of one another have no Lean file.
 
-:::{dropdown} `reformulations/p1/a_b.lean`
+:::{dropdown} `reformulations/p1/a_b/Reformulation.lean`
 :icon: code
-```{literalinclude} ../dataset/reformulations/p1/a_b.lean
+```{literalinclude} ../dataset/reformulations/p1/a_b/Reformulation.lean
 :language: lean
 ```
 :::

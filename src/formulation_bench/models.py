@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from ._render import render_parameter_map as _render_parameter_map
+
 _RAGGED_RE = re.compile(r"^(\w+)\[(\w+)\]$")
 _CARDINALITY_RE = re.compile(r"^\|(.+)\|$")
 
@@ -382,7 +384,30 @@ class ParameterType(str, Enum):
 
 
 @dataclass(frozen=True)
-class Definition:
+class Expression:
+    """A named quantity given in both LaTeX and code.
+
+    Attributes
+    ----------
+    formulation : str
+        LaTeX form of the expression.
+    code : dict[str, str]
+        Per-language source for the expression. The ``"python"`` key is used by
+        :meth:`Formulation.gen_solve_py` to generate Python code that computes the
+        expression in the solver script, and by
+        :meth:`Reformulation.gen_map_py` for the parameter map.
+    """
+
+    code: dict[str, str]
+    formulation: str
+
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> "Expression":
+        return cls(code=d["code"], formulation=d["formulation"])
+
+
+@dataclass(frozen=True)
+class Definition(Expression):
     """A named derived quantity computed from parameters.
 
     Typically defines sets, constants, etc... that are used by multiple
@@ -392,12 +417,6 @@ class Definition:
     ----------
     description : str
         Human-readable description.
-    formulation : str
-        LaTeX form of the definition.
-    code : dict[str, str]
-        Per-language source for the definition. The ``"python"`` key is used by
-        :meth:`Formulation.gen_solve_py` to generate Python code that computes the
-        definition in the solver script.
 
     Examples
     --------
@@ -415,16 +434,88 @@ class Definition:
     """
 
     description: str
-    code: dict[str, str]
-    formulation: str
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Definition":
         return cls(
-            description=d["description"],
             code=d["code"],
             formulation=d["formulation"],
+            description=d["description"],
         )
+
+
+@dataclass(frozen=True)
+class ParameterMap:
+    """A mapping from one formulation's parameters to another's.
+
+    Loaded from the ``map.json`` of a reformulation pair. See
+    :ref:`parameter-map` for the file schema.
+
+    Attributes
+    ----------
+    parameters : dict[str, Expression]
+        One entry per parameter of the target formulation, computing it from the
+        source formulation's parameters: An entry may reference any parameter
+        defined before it.
+    definitions : dict[str, Expression]
+        Optional intermediate quantities computed before the parameters. Used
+        when several parameters share a derivation.
+    metadata : dict[str, Any]
+        Free-form metadata about the map. Typically a ``notes`` field.
+    """
+
+    parameters: dict[str, Expression]
+    definitions: dict[str, Expression]
+    metadata: dict[str, Any]
+
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> "ParameterMap":
+        return cls(
+            parameters={k: Expression.from_dict(v) for k, v in d["parameters"].items()},
+            definitions={
+                k: Expression.from_dict(v) for k, v in d.get("definitions", {}).items()
+            },
+            metadata=d.get("metadata", {}),
+        )
+
+    def render_markdown(self) -> str:
+        r"""Render this parameter map in Markdown.
+
+        The output is produced by rendering the following Jinja template. The
+        ``notes`` passed to this template are the ``metadata.notes`` of the map.
+
+        .. literalinclude:: ../../src/formulation_bench/templates/parameter_map.j2
+           :language: jinja
+
+        Returns
+        -------
+        markdown : str
+            The rendered Markdown string.
+
+        Examples
+        --------
+
+        Render the map carrying formulation ``a`` of :doc:`/problems/p12` to
+        formulation ``b``::
+
+            >>> from formulation_bench import Dataset
+            >>> ds = Dataset("dataset")
+            >>> pmap = ds.reformulations[73].parameter_map
+            >>> print(pmap.render_markdown())
+            # Parameter Map
+            <BLANKLINE>
+            Formulation `b` has the same parameters as formulation `a`; the map is the identity.
+            <BLANKLINE>
+            ## Parameters
+            <BLANKLINE>
+            - **n**
+            $$n = n$$
+            - **c**
+            $$c_{ij} = c_{ij}$$
+            <BLANKLINE>
+
+        """  # noqa: E501
+        return _render_parameter_map(self)
 
 
 @dataclass(frozen=True)
