@@ -125,10 +125,7 @@
     },
     "metadata": {
         "notes": [
-            "Formulation `a` ships over the arcs of the supply network $(N, E)$; formulation `b` ships along whole supplier-to-camp routes, so the map enumerates the network's simple paths and derives $nP$, $pE$, $pRank$, $c$, and $e$ from them.",
-            "The ordering of $P$ is arbitrary. Formulation `b` constrains the path set only up to that ordering, requiring that every valid path appear and that no two indices denote the same path.",
-            "The procurement cost $q = pc$ is not folded into $c$; formulation `b` charges it separately on total shipped volume.",
-            "This pair is not a reformulation, for reasons unrelated to the map: the path-based model reaches exactly the acyclic arc flows, while formulation `a` also admits flows carrying circulation on a transshipment cycle."
+            "Formulation `a` ships over the arcs of the supply network $(N, E)$; formulation `b` ships along whole supplier-to-camp routes, so the map enumerates the network's simple paths and derives $nP$, $pE$, $pRank$, $c$, and $e$ from them."
         ]
     }
 }

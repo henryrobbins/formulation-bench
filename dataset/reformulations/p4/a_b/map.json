@@ -39,7 +39,7 @@
     },
     "metadata": {
         "notes": [
-            "Formulation `b` renames every parameter of formulation `a`; the values carry over unchanged."
+            "Formulation `b` renames every parameter of formulation `a`."
         ]
     }
 }

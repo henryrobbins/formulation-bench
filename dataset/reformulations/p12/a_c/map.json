@@ -15,7 +15,7 @@
     },
     "metadata": {
         "notes": [
-            "Formulation `c` is stated over the same parameters as formulation `a`; the map is the identity."
+            "Formulation `c` has the same parameters as formulation `a`; the map is the identity."
         ]
     }
 }

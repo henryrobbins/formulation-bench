@@ -57,8 +57,8 @@
     },
     "metadata": {
         "notes": [
-            "Formulation `b` is stated over the same data as formulation `a`, carried across unchanged, and adds the big-M constant $M$ linking the demand-fraction variable $q$ to the assignment indicator $z$.",
-            "$M$ is not derived from the data. Each region's demand fractions are non-negative and sum to one, so $q_{hc} \\leq 1$ at every feasible point; any $M \\geq 1$ is valid, and $M = 1$ is the tightest choice."
+            "Formulation `b` has the same parameters as formulation `a`, with the exception of the big-M constant $M$ linking the demand-fraction variable $q$ to the assignment indicator $z$.",
+            "It suffices to set $M = 1$ since the demand-fraction variable $q_{hc}$ is bounded above by $1$ at every feasible point."
         ]
     }
 }

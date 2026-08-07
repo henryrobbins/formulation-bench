@@ -51,7 +51,7 @@
     },
     "metadata": {
         "notes": [
-            "Formulation `h` is unrelated to formulation `a`: none of its parameters can be derived from `a`'s, so the map assigns each the fixed value the formulation is stated over."
+            "Formulation `h` is unrelated to formulation `a`, so we arbitrarily assign fixed values to formulation `h`."
         ]
     }
 }

@@ -99,9 +99,8 @@
     },
     "metadata": {
         "notes": [
-            "Formulation `a` describes a configuration by apartment counts $R_{jv}$; formulation `b` indexes apartments individually, so the map enumerates each configuration's apartments from those counts.",
-            "$\\text{jApt}$ is determined only up to the order of a configuration's apartments, which are interchangeable. The Python listing fixes the canonical choice: area indices in ascending order of $j$. Entries at $a \\geq \\text{cap}_v$ pad the row out to $nA$ and are never referenced by `b`.",
-            "The derivation is inverted by counting: $R_{jv} = |\\{a < \\text{cap}_v : \\text{jApt}_{va} = j\\}|$."
+            "Formulation `a` describes a configuration by apartment counts $R_{jv}$; formulation `b` indexes apartments individually.",
+            "$\\text{jApt}$ is determined only up to the order of a configuration's apartments, which are interchangeable. The Python listing fixes the canonical choice: area indices in ascending order of $j$. Entries at $a \\geq \\text{cap}_v$ pad the row out to $nA$ and are never referenced by formulation `b`."
         ]
     }
 }

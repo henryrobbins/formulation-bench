@@ -37,37 +37,37 @@
             }
         },
         "G_min": {
-            "formulation": "G_min = G_min",
+            "formulation": "G_\\min = G_\\min",
             "code": {
                 "python": "G_min = G_min"
             }
         },
         "G_max": {
-            "formulation": "G_max = G_max",
+            "formulation": "G_\\max = G_\\max",
             "code": {
                 "python": "G_max = G_max"
             }
         },
         "PC_min": {
-            "formulation": "PC_min = PC_min",
+            "formulation": "PC_\\min = PC_\\min",
             "code": {
                 "python": "PC_min = PC_min"
             }
         },
         "PC_max": {
-            "formulation": "PC_max = PC_max",
+            "formulation": "PC_\\max = PC_\\max",
             "code": {
                 "python": "PC_max = PC_max"
             }
         },
         "MC_min": {
-            "formulation": "MC_min = MC_min",
+            "formulation": "MC_\\min = MC_\\min",
             "code": {
                 "python": "MC_min = MC_min"
             }
         },
         "MC_max": {
-            "formulation": "MC_max = MC_max",
+            "formulation": "MC_\\max = MC_\\max",
             "code": {
                 "python": "MC_max = MC_max"
             }
@@ -81,7 +81,7 @@
     },
     "metadata": {
         "notes": [
-            "Formulation `b` is stated over the same parameters as formulation `a`; the map is the identity."
+            "Formulation `b` has the same parameters as formulation `a`; the map is the identity."
         ]
     }
 }
