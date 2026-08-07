@@ -18,7 +18,7 @@ returns the extracted path. Subsequent calls reuse the cached copy.
 from formulation_bench import download_dataset
 
 root = download_dataset()                   # latest version this package targets
-root = download_dataset("dataset-v0.2.0")   # download a specific release tag
+root = download_dataset("dataset-v0.3.0")   # download a specific release tag
 root = download_dataset(force=True)         # re-download, overwriting cache
 ```
 
@@ -43,7 +43,7 @@ If you just want the dataset files on disk, fetch the tarball directly
 from the release page:
 
 ```bash
-VERSION=dataset-v0.2.0
+VERSION=dataset-v0.3.0
 curl -L -o dataset.tar.gz \
     "https://github.com/henryrobbins/formulation-bench/releases/download/${VERSION}/dataset.tar.gz"
 
@@ -66,6 +66,6 @@ ds = Dataset("formulation-bench/dataset")
 ## GitHub website
 
 1. Open the {github}`FLARE releases page </releases>`.
-2. Pick a release (e.g. `dataset-v0.2.0`).
+2. Pick a release (e.g. `dataset-v0.3.0`).
 3. Under **Assets**, click `dataset.tar.gz`.
 4. Extract it with your archive tool of choice.
