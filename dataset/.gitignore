@@ -3,7 +3,7 @@
 **/formulations/*/parameters.json
 **/formulations/*/solution.json
 
-# Generated parameter-map scripts (Reformulation.gen_map_py)
+# Generated parameter-map scripts
 reformulations/*/*/map.py
 reformulations/*/*/parameters.json
 
