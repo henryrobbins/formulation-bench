@@ -8,7 +8,7 @@
 ## Definitions
 
 {% for name, d in definitions.items() %}
-- **{{ name }}**{{ ": " ~ d.description if d.description }}
+- **{{ name }}**
 $${{ d.formulation }}$$
 {% endfor %}
 
@@ -16,6 +16,6 @@ $${{ d.formulation }}$$
 ## Parameters
 
 {% for name, d in parameters.items() %}
-- **{{ name }}**{{ ": " ~ d.description if d.description }}
+- **{{ name }}**
 $${{ d.formulation }}$$
 {% endfor %}

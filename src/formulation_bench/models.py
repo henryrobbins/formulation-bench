@@ -384,26 +384,39 @@ class ParameterType(str, Enum):
 
 
 @dataclass(frozen=True)
-class Definition:
-    """A named derived quantity computed from parameters.
-
-    Typically defines sets, constants, etc... that are used by multiple
-    constraints and/or the objective. Also used for the entries of a
-    :class:`ParameterMap`, each of which computes one parameter of the target
-    formulation from the parameters of the source formulation.
+class Expression:
+    """A named quantity given in both LaTeX and code.
 
     Attributes
     ----------
     formulation : str
-        LaTeX form of the definition.
+        LaTeX form of the expression.
     code : dict[str, str]
-        Per-language source for the definition. The ``"python"`` key is used by
+        Per-language source for the expression. The ``"python"`` key is used by
         :meth:`Formulation.gen_solve_py` to generate Python code that computes the
-        definition in the solver script, and by
+        expression in the solver script, and by
         :meth:`Reformulation.gen_map_py` for the parameter map.
-    description : str or None
-        Human-readable description. Optional: a parameter map entry whose LaTeX
-        already states the derivation does not need one.
+    """
+
+    code: dict[str, str]
+    formulation: str
+
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> "Expression":
+        return cls(code=d["code"], formulation=d["formulation"])
+
+
+@dataclass(frozen=True)
+class Definition(Expression):
+    """A named derived quantity computed from parameters.
+
+    Typically defines sets, constants, etc... that are used by multiple
+    constraints and/or the objective.
+
+    Attributes
+    ----------
+    description : str
+        Human-readable description.
 
     Examples
     --------
@@ -420,16 +433,14 @@ class Definition:
         'M = sum(p[j][k] for j in range(n) for k in range(m))'
     """
 
-    code: dict[str, str]
-    formulation: str
-    description: str | None = None
+    description: str
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Definition":
         return cls(
             code=d["code"],
             formulation=d["formulation"],
-            description=d.get("description"),
+            description=d["description"],
         )
 
 
@@ -442,27 +453,27 @@ class ParameterMap:
 
     Attributes
     ----------
-    parameters : dict[str, Definition]
+    parameters : dict[str, Expression]
         One entry per parameter of the target formulation, computing it from the
         source formulation's parameters. Ordered: an entry may reference any
         parameter defined before it.
-    definitions : dict[str, Definition]
+    definitions : dict[str, Expression]
         Optional intermediate quantities computed before the parameters. Used
         when several parameters share a derivation.
     metadata : dict[str, Any]
         Free-form metadata about the map. Typically a ``notes`` field.
     """
 
-    parameters: dict[str, Definition]
-    definitions: dict[str, Definition]
+    parameters: dict[str, Expression]
+    definitions: dict[str, Expression]
     metadata: dict[str, Any]
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "ParameterMap":
         return cls(
-            parameters={k: Definition.from_dict(v) for k, v in d["parameters"].items()},
+            parameters={k: Expression.from_dict(v) for k, v in d["parameters"].items()},
             definitions={
-                k: Definition.from_dict(v) for k, v in d.get("definitions", {}).items()
+                k: Expression.from_dict(v) for k, v in d.get("definitions", {}).items()
             },
             metadata=d.get("metadata", {}),
         )

@@ -7,6 +7,7 @@ from .models import (
     Definition,
     Dimension,
     DimensionType,
+    Expression,
     Objective,
     Parameter,
     ParameterMap,
@@ -37,6 +38,7 @@ __all__ = [
     "Assumption",
     "Constraint",
     "Definition",
+    "Expression",
     "Objective",
     "Solution",
 ]

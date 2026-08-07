@@ -20,6 +20,9 @@ tocdepth: 2
 .. autoclass:: formulation_bench.models.VariableType
    :members:
 
+.. autoclass:: formulation_bench.models.Expression
+   :no-members:
+
 .. autoclass:: formulation_bench.models.Definition
    :no-members:
 
