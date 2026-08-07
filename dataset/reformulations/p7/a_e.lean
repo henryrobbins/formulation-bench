@@ -41,15 +41,11 @@ variable {p : P7.a.Params} {v : P7.a.Vars p} (h : P7.a.Feasible p v)
 include h
 
 -- Nonnegativity on Fin indices.
-private lemma fwd_t_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
-    (hab : ab ∈ P7.a.I p.N) :
-    0 ≤ v.t i ab.1 ab.2 := by
-  rcases h.ht_bin i ab hab with h0 | h1 <;> omega
+private lemma fwd_t_nn (i : Fin p.N) (ab : P7.a.Strip p.N) : 0 ≤ v.t i ab := by
+  rcases h.ht_bin i ab with h0 | h1 <;> omega
 
-private lemma fwd_s_nn (i : Fin p.N) (ab : Fin p.N × Fin p.N)
-    (hab : ab ∈ P7.a.I p.N) :
-    0 ≤ v.s i ab.1 ab.2 := by
-  rcases h.hs_bin i ab hab with h0 | h1 <;> omega
+private lemma fwd_s_nn (i : Fin p.N) (ab : P7.a.Strip p.N) : 0 ≤ v.s i ab := by
+  rcases h.hs_bin i ab with h0 | h1 <;> omega
 
 private lemma fwd_h_nn (i : Fin p.N) (j : Fin p.N) :
     0 ≤ v.h i j := by
@@ -62,8 +58,7 @@ end ForwardHelpers
 private lemma fwd_ec4 (p : P7.a.Params) (v : P7.a.Vars p)
     (hfeas : P7.a.Feasible p v) (j : Fin p.N) (hN : 1 < p.N) :
     v.h ⟨p.N - 1, Nat.sub_lt (Nat.pos_of_ne_zero p.hN.out) Nat.one_pos⟩ j ≤
-      ∑ ab ∈ P7.e.strips_covering p.N j,
-        v.t ⟨p.N - 2, by omega⟩ ab.1 ab.2 := by
+      ∑ ab ∈ P7.e.strips_covering p.N j, v.t ⟨p.N - 2, by omega⟩ ab := by
   haveI := p.hN
   have hN1_lt : p.N - 1 < p.N := Nat.sub_lt (by omega) Nat.one_pos
   have hN2_lt : p.N - 2 < p.N := Nat.sub_lt (by omega) (by omega)
@@ -74,47 +69,42 @@ private lemma fwd_ec4 (p : P7.a.Params) (v : P7.a.Vars p)
   have hpred_eq : (⟨iLast.val - 1, by omega⟩ : Fin p.N) = iPrev := by
     apply Fin.ext; show p.N - 1 - 1 = p.N - 2; omega
   -- Flow balance at row iLast, summed over strips covering column j:
-  have hflow_pt : ∀ ab : Fin p.N × Fin p.N,
+  have hflow_pt : ∀ ab : P7.a.Strip p.N,
       ab ∈ P7.a.strips_covering p.N j →
-      v.x iLast ab.1 ab.2 - v.x iPrev ab.1 ab.2 -
-        v.s iLast ab.1 ab.2 + v.t iPrev ab.1 ab.2 = 0 := by
-    intro ab hab
-    have hf := hfeas.hflow iLast ab (Finset.mem_filter.mp hab).1 hiLast_pos
+      v.x iLast ab - v.x iPrev ab - v.s iLast ab + v.t iPrev ab = 0 := by
+    intro ab _
+    have hf := hfeas.hflow iLast ab hiLast_pos
     rw [hpred_eq] at hf
     exact hf
   have hsum_flow :
       ∑ ab ∈ P7.a.strips_covering p.N j,
-        (v.x iLast ab.1 ab.2 - v.x iPrev ab.1 ab.2 -
-          v.s iLast ab.1 ab.2 + v.t iPrev ab.1 ab.2) = 0 := by
+        (v.x iLast ab - v.x iPrev ab - v.s iLast ab + v.t iPrev ab) = 0 := by
     apply Finset.sum_eq_zero
     intro ab hab
     exact hflow_pt ab hab
   have hsum_expand :
-      (∑ ab ∈ P7.a.strips_covering p.N j, v.x iLast ab.1 ab.2) -
-      (∑ ab ∈ P7.a.strips_covering p.N j, v.x iPrev ab.1 ab.2) -
-      (∑ ab ∈ P7.a.strips_covering p.N j, v.s iLast ab.1 ab.2) +
-      (∑ ab ∈ P7.a.strips_covering p.N j, v.t iPrev ab.1 ab.2) = 0 := by
+      (∑ ab ∈ P7.a.strips_covering p.N j, v.x iLast ab) -
+      (∑ ab ∈ P7.a.strips_covering p.N j, v.x iPrev ab) -
+      (∑ ab ∈ P7.a.strips_covering p.N j, v.s iLast ab) +
+      (∑ ab ∈ P7.a.strips_covering p.N j, v.t iPrev ab) = 0 := by
     have := hsum_flow
     simp only [Finset.sum_add_distrib, Finset.sum_sub_distrib] at this
     linarith
   have hcov_last : ∑ ab ∈ P7.a.strips_covering p.N j,
-      v.x iLast ab.1 ab.2 + v.h iLast j = 1 :=
+      v.x iLast ab + v.h iLast j = 1 :=
     hfeas.hcov iLast j
   have hcov_prev : ∑ ab ∈ P7.a.strips_covering p.N j,
-      v.x iPrev ab.1 ab.2 + v.h iPrev j = 1 :=
+      v.x iPrev ab + v.h iPrev j = 1 :=
     hfeas.hcov iPrev j
   have hcol_j : ∑ i : Fin p.N, v.h i j = 1 := hfeas.hcol j
-  have hs_nn : ∀ ab ∈ P7.a.strips_covering p.N j,
-      0 ≤ v.s iLast ab.1 ab.2 := by
-    intro ab hab; exact fwd_s_nn hfeas iLast ab (Finset.mem_filter.mp hab).1
-  have ht_nn : ∀ ab ∈ P7.a.strips_covering p.N j,
-      0 ≤ v.t iPrev ab.1 ab.2 := by
-    intro ab hab; exact fwd_t_nn hfeas iPrev ab (Finset.mem_filter.mp hab).1
+  have hs_nn : ∀ ab ∈ P7.a.strips_covering p.N j, 0 ≤ v.s iLast ab := by
+    intro ab _; exact fwd_s_nn hfeas iLast ab
+  have ht_nn : ∀ ab ∈ P7.a.strips_covering p.N j, 0 ≤ v.t iPrev ab := by
+    intro ab _; exact fwd_t_nn hfeas iPrev ab
   have hsum_s_nn : 0 ≤ ∑ ab ∈ P7.a.strips_covering p.N j,
-      v.s iLast ab.1 ab.2 := Finset.sum_nonneg hs_nn
+      v.s iLast ab := Finset.sum_nonneg hs_nn
   rw [← strips_covering_eq]
-  show v.h iLast j ≤
-      ∑ ab ∈ P7.a.strips_covering p.N j, v.t iPrev ab.1 ab.2
+  show v.h iLast j ≤ ∑ ab ∈ P7.a.strips_covering p.N j, v.t iPrev ab
   rcases hfeas.hh_bin iLast j with hh0 | hh1
   · rw [hh0]; exact Finset.sum_nonneg ht_nn
   · rw [hh1]
@@ -151,12 +141,10 @@ private lemma fwd_ec4 (p : P7.a.Params) (v : P7.a.Vars p)
         rw [hh1] at hstep1'
         rw [hp1] at hstep2'
         linarith
-    have hsum_x_last : ∑ ab ∈ P7.a.strips_covering p.N j,
-        v.x iLast ab.1 ab.2 = 0 := by
+    have hsum_x_last : ∑ ab ∈ P7.a.strips_covering p.N j, v.x iLast ab = 0 := by
       have := hcov_last
       rw [hh1] at this; linarith
-    have hsum_x_prev : ∑ ab ∈ P7.a.strips_covering p.N j,
-        v.x iPrev ab.1 ab.2 = 1 := by
+    have hsum_x_prev : ∑ ab ∈ P7.a.strips_covering p.N j, v.x iPrev ab = 1 := by
       have := hcov_prev
       rw [hh_prev_zero] at this; linarith
     rw [hsum_x_last, hsum_x_prev] at hsum_expand
@@ -169,13 +157,13 @@ private lemma fwd_feas (p : P7.a.Params) (v : P7.a.Vars p)
   · intro i; exact h.hrow i
   · intro j; exact h.hcol j
   · intro i j; exact h.hcov i j
-  · intro ab hab; exact h.htop ab hab
-  · intro i ab hab hi; exact h.hflow i ab hab hi
-  · intro ab hab; exact h.hbot ab hab
+  · intro ab; exact h.htop ab
+  · intro i ab hi; exact h.hflow i ab hi
+  · intro ab; exact h.hbot ab
   · intro i j; exact h.hh_bin i j
-  · intro i ab hab; exact h.hx_bin i ab hab
-  · intro i ab hab; exact h.hs_bin i ab hab
-  · intro i ab hab; exact h.ht_bin i ab hab
+  · intro i ab; exact h.hx_bin i ab
+  · intro i ab; exact h.hs_bin i ab
+  · intro i ab; exact h.ht_bin i ab
   · intro j hN; exact fwd_ec4 p v h j hN
 
 -- ============================================================================
