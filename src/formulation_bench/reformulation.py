@@ -59,20 +59,20 @@ class Reformulation:
     is_reformulation: bool
 
     @property
-    def _reformulation_dir(self) -> Path:
+    def _pair_dir(self) -> Path:
         problem_dir = self.a.problem.path
-        return problem_dir.parent.parent / "reformulations" / problem_dir.name
+        pair = f"{self.a.path.name}_{self.b.path.name}"
+        return problem_dir.parent.parent / "reformulations" / problem_dir.name / pair
 
     @property
     def lean_proof_path(self) -> Path | None:
         if not self.is_reformulation:
             return None
-        return self._reformulation_dir / f"{self.a.path.name}_{self.b.path.name}.lean"
+        return self._pair_dir / "Reformulation.lean"
 
     @property
     def map_path(self) -> Path:
-        pair = f"{self.a.path.name}_{self.b.path.name}"
-        return self._reformulation_dir / pair / "map.json"
+        return self._pair_dir / "map.json"
 
     @property
     def parameter_map(self) -> ParameterMap | None:

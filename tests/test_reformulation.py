@@ -54,7 +54,8 @@ def test_lean_proof_path_layout_for_positive(dataset: Dataset) -> None:
         problem_dir.parent.parent
         / "reformulations"
         / problem_dir.name
-        / f"{r.a.path.name}_{r.b.path.name}.lean"
+        / f"{r.a.path.name}_{r.b.path.name}"
+        / "Reformulation.lean"
     )
     assert r.lean_proof_path == expected
 

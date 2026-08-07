@@ -61,7 +61,7 @@ To compile just one formulation or proof, pass its module path:
 lake build problems.p1.formulations.a.Formulation
 
 # Build a single reformulation proof:
-lake build reformulations.p1.a_b
+lake build reformulations.p1.a_b.Reformulation
 ```
 
 The module path mirrors the dataset path with `/` replaced by `.`

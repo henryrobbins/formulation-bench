@@ -32,9 +32,9 @@ dataset/
 │   └── ...
 └── reformulations/          # Lean 4 reformulation proofs
     ├── p1/
-    │   ├── a_b.lean         # Proof that formulation b is a reformulation of a
     │   ├── a_b/
-    │   │   └── map.json     # Maps formulation a's parameters to b's
+    │   │   ├── map.json           # Maps formulation a's parameters to b's
+    │   │   └── Reformulation.lean # Proof that b is a reformulation of a
     │   └── ...
     └── ...
 ```
@@ -283,16 +283,17 @@ runnable script mapping `a`'s `parameters.json` to `b`'s.
 ```
 :::
 
-### Lean Proof
+### `Reformulation.lean`
 
 For every *positive* pair
 (`"reformulation": true`) there is a corresponding Lean file
-`reformulations/pN/a_b.lean` constructing a `MILPReformulation` instance (see
+`reformulations/pN/a_b/Reformulation.lean` constructing a `MILPReformulation`
+instance (see
 {ref}`reformulation-definition`). The path to the Lean file is exposed as the `lean_proof_path` attribute. Pairs that are *not* reformulations of one another have no Lean file.
 
-:::{dropdown} `reformulations/p1/a_b.lean`
+:::{dropdown} `reformulations/p1/a_b/Reformulation.lean`
 :icon: code
-```{literalinclude} ../dataset/reformulations/p1/a_b.lean
+```{literalinclude} ../dataset/reformulations/p1/a_b/Reformulation.lean
 :language: lean
 ```
 :::

@@ -175,7 +175,8 @@ skill and the `lean-lsp` MCP server configured in `.mcp.json`.
    formulation subdirectory does not yet contain `Formulation.lean`, follow
    the steps above to generate it.
 2. The output file for proving formulation b is a reformulation of
-   formulation a (for problem X) is `dataset/reformulations/pX/a_b.lean`.
+   formulation a (for problem X) is
+   `dataset/reformulations/pX/a_b/Reformulation.lean`.
 3. Invoke the `milp-reformulation-autoformalizer` agent with the identified
    source/output. If generating multiple proofs, invoke multiple agents in
    parallel.
@@ -183,6 +184,7 @@ skill and the `lean-lsp` MCP server configured in `.mcp.json`.
 **Review existing Lean MILP formulations or reformulation proofs**
 
 1. Identify the relevant file(s) to read: problem files, formulation files,
-   `Formulation.lean`, and `dataset/reformulations/pX/a_b.lean`.
+   `Formulation.lean`, and
+   `dataset/reformulations/pX/a_b/Reformulation.lean`.
 2. Invoke the `milp-reviewer` agent pointing to the relevant file locations.
    If reviewing multiple files, invoke multiple agents in parallel.
