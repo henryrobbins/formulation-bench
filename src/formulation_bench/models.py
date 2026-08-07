@@ -455,8 +455,8 @@ class ParameterMap:
     ----------
     parameters : dict[str, Expression]
         One entry per parameter of the target formulation, computing it from the
-        source formulation's parameters. Ordered: an entry may reference any
-        parameter defined before it.
+        source formulation's parameters: An entry may reference any parameter
+        defined before it.
     definitions : dict[str, Expression]
         Optional intermediate quantities computed before the parameters. Used
         when several parameters share a derivation.

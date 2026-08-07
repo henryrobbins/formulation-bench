@@ -110,6 +110,8 @@ with monotonicity witnessed by `objMap_mono`. Lastly, `fwd_feas`,
 :start-at: structure MILPReformulation
 ```
 
+There is a fixed parameter mapping defined in {ref}`parameter-map`, for every reformulation pair in the dataset. A reformulation construction's parameter mapping $\Phi_{\mathrm{p}}$ must faithfully encode this mapping.
+
 :::{warning}
 `MILPReformulation` omits the restriction that the backward mapping $\Phi_{\text{bwd}}$ is computable in polynomial time. See the {paper}`/` for a further discussion.
 :::

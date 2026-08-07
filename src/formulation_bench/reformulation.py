@@ -84,14 +84,8 @@ class Reformulation:
         """Generate a Python script computing ``b``'s parameters from ``a``'s.
 
         The script is generated from the ``python`` code snippets of this pair's
-        ``map.json``: its definitions first, then one statement per parameter of
-        ``b``, in declaration order. It is the parameter-map counterpart of the
-        per-formulation ``gen_params.py``, and composing the two must agree ---
-        running ``a``'s ``gen_params.py`` and then this script yields the same
-        parameters as running ``b``'s ``gen_params.py``.
-
-        The resulting script takes the path to ``a``'s ``parameters.json`` and
-        the path to write ``b``'s as positional arguments.
+        ``map.json``. The resulting script takes the path to ``a``'s
+        ``parameters.json`` and the path to write ``b``'s as positional arguments.
 
         Raises
         ------
@@ -144,8 +138,7 @@ class Reformulation:
         ----------
         input_path : str or pathlib.Path, optional
             Path to a ``parameters.json`` holding formulation ``a``'s parameters.
-            Defaults to ``parameters.json`` in ``a``'s formulation directory,
-            which :meth:`Formulation.run_gen_params` writes.
+            Defaults to ``parameters.json`` in ``a``'s formulation directory.
         output_path : str or pathlib.Path, optional
             Path to write the mapped parameters. Defaults to ``parameters.json``
             alongside this pair's ``map.json``.
@@ -167,6 +160,10 @@ class Reformulation:
             >>> reform = ds.reformulations[0]  # corresponds to p1.a -> p1.b
 
             >>> reform.a.run_gen_params()
+            >>> params = json.load(open(reform.a.path / "parameters.json"))
+            >>> params["CashMachineProcessingRate"]  # a's parameter
+            20
+
             >>> reform.run_map()
             >>> params = json.load(open(reform.map_path.parent / "parameters.json"))
             >>> params["A"]  # b's name for "CashMachineProcessingRate"
