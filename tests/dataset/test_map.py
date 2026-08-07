@@ -27,7 +27,7 @@ def test_map_agrees_with_gen_params(mapped_reformulation: Reformulation) -> None
     reform.b.run_gen_params()
     reform.run_map()
 
-    mapped = reform.map_path.parent / "parameters.json"
+    mapped = reform.path / "parameters.json"
     assert json.loads(mapped.read_text()) == json.loads(
         (reform.b.path / "parameters.json").read_text()
     )
