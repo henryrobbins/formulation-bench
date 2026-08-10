@@ -2159,7 +2159,6 @@ noncomputable def reformulation :
   bwd := bwd
   fwd_feas := fwd_feas
   bwd_feas := bwd_feas
-  bwd_fwd := bwd_fwd
   objMap := id
   objMap_mono := strictMono_id
   fwd_obj := fwd_obj
