@@ -226,10 +226,6 @@ def _reformulation_section(pid: int, reform: Reformulation) -> str:
     parts = [f"### {a_ref} → {b_ref} ({badge})\n"]
 
     pmap = reform.parameter_map
-    if pmap is None:
-        parts.append(f"_No parameter map is recorded for `{a}` → `{b}`._\n")
-        return "\n".join(parts)
-
     note_block = _notes_admonition(pmap.metadata.get("notes"))
     if note_block:
         parts += [note_block, ""]

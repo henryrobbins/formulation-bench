@@ -32,10 +32,9 @@ class Reformulation:
     lean_proof_path : pathlib.Path or None
         For positive entries, the path to the accompanying Lean 4 proof file. For
         negative entries, ``None`` since no proof exists.
-    parameter_map : ParameterMap or None
+    parameter_map : ParameterMap
         The loaded ``map.json``, which states how each parameter of ``b`` is
-        computed from the parameters of ``a``, or ``None`` for a pair that has
-        none.
+        computed from the parameters of ``a``.
 
     Examples
     --------
@@ -72,11 +71,8 @@ class Reformulation:
         return self.path / "Reformulation.lean"
 
     @property
-    def parameter_map(self) -> ParameterMap | None:
-        map_path = self.path / "map.json"
-        if not map_path.exists():
-            return None
-        return ParameterMap.from_dict(json.loads(map_path.read_text()))
+    def parameter_map(self) -> ParameterMap:
+        return ParameterMap.from_dict(json.loads((self.path / "map.json").read_text()))
 
     def gen_map_py(self) -> str:
         """Generate a Python script computing ``b``'s parameters from ``a``'s.
@@ -84,11 +80,6 @@ class Reformulation:
         The script is generated from the ``python`` code snippets of this pair's
         ``map.json``. The resulting script takes the path to ``a``'s
         ``parameters.json`` and the path to write ``b``'s as positional arguments.
-
-        Raises
-        ------
-        FileNotFoundError
-            If this pair has no ``map.json``.
 
         Examples
         --------
@@ -117,8 +108,6 @@ class Reformulation:
                 ...
 
         """
-        if self.parameter_map is None:
-            raise FileNotFoundError(f"no parameter map at {self.path / 'map.json'}")
         return generate_map(self)
 
     def run_map(
@@ -140,11 +129,6 @@ class Reformulation:
         output_path : str or pathlib.Path, optional
             Path to write the mapped parameters. Defaults to ``parameters.json``
             in this pair's directory.
-
-        Raises
-        ------
-        FileNotFoundError
-            If this pair has no ``map.json``.
 
         Examples
         --------

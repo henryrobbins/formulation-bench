@@ -268,7 +268,6 @@ def generate(formulation: Formulation) -> str:
 def generate_map(reformulation: Reformulation) -> str:
     """Return the complete ``map.py`` source for a reformulation pair."""
     pmap = reformulation.parameter_map
-    assert pmap is not None
 
     def _emit(code: str, into: list[str]) -> None:
         for line in code.strip().split("\n"):

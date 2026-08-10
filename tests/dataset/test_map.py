@@ -6,8 +6,7 @@ computes its own parameters from the problem's ``data.json``. The two are
 independent descriptions of the same data, so they must agree: mapping ``a``'s
 generated parameters must reproduce ``b``'s.
 
-Only pairs that have a ``map.json`` are collected. Restrict a run to specific
-problems with ``--problems``::
+Restrict a run to specific problems with ``--problems``::
 
     pytest tests/dataset -m dataset --problems 1,14
 """
@@ -19,9 +18,9 @@ import json
 from formulation_bench.reformulation import Reformulation
 
 
-def test_map_agrees_with_gen_params(mapped_reformulation: Reformulation) -> None:
+def test_map_agrees_with_gen_params(reformulation: Reformulation) -> None:
     """Mapping ``a``'s generated parameters reproduces ``b``'s."""
-    reform = mapped_reformulation
+    reform = reformulation
 
     reform.a.run_gen_params()
     reform.b.run_gen_params()
