@@ -5,6 +5,12 @@
             "code": {
                 "python": "def _enumerate_paths(nN, E, S, B):\n    camps = set(B)\n    paths = []\n    def extend(path):\n        i = path[-1]\n        if i in camps:\n            paths.append(list(path))\n            return\n        for j in range(nN):\n            if E[i][j] and j not in path:\n                extend(path + [j])\n    for s in S:\n        extend([s])\n    return paths\npaths = _enumerate_paths(nN, E, S, B)"
             }
+        },
+        "cycles": {
+            "formulation": "C = \\{\\text{simple directed cycles of } (N, E)\\}",
+            "code": {
+                "python": "def _enumerate_cycles(nN, E):\n    adj = [[j for j in range(nN) if E[i][j] == 1] for i in range(nN)]\n    cycles = []\n    for start in range(nN):\n        path = [start]\n        on_path = {start}\n        def dfs(v):\n            for w in adj[v]:\n                if w == start:\n                    edges = [(path[idx], path[idx + 1]) for idx in range(len(path) - 1)]\n                    edges.append((v, start))\n                    cycles.append(edges)\n                elif w > start and w not in on_path:\n                    path.append(w)\n                    on_path.add(w)\n                    dfs(w)\n                    path.pop()\n                    on_path.discard(w)\n        dfs(start)\n    return cycles\ncycles = _enumerate_cycles(nN, E)"
+            }
         }
     },
     "parameters": {
@@ -36,6 +42,12 @@
             "formulation": "nP = |P|",
             "code": {
                 "python": "nP = len(paths)"
+            }
+        },
+        "nC": {
+            "formulation": "nC = |C|",
+            "code": {
+                "python": "nC = len(cycles)"
             }
         },
         "nK": {
@@ -86,10 +98,22 @@
                 "python": "pRank = [[path.index(v) if v in path else 0 for v in range(nN)] for path in paths]"
             }
         },
-        "c": {
-            "formulation": "c_{pk} = \\sum_{(i,j) \\in p} tc_{ijk}",
+        "pCost": {
+            "formulation": "pCost_{pk} = \\sum_{(i,j) \\in p} tc_{ijk}",
             "code": {
-                "python": "c = [[sum(tc[i][j][k] for i, j in zip(path, path[1:])) for k in range(nK)] for path in paths]"
+                "python": "pCost = [[sum(tc[i][j][k] for i, j in zip(path, path[1:])) for k in range(nK)] for path in paths]"
+            }
+        },
+        "cE": {
+            "formulation": "cE_{c,i,j} = 1 \\iff (i, j) \\text{ is an edge of cycle } c",
+            "code": {
+                "python": "cE = [[[1 if (i, j) in set(cycle) else 0 for j in range(nN)] for i in range(nN)] for cycle in cycles]"
+            }
+        },
+        "cCost": {
+            "formulation": "cCost_{ck} = \\sum_{(i,j) \\in c} tc_{ijk}",
+            "code": {
+                "python": "cCost = [[sum(tc[i][j][k] for i, j in cycle) for k in range(nK)] for cycle in cycles]"
             }
         },
         "q": {
@@ -125,7 +149,8 @@
     },
     "metadata": {
         "notes": [
-            "Formulation `a` ships over the arcs of the supply network $(N, E)$; formulation `b` ships along whole supplier-to-camp routes, so the map enumerates the network's simple paths and derives $nP$, $pE$, $pRank$, $c$, and $e$ from them."
+            "Formulation `a` ships over the arcs of the supply network $(N, E)$; formulation `b` ships along whole supplier-to-camp routes, so the map enumerates the network's simple paths and derives $nP$, $pE$, $pRank$, $pCost$, and $e$ from them.",
+            "Since `a` admits cyclic flows, the map also enumerates the network's simple directed cycles and derives $nC$, $cE$, and $cCost$; these carry the cost of the circulating component that no path variable can express."
         ]
     }
 }
