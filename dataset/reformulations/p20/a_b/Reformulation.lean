@@ -1065,20 +1065,6 @@ private lemma structural_positive_edge_is_edge
   · exact absurd (hf.offedge i j hE) (ne_of_gt hpos)
   · exact hE
 
-private lemma structural_node_is_transshipment
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
-    (hnn : ∀ i j, 0 ≤ f i j) (v : Fin pa.nN)
-    (hin : ∃ i, 0 < f i v) (hout : ∃ j, 0 < f v j) :
-    ∃ t : Fin pa.nT, pa.T t = v := by
-  rcases pa.hSTB_partition v with ⟨s, hs⟩ | ⟨t, ht⟩ | ⟨b, hb⟩
-  · obtain ⟨i, hi⟩ := hin
-    rw [← hs, structural_no_supplier_in pa f hf hnn s i] at hi
-    norm_num at hi
-  · exact ⟨t, ht⟩
-  · obtain ⟨j, hj⟩ := hout
-    rw [← hb, structural_no_beneficiary_out pa f hf hnn b j] at hj
-    norm_num at hj
-
 private def PosWalk
     (f : Fin pa.nN → Fin pa.nN → ℝ) (L : List (Fin pa.nN)) : Prop :=
   L.Nodup ∧ 2 ≤ L.length ∧ L.IsChain (fun u w => 0 < f u w)
@@ -1156,24 +1142,6 @@ private lemma succ_mem_of_maximal_pos_walk
       simpa [hx', hy'] using hw
   have := hmax (L ++ [w]) hnew
   simp at this
-
-private lemma cycle_list_nodes_transshipment
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
-    (hnn : ∀ i j, 0 ≤ f i j)
-    (C : List (Fin pa.nN)) (hne : C ≠ [])
-    (hchain : C.IsChain (fun u w => 0 < f u w))
-    (hclose : 0 < f (C.getLast hne) (C.head hne)) :
-    ∀ v ∈ C, ∃ t : Fin pa.nT, pa.T t = v := by
-  intro v hv
-  apply structural_node_is_transshipment pa f hf hnn v
-  · by_cases hvh : v = C.head hne
-    · exact ⟨C.getLast hne, by simpa [hvh] using hclose⟩
-    · obtain ⟨u, hu⟩ := exists_consec_pred hne hv hvh
-      exact ⟨u, consec_chain (R := fun u w => 0 < f u w) hchain hu⟩
-  · by_cases hvl : v = C.getLast hne
-    · exact ⟨C.head hne, by simpa [hvl] using hclose⟩
-    · obtain ⟨w, hw⟩ := exists_consec_succ hne hv hvl
-      exact ⟨w, consec_chain (R := fun u w => 0 < f u w) hchain hw⟩
 
 private lemma head_ne_getLast_of_nodup_two
     {α : Type*} {L : List α} (hne : L ≠ []) (hnd : L.Nodup)
@@ -1672,31 +1640,6 @@ lemma cycle_beneficiary_outdeg_zero (c : Fin (numCycles pa)) (b : Fin pa.nB) :
   apply Finset.sum_eq_zero
   intro j _
   exact cycleEnum_zero_of_E_zero pa c (pa.B b) j (pa.hE_nooutflow_B b j)
-
-/-- Pointwise: a valid path carries no edge into a supplier. -/
-lemma path_supplier_no_inflow (p : Fin (numPaths pa)) (s : Fin pa.nS) (i : Fin pa.nN) :
-    pathEnum pa p i (pa.S s) = 0 :=
-  (Finset.sum_eq_zero_iff_of_nonneg (fun i' _ => by
-    rcases pathEnum_binary pa p i' (pa.S s) with h | h <;> omega)).1
-    (path_supplier_indeg_zero pa p s) i (Finset.mem_univ i)
-
-lemma path_beneficiary_no_outflow (p : Fin (numPaths pa)) (b : Fin pa.nB) (j : Fin pa.nN) :
-    pathEnum pa p (pa.B b) j = 0 :=
-  (Finset.sum_eq_zero_iff_of_nonneg (fun j' _ => by
-    rcases pathEnum_binary pa p (pa.B b) j' with h | h <;> omega)).1
-    (path_beneficiary_outdeg_zero pa p b) j (Finset.mem_univ j)
-
-lemma cycle_supplier_no_inflow (c : Fin (numCycles pa)) (s : Fin pa.nS) (i : Fin pa.nN) :
-    cycleEnum pa c i (pa.S s) = 0 :=
-  (Finset.sum_eq_zero_iff_of_nonneg (fun i' _ => by
-    rcases cycleEnum_binary pa c i' (pa.S s) with h | h <;> omega)).1
-    (cycle_supplier_deg_zero pa c s) i (Finset.mem_univ i)
-
-lemma cycle_beneficiary_no_outflow (c : Fin (numCycles pa)) (b : Fin pa.nB) (j : Fin pa.nN) :
-    cycleEnum pa c (pa.B b) j = 0 :=
-  (Finset.sum_eq_zero_iff_of_nonneg (fun j' _ => by
-    rcases cycleEnum_binary pa c (pa.B b) j' with h | h <;> omega)).1
-    (cycle_beneficiary_outdeg_zero pa c b) j (Finset.mem_univ j)
 
 -- ============================================================================
 -- § bwd_feas : b-feasible ⟹ a-feasible

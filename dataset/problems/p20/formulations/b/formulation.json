@@ -376,11 +376,11 @@
             }
         },
         {
-            "description": "Cycle indexing is complete: every valid cycle is indexed by some c in C.",
+            "description": "Cycle indexing is complete: every valid cycle is indexed by some $c \\in C$.",
             "formulation": "\\forall \\text{ valid cycle } \\pi, \\exists c \\in C : cE_c = \\pi",
             "explicit": false,
             "code": {
-                "python": "# Completeness must be verified by external cycle enumeration; not asserted here."
+                "python": "def simple_cycles():\n    # Since no arc enters a supplier and none leaves a camp, every simple\n    # directed cycle of (N, E) is automatically a valid cycle.\n    adj = [[j for j in range(nN) if E[i][j]] for i in range(nN)]\n    found = set()\n    for start in range(nN):\n        walk = [start]\n        def extend(v):\n            for w in adj[v]:\n                if w == start:\n                    found.add(frozenset(zip(walk, walk[1:] + [start])))\n                elif w > start and w not in walk:\n                    walk.append(w)\n                    extend(w)\n                    walk.pop()\n        extend(start)\n    return found\nassert simple_cycles() <= {\n    frozenset((i, j) for i in range(nN) for j in range(nN) if cE[c][i][j])\n    for c in range(nC)\n}"
             }
         },
         {
