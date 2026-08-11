@@ -514,8 +514,7 @@
         },
         "notes": [
             "The inefficient formulation is path- and cycle-based.",
-            "Because the supply graph has no arcs entering suppliers or leaving beneficiary camps, the graph-edge subset conditions and the node partition imply that path interiors and cycle nodes are transshipment nodes; these properties need not be assumed separately.",
-            "The assumptions relate the path- and cycle-based parameters to the underlying supply network of the efficient formulation, ensuring the sets of paths and cycles are well-formed and complete. They support a flow-decomposition argument: since formulation `a` admits cyclic flows, every feasible arc flow decomposes into simple supplier-to-camp paths plus simple cycles, and the cycle variables $y_{ck}$ carry the cost the path variables cannot."
+            "In {cite:t}`ferchtandiker2025` inefficient formulation only contains path variables $P$. The efficient formulation is node-based with flow variables $F_{ijk}$ on graph edges. Hence, it allows for feasible points that cycle flow around transhipment nodes. To resolve this discrepancy, we introduce cycle variables $C$ for all simple directed cycles in the supply network."
         ]
     }
 }
