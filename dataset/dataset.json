@@ -999,7 +999,7 @@
                 "problem": 20,
                 "formulation": "b"
             },
-            "reformulation": false
+            "reformulation": true
         }
     ]
 }
