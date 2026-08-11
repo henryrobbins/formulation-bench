@@ -510,7 +510,7 @@
         "source": {
             "dataset": "Ferchtandiker2025",
             "citekey": "ferchtandiker2025",
-            "variation_id": "inefficient"
+            "formulation_id": "inefficient"
         },
         "notes": [
             "The inefficient formulation is path- and cycle-based.",
