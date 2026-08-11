@@ -189,6 +189,22 @@
             }
         },
         {
+            "description": "No graph arc enters a supplier node.",
+            "formulation": "E_{i,S_s} = 0 \\quad \\forall i \\in N, s \\in N_S",
+            "explicit": true,
+            "code": {
+                "python": "assert all(E[i][S[s]] == 0 for i in range(nN) for s in range(nS))"
+            }
+        },
+        {
+            "description": "No graph arc leaves a beneficiary camp.",
+            "formulation": "E_{B_b,j} = 0 \\quad \\forall b \\in N_B, j \\in N",
+            "explicit": true,
+            "code": {
+                "python": "assert all(E[B[b]][j] == 0 for b in range(nB) for j in range(nN))"
+            }
+        },
+        {
             "description": "Number of beneficiaries at each camp is non-negative.",
             "formulation": "\\mathrm{dem}_j \\geq 0 \\quad \\forall j \\in N_B",
             "explicit": false,
@@ -249,27 +265,11 @@
     },
     "constraints": [
         {
-            "description": "Suppliers are pure sources: no inflow on incoming edges.",
-            "formulation": "\\sum_{i \\in N} E_{i, S_s} F_{i, S_s, k} = 0 \\quad \\forall s \\in N_S, k \\in K",
-            "explicit": true,
-            "code": {
-                "gurobipy": "model.addConstrs(\n    gp.quicksum(E[i][S[s]] * F[i, S[s], k] for i in range(nN)) == 0\n    for s in range(nS) for k in range(nK)\n)"
-            }
-        },
-        {
             "description": "Flow conservation at transshipment nodes for each commodity: total inflow equals total outflow (no storage).",
             "formulation": "\\sum_{i \\in N} E_{i, T_j} F_{i, T_j, k} = \\sum_{i \\in N} E_{T_j, i} F_{T_j, i, k} \\quad \\forall j \\in N_T, k \\in K",
             "explicit": true,
             "code": {
                 "gurobipy": "model.addConstrs(\n    gp.quicksum(E[i][T[j]] * F[i, T[j], k] for i in range(nN)) ==\n    gp.quicksum(E[T[j]][i] * F[T[j], i, k] for i in range(nN))\n    for j in range(nT) for k in range(nK)\n)"
-            }
-        },
-        {
-            "description": "Beneficiaries are pure sinks: no outflow on outgoing edges.",
-            "formulation": "\\sum_{j \\in N} E_{B_b, j} F_{B_b, j, k} = 0 \\quad \\forall b \\in N_B, k \\in K",
-            "explicit": true,
-            "code": {
-                "gurobipy": "model.addConstrs(\n    gp.quicksum(E[B[b]][j] * F[B[b], j, k] for j in range(nN)) == 0\n    for b in range(nB) for k in range(nK)\n)"
             }
         },
         {
@@ -328,6 +328,7 @@
         },
         "notes": [
             "The efficient formulation is node-based with continuous flow variables $F_{ijk}$ on graph edges.",
+            "The supply graph has no arcs entering supplier nodes and no arcs leaving beneficiary camps. Consequently, source no-inflow and sink no-outflow follow from the constraint that flow is zero off graph edges and need not be imposed separately.",
             "The original formulation was identified by `FLARE` to be invalid. Its procurement cost was $\\sum_{k \\in K} \\mathrm{pc}_k \\sum_{j \\in N_B} \\mathrm{dem}_j R_k$, which depends only on the ration size $R_k$, while the inefficient formulation charges procurement on the total amount shipped $\\sum_{p \\in P} x_{pk}$. Since the demand constraint $\\sum_{i \\in N} E_{ij} F_{ijk} \\geq \\mathrm{dem}_j R_k$ permits shipping in excess of $\\mathrm{dem}_j R_k$ without additional procurement penalty, the objectives are misaligned. We therefore charge procurement on the supplier outflow $\\sum_{s \\in N_S} \\sum_{j \\in N} E_{S_s, j} F_{S_s, j, k}$.",
             "A flow circulating on a transshipment cycle is feasible. While such a flow is never optimal, it has no counterpart among the paths of formulation `b`, which is why `b` carries cycle variables alongside its path variables."
         ]

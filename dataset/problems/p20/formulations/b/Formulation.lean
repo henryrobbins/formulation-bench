@@ -11,8 +11,8 @@ namespace P20.b
 /-- A candidate edge indicator + rank labeling represents a valid simple
 supplier-to-beneficiary path on the graph (N, E) with supplier set S and
 beneficiary set B. -/
-def IsValidPath {nN nS nT nB : ℕ}
-    (S : Fin nS → Fin nN) (T : Fin nT → Fin nN) (B : Fin nB → Fin nN)
+def IsValidPath {nN nS nB : ℕ}
+    (S : Fin nS → Fin nN) (B : Fin nB → Fin nN)
     (E : Fin nN → Fin nN → ℤ)
     (pE : Fin nN → Fin nN → ℤ) (pRank : Fin nN → ℕ) : Prop :=
   -- Path-edge indicator is binary
@@ -35,9 +35,6 @@ def IsValidPath {nN nS nT nB : ℕ}
     (∑ j : Fin nN, pE (B b) j) = 0 ∧
     (∀ v : Fin nN,
       (∑ i : Fin nN, pE i v) = 1 ∧ (∑ j : Fin nN, pE v j) = 0 → v = B b)) ∧
-  -- Every interior node (in-degree 1 and out-degree 1) is a transshipment node
-  (∀ v : Fin nN,
-    (∑ i : Fin nN, pE i v) = 1 → (∑ j : Fin nN, pE v j) = 1 → ∃ t : Fin nT, T t = v) ∧
   -- Acyclicity: rank strictly increases along path edges
   (∀ i j : Fin nN, pE i j = 1 → pRank j = pRank i + 1)
 
@@ -46,8 +43,7 @@ the graph (N, E): the active edges are a subset of the graph's edges, every
 node has in-degree and out-degree at most one with the two equal, and the
 active edges form one connected directed cycle rather than a union of two or
 more node-disjoint cycles. -/
-def IsValidCycle {nN nT : ℕ}
-    (T : Fin nT → Fin nN)
+def IsValidCycle {nN : ℕ}
     (E : Fin nN → Fin nN → ℤ)
     (cE : Fin nN → Fin nN → ℤ) : Prop :=
   -- Cycle-edge indicator is binary
@@ -60,8 +56,6 @@ def IsValidCycle {nN nT : ℕ}
   (∀ v : Fin nN, ∑ j : Fin nN, cE v j ≤ 1) ∧
   -- In-degree equals out-degree (flow conservation) at every node
   (∀ v : Fin nN, ∑ i : Fin nN, cE i v = ∑ j : Fin nN, cE v j) ∧
-  -- Every node of the cycle (out-degree 1) is a transshipment node
-  (∀ v : Fin nN, (∑ j : Fin nN, cE v j) = 1 → ∃ t : Fin nT, T t = v) ∧
   -- The active edges form a single simple directed cycle: there is a closed
   -- walk v₀ → v₁ → ⋯ → v_{m-1} → v₀ through m ≥ 1 distinct nodes whose edges
   -- are exactly the active edges of cE.
@@ -97,6 +91,10 @@ structure Params where
   e : Fin nB → Fin nP → ℤ  -- indicator: 1 if path p ends at camp j, 0 otherwise
   -- Assumptions
   hE_bin : ∀ i j : Fin nN, E i j = 0 ∨ E i j = 1
+  -- Supplier nodes have no incoming graph arcs
+  hE_noinflow_S : ∀ (i : Fin nN) (s : Fin nS), E i (S s) = 0
+  -- Beneficiary camp nodes have no outgoing graph arcs
+  hE_nooutflow_B : ∀ (b : Fin nB) (j : Fin nN), E (B b) j = 0
   he_bin : ∀ j : Fin nB, ∀ p : Fin nP, e j p = 0 ∨ e j p = 1
   -- The supplier, transshipment, and beneficiary node-class maps partition N
   hSTB_partition : ∀ v : Fin nN,
@@ -121,22 +119,22 @@ structure Params where
   hnutreq_nn : ∀ l : Fin nL, 0 ≤ nutreq l
   hdem_nn : ∀ j : Fin nB, 0 ≤ dem j
   -- Path validity: every indexed path is a valid simple S-to-B path
-  hpE_valid : ∀ p : Fin nP, IsValidPath S T B E (pE p) (pRank p)
+  hpE_valid : ∀ p : Fin nP, IsValidPath S B E (pE p) (pRank p)
   -- End indicator e agrees with pE: e_{b,p} = pIn_p(B b) - pOut_p(B b)
   hpE_endE : ∀ b : Fin nB, ∀ p : Fin nP,
     (e b p : ℤ) = (∑ i : Fin nN, pE p i (B b)) - (∑ j : Fin nN, pE p (B b) j)
   -- Completeness: every valid simple S-to-B path is indexed by some p
   hpE_complete : ∀ (pE' : Fin nN → Fin nN → ℤ) (pRank' : Fin nN → ℕ),
-    IsValidPath S T B E pE' pRank' →
+    IsValidPath S B E pE' pRank' →
     ∃ p : Fin nP, ∀ i j : Fin nN, pE p i j = pE' i j
   -- Injectivity: distinct path indices give distinct edge sets
   hpE_inj : ∀ p₁ p₂ : Fin nP,
     (∀ i j : Fin nN, pE p₁ i j = pE p₂ i j) → p₁ = p₂
   -- Cycle validity: every indexed cycle is a single simple directed cycle
-  hcE_valid : ∀ c : Fin nC, IsValidCycle T E (cE c)
+  hcE_valid : ∀ c : Fin nC, IsValidCycle E (cE c)
   -- Completeness: every valid cycle is indexed by some c
   hcE_complete : ∀ (cE' : Fin nN → Fin nN → ℤ),
-    IsValidCycle T E cE' →
+    IsValidCycle E cE' →
     ∃ c : Fin nC, ∀ i j : Fin nN, cE c i j = cE' i j
   -- Injectivity: distinct cycle indices give distinct edge sets
   hcE_inj : ∀ c₁ c₂ : Fin nC,

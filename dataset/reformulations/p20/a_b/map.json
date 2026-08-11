@@ -150,6 +150,7 @@
     "metadata": {
         "notes": [
             "Formulation `a` ships over the arcs of the supply network $(N, E)$; formulation `b` ships along whole supplier-to-camp routes, so the map enumerates the network's simple paths and derives $nP$, $pE$, $pRank$, $pCost$, and $e$ from them.",
+            "The shared graph assumptions (no arcs entering suppliers and no arcs leaving camps) ensure that the unfiltered path and cycle enumeration produces exactly the structurally admissible routes and cycles.",
             "Since `a` admits cyclic flows, the map also enumerates the network's simple directed cycles and derives $nC$, $cE$, and $cCost$; these carry the cost of the circulating component that no path variable can express."
         ]
     }

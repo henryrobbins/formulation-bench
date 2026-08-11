@@ -46,6 +46,9 @@ Transshipment Points: Intermediate hubs where food is consolidated, repackaged, 
 Beneficiary Camps: Final destinations where displaced populations receive food. Demand is determined by the number of people and required ration sizes.
 
 Critical Constraints
+Network Directionality:
+The supply graph has no arcs entering supplier nodes and no arcs leaving beneficiary camps.
+
 No Storage:
 No storage is assumed—food is immediately redirected.
 

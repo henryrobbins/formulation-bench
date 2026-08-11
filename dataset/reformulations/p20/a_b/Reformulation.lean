@@ -8,21 +8,16 @@ import Mathlib.Data.Int.Basic
 import Mathlib.Logic.Equiv.Fin.Rotate
 import Mathlib.Tactic
 
-open BigOperators Finset
-
-namespace P20.AB
-
 /-!
 # P20: `a → b` reformulation (rebuilt for the current formulations)
 
 Arc-based formulation `P20.a` (cyclic node-flow) ⇄ path+cycle formulation
 `P20.b`. This supersedes the old acyclic-only scaffold.
 
-It relies on `P20.b`'s strengthened path/cycle validity: every interior node of
-a path, and every node of a cycle, must be a transshipment node. That
-restriction is what makes the backward map (`bwd : b → a`) land in `a`'s
-feasible region — otherwise a valid path could route through a supplier and the
-reconstructed flow would violate `a`'s no-supplier-inflow constraint.
+It relies on the graph assumptions that suppliers have no incoming arcs and
+beneficiary camps have no outgoing arcs. Together with path/cycle edge support,
+these assumptions imply the node-class restrictions needed by the forward and
+backward maps.
 
 The analytic heart of the `fwd` (a → b) direction is the **flow-decomposition
 lemma** below: any commodity-`k` flow satisfying `a`'s structural constraints
@@ -33,6 +28,10 @@ The proof below formalizes the classical finite-support argument: extract a
 simple positive path or cycle, subtract its bottleneck flow, and recurse on the
 strictly smaller positive support.
 -/
+
+open BigOperators Finset
+
+namespace P20.AB
 
 -- ============================================================================
 -- § Enumeration of valid paths / cycles and completeness bridges
@@ -148,11 +147,11 @@ variable (pa : P20.a.Params)
 
 /-- The valid simple supplier→beneficiary path indicators of `pa`'s graph. -/
 def PathIndicatorSet : Set (Fin pa.nN → Fin pa.nN → ℤ) :=
-  {pE' | ∃ pRank : Fin pa.nN → ℕ, P20.b.IsValidPath pa.S pa.T pa.B pa.E pE' pRank}
+  {pE' | ∃ pRank : Fin pa.nN → ℕ, P20.b.IsValidPath pa.S pa.B pa.E pE' pRank}
 
 /-- The valid single-directed-cycle indicators of `pa`'s graph. -/
 def CycleIndicatorSet : Set (Fin pa.nN → Fin pa.nN → ℤ) :=
-  {cE' | P20.b.IsValidCycle pa.T pa.E cE'}
+  {cE' | P20.b.IsValidCycle pa.E cE'}
 
 lemma pathIndicatorSet_finite : (PathIndicatorSet pa).Finite :=
   finite_binary_indicators _ (by rintro f ⟨pRank, hbin, -⟩; exact hbin)
@@ -175,7 +174,7 @@ noncomputable def cycleEnum : Fin (numCycles pa) → (Fin pa.nN → Fin pa.nN �
 enumeration ranges over *all* valid indicators. -/
 lemma pathEnum_complete
     (pE' : Fin pa.nN → Fin pa.nN → ℤ) (pRank' : Fin pa.nN → ℕ)
-    (hVP : P20.b.IsValidPath pa.S pa.T pa.B pa.E pE' pRank') :
+    (hVP : P20.b.IsValidPath pa.S pa.B pa.E pE' pRank') :
     ∃ p : Fin (numPaths pa), ∀ i j, pathEnum pa p i j = pE' i j := by
   have hmem : pE' ∈ (pathIndicatorSet_finite pa).toFinset :=
     (Set.Finite.mem_toFinset _).2 ⟨pRank', hVP⟩
@@ -186,7 +185,7 @@ lemma pathEnum_complete
 `IsValidCycle` is one of the enumerated cycles. -/
 lemma cycleEnum_complete
     (cE' : Fin pa.nN → Fin pa.nN → ℤ)
-    (hVC : P20.b.IsValidCycle pa.T pa.E cE') :
+    (hVC : P20.b.IsValidCycle pa.E cE') :
     ∃ c : Fin (numCycles pa), ∀ i j, cycleEnum pa c i j = cE' i j := by
   have hmem : cE' ∈ (cycleIndicatorSet_finite pa).toFinset :=
     (Set.Finite.mem_toFinset _).2 hVC
@@ -207,12 +206,12 @@ lemma cycleEnum_mem (c : Fin (numCycles pa)) : cycleEnum pa c ∈ CycleIndicator
 
 /-- Each enumerated cycle indicator is a valid cycle. -/
 lemma cycleEnum_isValid (c : Fin (numCycles pa)) :
-    P20.b.IsValidCycle pa.T pa.E (cycleEnum pa c) :=
+    P20.b.IsValidCycle pa.E (cycleEnum pa c) :=
   cycleEnum_mem pa c
 
 /-- Existence of a valid rank labeling for each enumerated path. -/
 lemma pathEnum_valid_ex (p : Fin (numPaths pa)) :
-    ∃ pRank : Fin pa.nN → ℕ, P20.b.IsValidPath pa.S pa.T pa.B pa.E (pathEnum pa p) pRank :=
+    ∃ pRank : Fin pa.nN → ℕ, P20.b.IsValidPath pa.S pa.B pa.E (pathEnum pa p) pRank :=
   pathEnum_mem pa p
 
 /-- A canonical rank labeling for each enumerated path (chosen by `IsValidPath`). -/
@@ -221,7 +220,7 @@ noncomputable def pathRankOf (p : Fin (numPaths pa)) : Fin pa.nN → ℕ :=
 
 /-- The enumerated path together with its chosen rank is a valid path. -/
 lemma pathEnum_isValidPath (p : Fin (numPaths pa)) :
-    P20.b.IsValidPath pa.S pa.T pa.B pa.E (pathEnum pa p) (pathRankOf pa p) :=
+    P20.b.IsValidPath pa.S pa.B pa.E (pathEnum pa p) (pathRankOf pa p) :=
   (pathEnum_valid_ex pa p).choose_spec
 
 lemma pathEnum_injective : Function.Injective (pathEnum pa) := by
@@ -242,6 +241,22 @@ lemma cycleEnum_binary (c : Fin (numCycles pa)) (i j : Fin pa.nN) :
     cycleEnum pa c i j = 0 ∨ cycleEnum pa c i j = 1 :=
   (cycleEnum_isValid pa c).1 i j
 
+private lemma pathEnum_zero_of_E_zero (p : Fin (numPaths pa)) (i j : Fin pa.nN)
+    (hE : pa.E i j = 0) : pathEnum pa p i j = 0 := by
+  obtain ⟨hbin, hsub, -⟩ := pathEnum_isValidPath pa p
+  have hle := hsub i j
+  rcases hbin i j with h | h
+  · exact h
+  · omega
+
+private lemma cycleEnum_zero_of_E_zero (c : Fin (numCycles pa)) (i j : Fin pa.nN)
+    (hE : pa.E i j = 0) : cycleEnum pa c i j = 0 := by
+  obtain ⟨hbin, hsub, -⟩ := cycleEnum_isValid pa c
+  have hle := hsub i j
+  rcases hbin i j with h | h
+  · exact h
+  · omega
+
 /-- Path indicators are non-negative (as reals). -/
 lemma pathEnum_nonneg (p : Fin (numPaths pa)) (i j : Fin pa.nN) :
     (0 : ℝ) ≤ (pathEnum pa p i j : ℝ) := by
@@ -257,7 +272,7 @@ since the source is a supplier and suppliers are disjoint from beneficiaries. -/
 lemma pathEnd_binary (p : Fin (numPaths pa)) (j : Fin pa.nB) :
     (∑ i, pathEnum pa p i (pa.B j)) - (∑ k, pathEnum pa p (pa.B j) k) = 0 ∨
     (∑ i, pathEnum pa p i (pa.B j)) - (∑ k, pathEnum pa p (pa.B j) k) = 1 := by
-  obtain ⟨hbin, -, hin1, hout1, hsrc, -, -, -⟩ := pathEnum_isValidPath pa p
+  obtain ⟨hbin, -, hin1, hout1, hsrc, -, -⟩ := pathEnum_isValidPath pa p
   have hIN_nn : (0 : ℤ) ≤ ∑ i, pathEnum pa p i (pa.B j) :=
     Finset.sum_nonneg fun i _ => by rcases hbin i (pa.B j) with h | h <;> omega
   have hOUT_nn : (0 : ℤ) ≤ ∑ k, pathEnum pa p (pa.B j) k :=
@@ -302,6 +317,8 @@ noncomputable def paramMap (pa : P20.a.Params) : P20.b.Params where
   dem := pa.dem
   e := fun j p => (∑ i, pathEnum pa p i (pa.B j)) - (∑ k, pathEnum pa p (pa.B j) k)
   hE_bin := pa.hE_bin
+  hE_noinflow_S := pa.hE_noinflow_S
+  hE_nooutflow_B := pa.hE_nooutflow_B
   he_bin := fun j p => pathEnd_binary pa p j
   hSTB_partition := pa.hSTB_partition
   hSTB_disj_ST := pa.hSTB_disj_ST
@@ -640,11 +657,11 @@ private lemma pathRank_consec {n : ℕ}
     exact List.Nodup.idxOf_getElem hnd _ hwL
   omega
 
-/-- A nonempty nodup graph walk from a supplier to a beneficiary, whose
-strictly interior vertices are transshipment nodes, induces a valid path. -/
+/-- A nonempty nodup graph walk from a supplier to a beneficiary induces a
+valid path. -/
 private lemma exists_valid_path_of_walk
-    {nN nS nT nB : ℕ}
-    (S : Fin nS → Fin nN) (T : Fin nT → Fin nN) (B : Fin nB → Fin nN)
+    {nN nS nB : ℕ}
+    (S : Fin nS → Fin nN) (B : Fin nB → Fin nN)
     (E : Fin nN → Fin nN → ℤ)
     (hE_bin : ∀ i j : Fin nN, E i j = 0 ∨ E i j = 1)
     (hSTB_disj_SB : ∀ (s : Fin nS) (b : Fin nB), S s ≠ B b)
@@ -653,12 +670,10 @@ private lemma exists_valid_path_of_walk
     (hnd : L.Nodup)
     (hchain : L.IsChain (fun u w => E u w = 1))
     (s : Fin nS) (hs : L.head hne = S s)
-    (b : Fin nB) (hb : L.getLast hne = B b)
-    (hinterior : ∀ v, v ∈ L → v ≠ L.head hne → v ≠ L.getLast hne →
-      ∃ t : Fin nT, T t = v) :
-    P20.b.IsValidPath S T B E (pathIndicator L) (pathRank L) := by
+    (b : Fin nB) (hb : L.getLast hne = B b) :
+    P20.b.IsValidPath S B E (pathIndicator L) (pathRank L) := by
   classical
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact pathIndicator_binary L
   · intro i j
     by_cases hc : Consec L i j
@@ -749,36 +764,6 @@ private lemma exists_valid_path_of_walk
         rw [hb]
         exact hvb
       exact hnosucc (exists_consec_succ hne hvmem hvlast)
-  · intro v hin hout
-    have hpred : ∃ u, Consec L u v := by
-      rw [sum_pathIndicator_in_eq L hnd] at hin
-      by_cases he : ∃ u, Consec L u v
-      · exact he
-      · rw [if_neg he] at hin
-        norm_num at hin
-    have hsucc : ∃ w, Consec L v w := by
-      rw [sum_pathIndicator_out_eq L hnd] at hout
-      by_cases he : ∃ w, Consec L v w
-      · exact he
-      · rw [if_neg he] at hout
-        norm_num at hout
-    have hvmem : v ∈ L := by
-      obtain ⟨u, hu⟩ := hpred
-      exact consec_right_mem hu
-    have hvhead : v ≠ L.head hne := by
-      intro hv
-      rcases L with _ | ⟨a, as⟩
-      · exact hne rfl
-      · have ha : a = v := by simpa using hv.symm
-        subst a
-        obtain ⟨u, hu⟩ := hpred
-        exact consec_no_pred_head hnd u hu
-    have hvlast : v ≠ L.getLast hne := by
-      intro hv
-      obtain ⟨w, hw⟩ := hsucc
-      rw [hv] at hw
-      exact consec_no_succ_last hne hnd w hw
-    exact hinterior v hvmem hvhead hvlast
   · intro i j hij
     exact pathRank_consec L hnd ((pathIndicator_eq_one_iff L i j).mp hij)
 
@@ -897,18 +882,16 @@ private lemma snoc_succ_eq_rotate {n m : ℕ} (hm : 0 < m)
     rw [heq, Fin.snoc_castSucc]
 
 private lemma valid_cycle_of_rotate
-    {n nT m : ℕ}
-    (T : Fin nT → Fin n)
+    {n m : ℕ}
     (E : Fin n → Fin n → ℤ)
     (hEbin : ∀ u w, E u w = 0 ∨ E u w = 1)
     (hm : 0 < m)
     (verts : Fin m → Fin n)
     (hinj : Function.Injective verts)
-    (hedge : ∀ i, E (verts i) (verts (finRotate m i)) = 1)
-    (hT : ∀ i, ∃ t, T t = verts i) :
-    P20.b.IsValidCycle T E (cycleIndicator verts) := by
+    (hedge : ∀ i, E (verts i) (verts (finRotate m i)) = 1) :
+    P20.b.IsValidCycle E (cycleIndicator verts) := by
   classical
-  refine ⟨cycleIndicator_binary verts, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨cycleIndicator_binary verts, ?_, ?_, ?_, ?_, ?_⟩
   · intro u w
     by_cases hc : ∃ i, verts i = u ∧ verts (finRotate m i) = w
     · obtain ⟨i, rfl, rfl⟩ := hc
@@ -927,11 +910,6 @@ private lemma valid_cycle_of_rotate
   · intro v
     rw [sum_cycleIndicator_in_eq verts hinj v,
       sum_cycleIndicator_out_eq verts hinj v]
-  · intro v hv
-    rw [sum_cycleIndicator_out_eq verts hinj v] at hv
-    split at hv
-    next h => exact h.choose_spec ▸ hT h.choose
-    next => omega
   · let z : Fin m := ⟨0, hm⟩
     let closed : Fin (m + 1) → Fin n := Fin.snoc verts (verts z)
     refine ⟨m, closed, hm, ?_, ?_, ?_⟩
@@ -965,19 +943,17 @@ private lemma valid_cycle_of_rotate
           exact hw
 
 private lemma valid_cycle_of_list
-    {n nT : ℕ}
-    (T : Fin nT → Fin n)
+    {n : ℕ}
     (E : Fin n → Fin n → ℤ)
     (hEbin : ∀ u w, E u w = 0 ∨ E u w = 1)
     (L : List (Fin n)) (hne : L ≠ []) (hnd : L.Nodup)
     (hchain : L.IsChain (fun u w => E u w = 1))
-    (hclose : E (L.getLast hne) (L.head hne) = 1)
-    (hT : ∀ v ∈ L, ∃ t, T t = v) :
-    P20.b.IsValidCycle T E (cycleIndicator L.get) := by
+    (hclose : E (L.getLast hne) (L.head hne) = 1) :
+    P20.b.IsValidCycle E (cycleIndicator L.get) := by
   classical
   rcases L with _ | ⟨a, as⟩
   · exact absurd rfl hne
-  · apply valid_cycle_of_rotate T E hEbin (by simp) (a :: as).get hnd.injective_get
+  · apply valid_cycle_of_rotate E hEbin (by simp) (a :: as).get hnd.injective_get
     · intro i
       by_cases hi : i = Fin.last as.length
       · subst i
@@ -993,9 +969,6 @@ private lemma valid_cycle_of_list
           Fin.ext hrot
         rw [hrotfin]
         exact hedge
-    · intro i
-      apply hT ((a :: as).get i)
-      exact List.get_mem _ _
 
 -- ============================================================================
 -- § Per-commodity structural flows
@@ -1023,11 +996,15 @@ private lemma feasible_structural (v : P20.a.Vars pa) (h : P20.a.Feasible pa v)
     StructuralFlow pa (fun i j => v.F i j k) := by
   refine ⟨?_, ?_, ?_, h.hF_offedge (k := k)⟩
   · intro s
-    simpa only [edge_mul_flow_eq pa v h] using h.hS_noinflow s k
+    apply Finset.sum_eq_zero
+    intro i _
+    exact h.hF_offedge i (pa.S s) k (pa.hE_noinflow_S i s)
   · intro t
     simpa only [edge_mul_flow_eq pa v h] using h.hflow t k
   · intro b
-    simpa only [edge_mul_flow_eq pa v h] using h.hB_nooutflow b k
+    apply Finset.sum_eq_zero
+    intro j _
+    exact h.hF_offedge (pa.B b) j k (pa.hE_nooutflow_B b j)
 
 private lemma sum_eq_zero_term_eq_zero {ι : Type*} [Fintype ι]
     (g : ι → ℝ) (hnn : ∀ i, 0 ≤ g i) (hsum : ∑ i, g i = 0) (i : ι) :
@@ -1364,16 +1341,8 @@ private lemma exists_positive_enumerated_atom
   · obtain ⟨L, hne, hnd, hchain, ⟨s, hs⟩, ⟨b, hb⟩⟩ := hpath
     have hEchain : L.IsChain (fun u w => pa.E u w = 1) := by
       exact hchain.imp fun _ _ h => structural_positive_edge_is_edge pa f hf h
-    have hinterior : ∀ v, v ∈ L → v ≠ L.head hne → v ≠ L.getLast hne →
-        ∃ t : Fin pa.nT, pa.T t = v := by
-      intro v hv hvh hvl
-      obtain ⟨u, hu⟩ := exists_consec_pred hne hv hvh
-      obtain ⟨w, hw⟩ := exists_consec_succ hne hv hvl
-      exact structural_node_is_transshipment pa f hf hnn v
-        ⟨u, consec_chain (R := fun u w => 0 < f u w) hchain hu⟩
-        ⟨w, consec_chain (R := fun u w => 0 < f u w) hchain hw⟩
-    have hvp := exists_valid_path_of_walk pa.S pa.T pa.B pa.E pa.hE_bin
-      pa.hSTB_disj_SB L hne hnd hEchain s hs b hb hinterior
+    have hvp := exists_valid_path_of_walk pa.S pa.B pa.E pa.hE_bin
+      pa.hSTB_disj_SB L hne hnd hEchain s hs b hb
     obtain ⟨p, hp⟩ := pathEnum_complete pa (pathIndicator L) (pathRank L) hvp
     left
     refine ⟨p, ?_⟩
@@ -1382,12 +1351,11 @@ private lemma exists_positive_enumerated_atom
     exact consec_chain (R := fun u w => 0 < f u w) hchain
       ((pathIndicator_eq_one_iff L u w).mp hi)
   · obtain ⟨C, hne, hnd, hchain, hclose⟩ := hcycle
-    have hT := cycle_list_nodes_transshipment pa f hf hnn C hne hchain hclose
     have hEchain : C.IsChain (fun u w => pa.E u w = 1) :=
       hchain.imp fun _ _ h => structural_positive_edge_is_edge pa f hf h
     have hEclose : pa.E (C.getLast hne) (C.head hne) = 1 :=
       structural_positive_edge_is_edge pa f hf hclose
-    have hvc := valid_cycle_of_list pa.T pa.E pa.hE_bin C hne hnd hEchain hEclose hT
+    have hvc := valid_cycle_of_list pa.E pa.hE_bin C hne hnd hEchain hEclose
     obtain ⟨c, hc⟩ := cycleEnum_complete pa (cycleIndicator C.get) hvc
     right
     refine ⟨c, ?_⟩
@@ -1398,47 +1366,21 @@ private lemma exists_positive_enumerated_atom
 private lemma path_supplier_deg_zero_aux
     (p : Fin (numPaths pa)) (s : Fin pa.nS) :
     ∑ i, pathEnum pa p i (pa.S s) = 0 := by
-  obtain ⟨hbin, -, hin1, hout1, -, hsink, hinterior, -⟩ := pathEnum_isValidPath pa p
-  set IN := ∑ i, pathEnum pa p i (pa.S s)
-  set OUT := ∑ j, pathEnum pa p (pa.S s) j
-  have hIN_nn : 0 ≤ IN := Finset.sum_nonneg fun i _ => by
-    rcases hbin i (pa.S s) with h | h <;> omega
-  have hIN_le := hin1 (pa.S s)
-  have hOUT_nn : 0 ≤ OUT := Finset.sum_nonneg fun j _ => by
-    rcases hbin (pa.S s) j with h | h <;> omega
-  have hOUT_le := hout1 (pa.S s)
-  by_contra hne
-  have hIN1 : IN = 1 := by omega
-  rcases (show OUT = 0 ∨ OUT = 1 by omega) with hO | hO
-  · obtain ⟨b, -, -, hbuniq⟩ := hsink
-    exact pa.hSTB_disj_SB s b (hbuniq (pa.S s) ⟨hIN1, hO⟩)
-  · obtain ⟨t, ht⟩ := hinterior (pa.S s) hIN1 hO
-    exact pa.hSTB_disj_ST s t ht.symm
+  apply Finset.sum_eq_zero
+  intro i _
+  exact pathEnum_zero_of_E_zero pa p i (pa.S s) (pa.hE_noinflow_S i s)
 
 private lemma path_beneficiary_deg_zero_aux
     (p : Fin (numPaths pa)) (b : Fin pa.nB) :
     ∑ j, pathEnum pa p (pa.B b) j = 0 := by
-  obtain ⟨hbin, -, hin1, hout1, hsrc, -, hinterior, -⟩ := pathEnum_isValidPath pa p
-  set IN := ∑ i, pathEnum pa p i (pa.B b)
-  set OUT := ∑ j, pathEnum pa p (pa.B b) j
-  have hIN_nn : 0 ≤ IN := Finset.sum_nonneg fun i _ => by
-    rcases hbin i (pa.B b) with h | h <;> omega
-  have hIN_le := hin1 (pa.B b)
-  have hOUT_nn : 0 ≤ OUT := Finset.sum_nonneg fun j _ => by
-    rcases hbin (pa.B b) j with h | h <;> omega
-  have hOUT_le := hout1 (pa.B b)
-  by_contra hne
-  have hOUT1 : OUT = 1 := by omega
-  rcases (show IN = 0 ∨ IN = 1 by omega) with hI | hI
-  · obtain ⟨s, -, -, hsuniq⟩ := hsrc
-    exact pa.hSTB_disj_SB s b (hsuniq (pa.B b) ⟨hOUT1, hI⟩).symm
-  · obtain ⟨t, ht⟩ := hinterior (pa.B b) hI hOUT1
-    exact pa.hSTB_disj_TB t b ht
+  apply Finset.sum_eq_zero
+  intro j _
+  exact pathEnum_zero_of_E_zero pa p (pa.B b) j (pa.hE_nooutflow_B b j)
 
 private lemma path_transshipment_deg_aux
     (p : Fin (numPaths pa)) (t : Fin pa.nT) :
     ∑ i, pathEnum pa p i (pa.T t) = ∑ j, pathEnum pa p (pa.T t) j := by
-  obtain ⟨hbin, -, hin1, hout1, hsrc, hsink, -, -⟩ := pathEnum_isValidPath pa p
+  obtain ⟨hbin, -, hin1, hout1, hsrc, hsink, -⟩ := pathEnum_isValidPath pa p
   set IN := ∑ i, pathEnum pa p i (pa.T t)
   set OUT := ∑ j, pathEnum pa p (pa.T t) j
   have hIN_nn : 0 ≤ IN := Finset.sum_nonneg fun i _ => by
@@ -1458,29 +1400,16 @@ private lemma path_transshipment_deg_aux
 private lemma cycle_supplier_deg_zero_aux
     (c : Fin (numCycles pa)) (s : Fin pa.nS) :
     ∑ i, cycleEnum pa c i (pa.S s) = 0 := by
-  obtain ⟨hbin, -, -, hout1, hcons, htrans, -⟩ := cycleEnum_isValid pa c
-  have hnn : 0 ≤ ∑ j, cycleEnum pa c (pa.S s) j := Finset.sum_nonneg fun j _ => by
-    rcases hbin (pa.S s) j with h | h <;> omega
-  have hle := hout1 (pa.S s)
-  have hout0 : ∑ j, cycleEnum pa c (pa.S s) j = 0 := by
-    by_contra hne
-    have h1 : ∑ j, cycleEnum pa c (pa.S s) j = 1 := by omega
-    obtain ⟨t, ht⟩ := htrans (pa.S s) h1
-    exact pa.hSTB_disj_ST s t ht.symm
-  rw [hcons (pa.S s)]
-  exact hout0
+  apply Finset.sum_eq_zero
+  intro i _
+  exact cycleEnum_zero_of_E_zero pa c i (pa.S s) (pa.hE_noinflow_S i s)
 
 private lemma cycle_beneficiary_deg_zero_aux
     (c : Fin (numCycles pa)) (b : Fin pa.nB) :
     ∑ j, cycleEnum pa c (pa.B b) j = 0 := by
-  obtain ⟨hbin, -, -, hout1, -, htrans, -⟩ := cycleEnum_isValid pa c
-  have hnn : 0 ≤ ∑ j, cycleEnum pa c (pa.B b) j := Finset.sum_nonneg fun j _ => by
-    rcases hbin (pa.B b) j with h | h <;> omega
-  have hle := hout1 (pa.B b)
-  by_contra hne
-  have h1 : ∑ j, cycleEnum pa c (pa.B b) j = 1 := by omega
-  obtain ⟨t, ht⟩ := htrans (pa.B b) h1
-  exact pa.hSTB_disj_TB t b ht
+  apply Finset.sum_eq_zero
+  intro j _
+  exact cycleEnum_zero_of_E_zero pa c (pa.B b) j (pa.hE_nooutflow_B b j)
 
 private noncomputable def decompAtom
     (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa)))
@@ -1570,7 +1499,7 @@ private lemma pathEnum_has_edge (p : Fin (numPaths pa)) :
 
 private lemma cycleEnum_has_edge (c : Fin (numCycles pa)) :
     ∃ e : Fin pa.nN × Fin pa.nN, cycleEnum pa c e.1 e.2 = 1 := by
-  obtain ⟨-, -, -, -, -, -, m, verts, hm, -, -, hedge⟩ := cycleEnum_isValid pa c
+  obtain ⟨-, -, -, -, -, m, verts, hm, -, -, hedge⟩ := cycleEnum_isValid pa c
   let i : Fin m := ⟨0, hm⟩
   exact ⟨(verts i.castSucc, verts i.succ), hedge _ _ |>.2 ⟨i, rfl, rfl⟩⟩
 
@@ -1700,47 +1629,21 @@ lemma fwd_spec (v : P20.a.Vars pa) (h : P20.a.Feasible pa v) :
 /-- A valid path has zero in-degree at a supplier (it can only be the source). -/
 lemma path_supplier_indeg_zero (p : Fin (numPaths pa)) (s : Fin pa.nS) :
     ∑ i, pathEnum pa p i (pa.S s) = 0 := by
-  obtain ⟨hbin, -, hin1, hout1, -, hsink, hinterior, -⟩ := pathEnum_isValidPath pa p
-  set IN := ∑ i, pathEnum pa p i (pa.S s)
-  set OUT := ∑ j, pathEnum pa p (pa.S s) j
-  have hIN_nn : 0 ≤ IN := Finset.sum_nonneg fun i _ => by
-    rcases hbin i (pa.S s) with h | h <;> omega
-  have hIN_le : IN ≤ 1 := hin1 (pa.S s)
-  have hOUT_nn : 0 ≤ OUT := Finset.sum_nonneg fun j _ => by
-    rcases hbin (pa.S s) j with h | h <;> omega
-  have hOUT_le : OUT ≤ 1 := hout1 (pa.S s)
-  by_contra hne
-  have hIN1 : IN = 1 := by omega
-  rcases (show OUT = 0 ∨ OUT = 1 by omega) with hO | hO
-  · obtain ⟨b, -, -, hbuniq⟩ := hsink
-    exact pa.hSTB_disj_SB s b (hbuniq (pa.S s) ⟨hIN1, hO⟩)
-  · obtain ⟨t, ht⟩ := hinterior (pa.S s) hIN1 hO
-    exact pa.hSTB_disj_ST s t ht.symm
+  apply Finset.sum_eq_zero
+  intro i _
+  exact pathEnum_zero_of_E_zero pa p i (pa.S s) (pa.hE_noinflow_S i s)
 
 /-- A valid path has zero out-degree at a beneficiary (it can only be the sink). -/
 lemma path_beneficiary_outdeg_zero (p : Fin (numPaths pa)) (b : Fin pa.nB) :
     ∑ j, pathEnum pa p (pa.B b) j = 0 := by
-  obtain ⟨hbin, -, hin1, hout1, hsrc, -, hinterior, -⟩ := pathEnum_isValidPath pa p
-  set IN := ∑ i, pathEnum pa p i (pa.B b)
-  set OUT := ∑ j, pathEnum pa p (pa.B b) j
-  have hIN_nn : 0 ≤ IN := Finset.sum_nonneg fun i _ => by
-    rcases hbin i (pa.B b) with h | h <;> omega
-  have hIN_le : IN ≤ 1 := hin1 (pa.B b)
-  have hOUT_nn : 0 ≤ OUT := Finset.sum_nonneg fun j _ => by
-    rcases hbin (pa.B b) j with h | h <;> omega
-  have hOUT_le : OUT ≤ 1 := hout1 (pa.B b)
-  by_contra hne
-  have hOUT1 : OUT = 1 := by omega
-  rcases (show IN = 0 ∨ IN = 1 by omega) with hI | hI
-  · obtain ⟨s, -, -, hsuniq⟩ := hsrc
-    exact pa.hSTB_disj_SB s b (hsuniq (pa.B b) ⟨hOUT1, hI⟩).symm
-  · obtain ⟨t, ht⟩ := hinterior (pa.B b) hI hOUT1
-    exact pa.hSTB_disj_TB t b ht
+  apply Finset.sum_eq_zero
+  intro j _
+  exact pathEnum_zero_of_E_zero pa p (pa.B b) j (pa.hE_nooutflow_B b j)
 
 /-- A valid path has equal in- and out-degree at a transshipment node. -/
 lemma path_transshipment_deg (p : Fin (numPaths pa)) (t : Fin pa.nT) :
     ∑ i, pathEnum pa p i (pa.T t) = ∑ j, pathEnum pa p (pa.T t) j := by
-  obtain ⟨hbin, -, hin1, hout1, hsrc, hsink, -, -⟩ := pathEnum_isValidPath pa p
+  obtain ⟨hbin, -, hin1, hout1, hsrc, hsink, -⟩ := pathEnum_isValidPath pa p
   set IN := ∑ i, pathEnum pa p i (pa.T t)
   set OUT := ∑ j, pathEnum pa p (pa.T t) j
   have hIN_nn : 0 ≤ IN := Finset.sum_nonneg fun i _ => by
@@ -1756,31 +1659,19 @@ lemma path_transshipment_deg (p : Fin (numPaths pa)) (t : Fin pa.nT) :
   · obtain ⟨b, -, -, hbuniq⟩ := hsink
     exact pa.hSTB_disj_TB t b (hbuniq (pa.T t) ⟨hI, hO⟩)
 
-/-- A valid cycle has zero in-degree at a supplier (its nodes are transshipment). -/
+/-- A valid cycle has zero in-degree at a supplier. -/
 lemma cycle_supplier_deg_zero (c : Fin (numCycles pa)) (s : Fin pa.nS) :
     ∑ i, cycleEnum pa c i (pa.S s) = 0 := by
-  obtain ⟨hbin, -, -, hout1, hcons, htrans, -⟩ := cycleEnum_isValid pa c
-  have hOUT_nn : 0 ≤ ∑ j, cycleEnum pa c (pa.S s) j := Finset.sum_nonneg fun j _ => by
-    rcases hbin (pa.S s) j with h | h <;> omega
-  have hOUT_le : ∑ j, cycleEnum pa c (pa.S s) j ≤ 1 := hout1 (pa.S s)
-  have hout0 : ∑ j, cycleEnum pa c (pa.S s) j = 0 := by
-    by_contra hne
-    have h1 : ∑ j, cycleEnum pa c (pa.S s) j = 1 := by omega
-    obtain ⟨t, ht⟩ := htrans (pa.S s) h1
-    exact pa.hSTB_disj_ST s t ht.symm
-  rw [hcons (pa.S s)]; exact hout0
+  apply Finset.sum_eq_zero
+  intro i _
+  exact cycleEnum_zero_of_E_zero pa c i (pa.S s) (pa.hE_noinflow_S i s)
 
 /-- A valid cycle has zero out-degree at a beneficiary. -/
 lemma cycle_beneficiary_outdeg_zero (c : Fin (numCycles pa)) (b : Fin pa.nB) :
     ∑ j, cycleEnum pa c (pa.B b) j = 0 := by
-  obtain ⟨hbin, -, -, hout1, -, htrans, -⟩ := cycleEnum_isValid pa c
-  have hnn : 0 ≤ ∑ j, cycleEnum pa c (pa.B b) j := Finset.sum_nonneg fun j _ => by
-    rcases hbin (pa.B b) j with h | h <;> omega
-  have hle : ∑ j, cycleEnum pa c (pa.B b) j ≤ 1 := hout1 (pa.B b)
-  by_contra hne
-  have h1 : ∑ j, cycleEnum pa c (pa.B b) j = 1 := by omega
-  obtain ⟨t, ht⟩ := htrans (pa.B b) h1
-  exact pa.hSTB_disj_TB t b ht
+  apply Finset.sum_eq_zero
+  intro j _
+  exact cycleEnum_zero_of_E_zero pa c (pa.B b) j (pa.hE_nooutflow_B b j)
 
 /-- Pointwise: a valid path carries no edge into a supplier. -/
 lemma path_supplier_no_inflow (p : Fin (numPaths pa)) (s : Fin pa.nS) (i : Fin pa.nN) :
@@ -1873,17 +1764,6 @@ lemma sum_bwd_F_out (vb : P20.b.Vars (paramMap pa)) (w : Fin pa.nN) (k : Fin pa.
 /-- **Backward feasibility.** A `b`-feasible solution maps to an `a`-feasible one. -/
 lemma bwd_feas (vb : P20.b.Vars (paramMap pa)) (hb : P20.b.Feasible (paramMap pa) vb) :
     P20.a.Feasible pa (bwd pa vb) where
-  hS_noinflow := fun s k => by
-    have hFz : ∀ i, (bwd pa vb).F i (pa.S s) k = 0 := fun i => by
-      show (∑ p, (pathEnum pa p i (pa.S s) : ℝ) * vb.x p k)
-            + (∑ c, (cycleEnum pa c i (pa.S s) : ℝ) * vb.y c k) = 0
-      have h1 : (∑ p, (pathEnum pa p i (pa.S s) : ℝ) * vb.x p k) = 0 :=
-        Finset.sum_eq_zero fun p _ => by simp [path_supplier_no_inflow pa p s i]
-      have h2 : (∑ c, (cycleEnum pa c i (pa.S s) : ℝ) * vb.y c k) = 0 :=
-        Finset.sum_eq_zero fun c _ => by simp [cycle_supplier_no_inflow pa c s i]
-      rw [h1, h2, add_zero]
-    apply Finset.sum_eq_zero
-    intro i _; rw [hFz i]; ring
   hflow := fun t k => by
     rw [Finset.sum_congr rfl (fun i _ => bwd_E_mul pa vb i (pa.T t) k),
         Finset.sum_congr rfl (fun i _ => bwd_E_mul pa vb (pa.T t) i k),
@@ -1892,25 +1772,14 @@ lemma bwd_feas (vb : P20.b.Vars (paramMap pa)) (hb : P20.b.Feasible (paramMap pa
     · refine Finset.sum_congr rfl fun p _ => ?_
       rw [path_transshipment_deg pa p t]
     · refine Finset.sum_congr rfl fun c _ => ?_
-      obtain ⟨-, -, -, -, hcons, -, -⟩ := cycleEnum_isValid pa c
+      obtain ⟨-, -, -, -, hcons, -⟩ := cycleEnum_isValid pa c
       rw [hcons (pa.T t)]
-  hB_nooutflow := fun b k => by
-    have hFz : ∀ j, (bwd pa vb).F (pa.B b) j k = 0 := fun j => by
-      show (∑ p, (pathEnum pa p (pa.B b) j : ℝ) * vb.x p k)
-            + (∑ c, (cycleEnum pa c (pa.B b) j : ℝ) * vb.y c k) = 0
-      have h1 : (∑ p, (pathEnum pa p (pa.B b) j : ℝ) * vb.x p k) = 0 :=
-        Finset.sum_eq_zero fun p _ => by simp [path_beneficiary_no_outflow pa p b j]
-      have h2 : (∑ c, (cycleEnum pa c (pa.B b) j : ℝ) * vb.y c k) = 0 :=
-        Finset.sum_eq_zero fun c _ => by simp [cycle_beneficiary_no_outflow pa c b j]
-      rw [h1, h2, add_zero]
-    apply Finset.sum_eq_zero
-    intro j _; rw [hFz j]; ring
   hdemand := fun j k => by
     rw [Finset.sum_congr rfl (fun i _ => bwd_E_mul pa vb i (pa.B j) k),
         sum_bwd_F_in pa vb (pa.B j) k]
     have hcyc0 : (∑ c, (↑(∑ i, cycleEnum pa c i (pa.B j)) : ℝ) * vb.y c k) = 0 := by
       apply Finset.sum_eq_zero; intro c _
-      obtain ⟨-, -, -, -, hcons, -, -⟩ := cycleEnum_isValid pa c
+      obtain ⟨-, -, -, -, hcons, -⟩ := cycleEnum_isValid pa c
       rw [hcons (pa.B j), cycle_beneficiary_outdeg_zero pa c j]; simp
     rw [hcyc0, add_zero]
     have hep : (∑ p, (↑(∑ i, pathEnum pa p i (pa.B j)) : ℝ) * vb.x p k)
@@ -1959,7 +1828,7 @@ lemma fwd_feas (v : P20.a.Vars pa) (ha : P20.a.Feasible pa v) :
       have hcyc0 :
           (∑ c, (↑(∑ i, cycleEnum pa c i (pa.B j)) : ℝ) * (fwd pa v).y c k) = 0 := by
         apply Finset.sum_eq_zero; intro c _
-        obtain ⟨-, -, -, -, hcons, -, -⟩ := cycleEnum_isValid pa c
+        obtain ⟨-, -, -, -, hcons, -⟩ := cycleEnum_isValid pa c
         rw [hcons (pa.B j), cycle_beneficiary_outdeg_zero pa c j]; simp
       rw [hcyc0, add_zero]
       apply Finset.sum_congr rfl; intro p _
@@ -1988,20 +1857,15 @@ lemma a_obj_congr (v1 v2 : P20.a.Vars pa) (h : v1.F = v2.F) :
 /-- A valid cycle has zero out-degree at a supplier. -/
 lemma cycle_supplier_outdeg_zero (c : Fin (numCycles pa)) (s : Fin pa.nS) :
     ∑ j, cycleEnum pa c (pa.S s) j = 0 := by
-  obtain ⟨hbin, -, -, hout1, -, htrans, -⟩ := cycleEnum_isValid pa c
-  have hnn : 0 ≤ ∑ j, cycleEnum pa c (pa.S s) j := Finset.sum_nonneg fun j _ => by
-    rcases hbin (pa.S s) j with h | h <;> omega
-  have hle : ∑ j, cycleEnum pa c (pa.S s) j ≤ 1 := hout1 (pa.S s)
-  by_contra hne
-  have h1 : ∑ j, cycleEnum pa c (pa.S s) j = 1 := by omega
-  obtain ⟨t, ht⟩ := htrans (pa.S s) h1
-  exact pa.hSTB_disj_ST s t ht.symm
+  obtain ⟨-, -, -, -, hcons, -⟩ := cycleEnum_isValid pa c
+  rw [← hcons (pa.S s)]
+  exact cycle_supplier_deg_zero pa c s
 
 /-- Every valid path leaves exactly one supplier: total out-degree over all
 suppliers is 1 (the unique source; every other supplier is off the path). -/
 lemma path_supplier_total_outdeg (p : Fin (numPaths pa)) :
     ∑ s, (∑ j, pathEnum pa p (pa.S s) j) = 1 := by
-  obtain ⟨hbin, -, hin1, hout1, ⟨s0, hs0out, hs0in, hs0uniq⟩, -, hinterior, -⟩ :=
+  obtain ⟨hbin, -, hin1, hout1, ⟨s0, hs0out, hs0in, hs0uniq⟩, -, -⟩ :=
     pathEnum_isValidPath pa p
   have hzero : ∀ s ∈ (Finset.univ : Finset (Fin pa.nS)), s ≠ s0 →
       (∑ j, pathEnum pa p (pa.S s) j) = 0 := by
@@ -2010,14 +1874,8 @@ lemma path_supplier_total_outdeg (p : Fin (numPaths pa)) :
     have hout_nn : 0 ≤ ∑ j, pathEnum pa p (pa.S s) j :=
       Finset.sum_nonneg fun j _ => by rcases hbin (pa.S s) j with h | h <;> omega
     have hout1v : ∑ j, pathEnum pa p (pa.S s) j = 1 := by have := hout1 (pa.S s); omega
-    have hin_nn : 0 ≤ ∑ i, pathEnum pa p i (pa.S s) :=
-      Finset.sum_nonneg fun i _ => by rcases hbin i (pa.S s) with h | h <;> omega
-    have hin_le := hin1 (pa.S s)
-    rcases (show ∑ i, pathEnum pa p i (pa.S s) = 0 ∨ ∑ i, pathEnum pa p i (pa.S s) = 1
-        by omega) with hin0 | hin1v
-    · exact hsne (pa.hS_inj (hs0uniq (pa.S s) ⟨hout1v, hin0⟩))
-    · obtain ⟨t, ht⟩ := hinterior (pa.S s) hin1v hout1v
-      exact pa.hSTB_disj_ST s t ht.symm
+    have hin0 := path_supplier_indeg_zero pa p s
+    exact hsne (pa.hS_inj (hs0uniq (pa.S s) ⟨hout1v, hin0⟩))
   rw [Finset.sum_eq_single s0 hzero (fun h => absurd (Finset.mem_univ s0) h)]
   exact hs0out
 

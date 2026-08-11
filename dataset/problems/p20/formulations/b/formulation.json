@@ -240,6 +240,22 @@
             }
         },
         {
+            "description": "No graph arc enters a supplier node.",
+            "formulation": "E_{i,S_s} = 0 \\quad \\forall i \\in N, s \\in N_S",
+            "explicit": true,
+            "code": {
+                "python": "assert all(E[i][S[s]] == 0 for i in range(nN) for s in range(nS))"
+            }
+        },
+        {
+            "description": "No graph arc leaves a beneficiary camp.",
+            "formulation": "E_{B_b,j} = 0 \\quad \\forall b \\in N_B, j \\in N",
+            "explicit": true,
+            "code": {
+                "python": "assert all(E[B[b]][j] == 0 for b in range(nB) for j in range(nN))"
+            }
+        },
+        {
             "description": "Each path edge must be a graph edge.",
             "formulation": "pE_{p,i,j} \\leq E_{ij} \\quad \\forall p \\in P, i, j \\in N",
             "explicit": false,
@@ -277,14 +293,6 @@
             "explicit": false,
             "code": {
                 "python": "for p in range(nP):\n    sinks = [v for v in range(nN) if sum(pE[p][i][v] for i in range(nN)) == 1 and sum(pE[p][v][j] for j in range(nN)) == 0]\n    assert len(sinks) == 1 and sinks[0] in B"
-            }
-        },
-        {
-            "description": "Every interior node of a path (in-degree $1$ and out-degree $1$) is a transshipment node.",
-            "formulation": "\\left( \\sum_{i \\in N} pE_{p,i,v} = 1 \\;\\land\\; \\sum_{j \\in N} pE_{p,v,j} = 1 \\right) \\implies v \\in N_T \\quad \\forall p \\in P, v \\in N",
-            "explicit": false,
-            "code": {
-                "python": "assert all(v in T for p in range(nP) for v in range(nN) if sum(pE[p][i][v] for i in range(nN)) == 1 and sum(pE[p][v][j] for j in range(nN)) == 1)"
             }
         },
         {
@@ -365,14 +373,6 @@
             "explicit": false,
             "code": {
                 "python": "for c in range(nC):\n    succ = {i: j for i in range(nN) for j in range(nN) if cE[c][i][j] == 1}\n    active = set(succ)\n    assert active, \"each cycle must contain at least one edge\"\n    start = min(active)\n    visited, node = [], start\n    while node not in visited:\n        visited.append(node)\n        node = succ[node]\n    assert node == start and set(visited) == active"
-            }
-        },
-        {
-            "description": "Every node of a cycle (out-degree $1$) is a transshipment node.",
-            "formulation": "\\sum_{j \\in N} cE_{c,v,j} = 1 \\implies v \\in N_T \\quad \\forall c \\in C, v \\in N",
-            "explicit": false,
-            "code": {
-                "python": "assert all(v in T for c in range(nC) for v in range(nN) if sum(cE[c][v][j] for j in range(nN)) == 1)"
             }
         },
         {
@@ -514,6 +514,7 @@
         },
         "notes": [
             "The inefficient formulation is path- and cycle-based.",
+            "Because the supply graph has no arcs entering suppliers or leaving beneficiary camps, the graph-edge subset conditions and the node partition imply that path interiors and cycle nodes are transshipment nodes; these properties need not be assumed separately.",
             "The assumptions relate the path- and cycle-based parameters to the underlying supply network of the efficient formulation, ensuring the sets of paths and cycles are well-formed and complete. They support a flow-decomposition argument: since formulation `a` admits cyclic flows, every feasible arc flow decomposes into simple supplier-to-camp paths plus simple cycles, and the cycle variables $y_{ck}$ carry the cost the path variables cannot."
         ]
     }

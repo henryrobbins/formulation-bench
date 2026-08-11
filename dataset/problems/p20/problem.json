@@ -82,6 +82,7 @@
         },
         "notes": [
             "We add implicit assumptions that all sets are non-empty and $\\mathrm{dem}_j, \\mathrm{pc}_k, \\mathrm{tc}_{ijk}, \\mathrm{nutreq}_\\ell, \\mathrm{nutval}_{k\\ell} \\geq 0$.",
+            "We assume the directed supply graph has no arcs entering suppliers and no arcs leaving beneficiary camps, matching the supplier-to-transshipment-to-camp network structure.",
             "The description clarifies that procurement costs $\\mathrm{pc}_k$ vary by commodity only, not by supplier."
         ]
     }

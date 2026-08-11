@@ -35,6 +35,10 @@ structure Params where
   hS_inj : Function.Injective S
   hT_inj : Function.Injective T
   hB_inj : Function.Injective B
+  -- Supplier nodes have no incoming arcs
+  hE_noinflow_S : ∀ i : Fin nN, ∀ s : Fin nS, E i (S s) = 0
+  -- Beneficiary camps have no outgoing arcs
+  hE_nooutflow_B : ∀ b : Fin nB, ∀ j : Fin nN, E (B b) j = 0
   -- Implicit Assumptions
   hnN : NeZero nN
   hnS : NeZero nS
@@ -53,16 +57,10 @@ structure Vars (p : Params) where
   R : Fin p.nK → ℝ  -- ration size per person of each commodity (kg)
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
-  -- Suppliers are pure sources: no inflow on incoming edges
-  hS_noinflow : ∀ s : Fin p.nS, ∀ k : Fin p.nK,
-    ∑ i : Fin p.nN, (p.E i (p.S s) : ℝ) * v.F i (p.S s) k = 0
   -- Flow conservation at transshipment nodes for each commodity (no storage)
   hflow : ∀ j : Fin p.nT, ∀ k : Fin p.nK,
     ∑ i : Fin p.nN, (p.E i (p.T j) : ℝ) * v.F i (p.T j) k =
     ∑ i : Fin p.nN, (p.E (p.T j) i : ℝ) * v.F (p.T j) i k
-  -- Beneficiaries are pure sinks: no outflow on outgoing edges
-  hB_nooutflow : ∀ b : Fin p.nB, ∀ k : Fin p.nK,
-    ∑ j : Fin p.nN, (p.E (p.B b) j : ℝ) * v.F (p.B b) j k = 0
   -- Beneficiary camps receive at least their ration demand
   hdemand : ∀ j : Fin p.nB, ∀ k : Fin p.nK,
     p.dem j * v.R k ≤ ∑ i : Fin p.nN, (p.E i (p.B j) : ℝ) * v.F i (p.B j) k
