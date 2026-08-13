@@ -28,8 +28,7 @@ class Problem:
         Human-readable problem name.
     np_hard : bool
         Whether the underlying optimization problem is NP-hard. This is a
-        property of the problem itself, not of any one formulation of it; where
-        the classification is not obvious, ``metadata.notes`` records why.
+        property of the problem itself, not of any one formulation of it.
     parameters : dict[str, Parameter]
         Problem data parameters keyed by their names.
     description : str

@@ -103,9 +103,7 @@ and freeform `metadata`:
 - **`name`** — human-readable problem name.
 - **`np_hard`** — boolean indicating whether the underlying optimization
   problem is NP-hard. This describes the problem itself, not any one
-  formulation of it: a problem may be polynomially solvable yet still admit
-  MILP formulations. Where the classification is not obvious, `metadata.notes`
-  records the reasoning.
+  formulation of it. 
 - **`parameters`** — schema of the problem's data parameters, keyed by name.
   Each value is a {class}`Parameter <formulation_bench.models.Parameter>`
   with a `description`, `type`, and `shape` (see

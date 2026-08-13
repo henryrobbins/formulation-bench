@@ -304,9 +304,8 @@ def _source_short(src: object) -> str:
 def _index_page(problems: dict[int, object]) -> str:
     lines = [
         "# Problems\n",
-        "The table below enumerates every problem in FormulationBench, whether it "
-        "is NP-hard, and the source it was adapted from. Each problem page provides "
-        "detailed information "
+        "The table below enumerates every problem in FormulationBench and the "
+        "source it was adapted from. Each problem page provides detailed information "
         "about the problem and every formulation of it. This documentation is "
         "automatically generated from the dataset to ensure it is up-to-date.\n",
         "| Problem | Name | NP-hard | Source |",
