@@ -45,7 +45,7 @@
             "The source variable type is continuous; we correct the variable type to integer.",
             "The cutting plane (source variation `74_e`) is excluded because it is instance-specific.",
             "Implicit non-negativity assumptions are added for every parameter.",
-            "The problem is NP-hard: it is a multi-dimensional integer knapsack problem. The number of resource constraints is part of the input, so it is strongly NP-hard."
+            "The problem is NP-hard: it is a multi-dimensional integer knapsack problem."
         ]
     }
 }

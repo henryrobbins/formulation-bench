@@ -49,7 +49,7 @@
         },
         "notes": [
             "We identify a number of modeling inconsistencies in the original pair of formulations. To address this, we propose a new pair of flow-based formulations. The efficient formulation `p13.a` is an aggregated version of `p13.b`.",
-            "The problem is not NP-hard: interchangeable flights are aggregated into a single commodity, and the location capacities are node capacities on a time-expanded flow network, so the constraint matrix is totally unimodular. The per-flight variant of the TFMP, in which each flight is its own commodity sharing the location capacities, is NP-hard."
+            "The problem is not NP-hard: interchangeable flights are aggregated into a single commodity, and the location capacities are node capacities on a time-expanded flow network, so the constraint matrix is totally unimodular."
         ]
     }
 }

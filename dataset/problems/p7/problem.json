@@ -14,8 +14,7 @@
             "citekey": "yazdani2025"
         },
         "notes": [
-            "We add an implicit assumption $N \\ge 1$.",
-            "The problem is not NP-hard: minimum-rectangle partition of the grid is solvable in polynomial time."
+            "We add an implicit assumption $N \\ge 1$."
         ]
     }
 }

@@ -42,8 +42,7 @@
         "notes": [
             "The source incorrectly encodes integer variables with `\"shape\": [\"Integer\"]`; we correct this to `\"type\": \"integer\"`.",
             "The cutting plane (source variation `183_e`) is excluded because it is instance-specific.",
-            "Implicit non-negativity assumptions are added for every parameter.",
-            "The problem is not NP-hard: the number of integer variables is fixed, so it is solvable in polynomial time."
+            "Implicit non-negativity assumptions are added for every parameter."
         ]
     }
 }
