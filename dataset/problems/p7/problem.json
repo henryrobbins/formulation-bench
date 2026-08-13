@@ -1,5 +1,6 @@
 {
     "name": "Rectangular Tiling with One Hole per Row and Column (IMO6)",
+    "np_hard": false,
     "parameters": {
         "N": {
             "description": "Size of the grid (number of rows and columns)",
@@ -13,7 +14,8 @@
             "citekey": "yazdani2025"
         },
         "notes": [
-            "We add an implicit assumption $N \\ge 1$."
+            "We add an implicit assumption $N \\ge 1$.",
+            "The problem is not NP-hard: minimum-rectangle partition of the grid is solvable in polynomial time."
         ]
     }
 }

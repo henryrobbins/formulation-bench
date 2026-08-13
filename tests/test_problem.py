@@ -19,6 +19,11 @@ def test_name_loaded_when_present(problem11: Problem) -> None:
     assert problem11.name == "Sub-Hour Unit Commitment (SHUC)"
 
 
+def test_np_hard_loaded(problem1: Problem, dataset: Dataset) -> None:
+    assert problem1.np_hard is False
+    assert dataset.problems[12].np_hard is True
+
+
 def test_metadata_loaded_eagerly(problem1: Problem) -> None:
     source = problem1.metadata["source"]
     assert source["dataset"] == "EquivaFormulation"
@@ -108,7 +113,7 @@ def test_solution_none_when_missing(tmp_path: "Path") -> None:
     problem_dir = tmp_path / "prob"
     problem_dir.mkdir()
     (problem_dir / "problem.json").write_text(
-        '{"name": "Test Problem", "description": "test",'
+        '{"name": "Test Problem", "np_hard": false, "description": "test",'
         ' "parameters": {}, "metadata": {}}'
     )
     (problem_dir / "description.md").write_text("test")

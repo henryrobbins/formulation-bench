@@ -1,5 +1,6 @@
 {
     "name": "World Food Program Food Distribution",
+    "np_hard": false,
     "parameters": {
         "nN": {
             "description": "Total number of nodes in the supply network (suppliers, transshipment points, and beneficiary camps)",
@@ -82,7 +83,8 @@
         },
         "notes": [
             "We add implicit assumptions that all sets are non-empty and $\\mathrm{dem}_j, \\mathrm{pc}_k, \\mathrm{tc}_{ijk}, \\mathrm{nutreq}_\\ell, \\mathrm{nutval}_{k\\ell} \\geq 0$.",
-            "We assume the directed supply graph has no arcs entering suppliers and no arcs leaving beneficiary camps."
+            "We assume the directed supply graph has no arcs entering suppliers and no arcs leaving beneficiary camps.",
+            "The problem is not NP-hard: with no capacity constraints the commodities decouple, and the problem reduces to a shortest-path computation per beneficiary camp plus a linear program over the ration."
         ]
     }
 }

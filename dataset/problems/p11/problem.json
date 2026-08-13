@@ -1,5 +1,6 @@
 {
     "name": "Sub-Hour Unit Commitment (SHUC)",
+    "np_hard": true,
     "parameters": {
         "T": {
             "description": "Number of time periods",

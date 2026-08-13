@@ -1,5 +1,6 @@
 {
     "name": "Timor-Leste Hospital Location",
+    "np_hard": true,
     "parameters": {
         "nI": {
             "description": "Number of household clusters",

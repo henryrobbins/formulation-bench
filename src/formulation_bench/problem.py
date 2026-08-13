@@ -26,6 +26,11 @@ class Problem:
         Resolved absolute path to the problem directory.
     name : str
         Human-readable problem name.
+    np_hard : bool or None
+        Whether the underlying optimization problem is NP-hard. This is a
+        property of the problem itself, not of any one formulation of it; where
+        the classification is not obvious, ``metadata.notes`` records why. It is
+        ``None`` only for dataset releases predating the field.
     parameters : dict[str, Parameter]
         Problem data parameters keyed by their names.
     description : str
@@ -54,6 +59,8 @@ class Problem:
         >>> p12 = ds.problems[12]
         >>> p12.name
         'Traveling Salesman Problem (TSP)'
+        >>> p12.np_hard
+        True
         >>> p12.description
         'The Traveling Salesman Problem (TSP) aims to find the shortest cycle ...'
 
@@ -81,6 +88,7 @@ class Problem:
         raw = json.loads((self.path / "problem.json").read_text())
 
         self.name: str = raw["name"]
+        self.np_hard: bool | None = raw.get("np_hard")
         self.parameters: dict[str, Parameter] = {
             k: Parameter.from_dict(v) for k, v in raw["parameters"].items()
         }

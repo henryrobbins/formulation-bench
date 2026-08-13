@@ -1,5 +1,6 @@
 {
     "name": "Garden Bed Soil Hydration",
+    "np_hard": false,
     "parameters": {
         "WaterSubsoil": {
             "description": "Amount of water required to hydrate one bag of subsoil per day",
@@ -36,7 +37,8 @@
         "notes": [
             "The source variable type is continuous; we correct the variable type to integer.",
             "The cutting plane (source variation `217_e`) is excluded because it is instance-specific.",
-            "Implicit non-negativity assumptions are added for every parameter."
+            "Implicit non-negativity assumptions are added for every parameter.",
+            "The problem is not NP-hard: the number of integer variables is fixed, so it is solvable in polynomial time."
         ]
     }
 }

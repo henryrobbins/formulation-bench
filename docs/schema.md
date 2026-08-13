@@ -97,9 +97,17 @@ exposed as the `description` attribute of {class}`Problem
 
 ### `problem.json`
 
-Defines the problem `name`, its data `parameters`, and freeform `metadata`:
+Defines the problem `name`, whether it is `np_hard`, its data `parameters`,
+and freeform `metadata`:
 
 - **`name`** — human-readable problem name.
+- **`np_hard`** — boolean indicating whether the underlying optimization
+  problem is NP-hard. This describes the problem itself, not any one
+  formulation of it: a problem may be polynomially solvable yet still admit
+  MILP formulations. Where the classification is not obvious, `metadata.notes`
+  records the reasoning. The field is required; it is absent only in dataset
+  releases predating it, which load with
+  {attr}`np_hard <formulation_bench.Problem.np_hard>` set to `None`.
 - **`parameters`** — schema of the problem's data parameters, keyed by name.
   Each value is a {class}`Parameter <formulation_bench.models.Parameter>`
   with a `description`, `type`, and `shape` (see

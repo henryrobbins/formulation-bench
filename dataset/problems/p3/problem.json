@@ -1,5 +1,6 @@
 {
     "name": "Summer Camp Science Experiment",
+    "np_hard": true,
     "parameters": {
         "NumBeakers": {
             "description": "Number of beakers",
@@ -59,7 +60,8 @@
         "notes": [
             "The source variable type is continuous; we correct the variable type to integer.",
             "The cutting plane (source variation `92_e`) is excluded because it is instance-specific.",
-            "Implicit non-negativity assumptions are added for every parameter."
+            "Implicit non-negativity assumptions are added for every parameter.",
+            "The problem is NP-hard, but only weakly so: the number of resource constraints is fixed, so a pseudo-polynomial dynamic program over the resource vector solves it."
         ]
     }
 }

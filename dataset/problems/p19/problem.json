@@ -1,5 +1,6 @@
 {
     "name": "UN Humanitarian Disaster Response Hub Location (UNHDR)",
+    "np_hard": true,
     "parameters": {
         "nH": {
             "description": "Total number of candidate hub locations",

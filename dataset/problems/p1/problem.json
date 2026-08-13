@@ -1,5 +1,6 @@
 {
     "name": "Amusement Park Ticket Machines",
+    "np_hard": false,
     "parameters": {
         "CashMachineProcessingRate": {
             "description": "Processing rate of a cash-based machine in people per hour",
@@ -41,7 +42,8 @@
         "notes": [
             "The source variable type is continuous; we correct the variable type to integer.",
             "The cutting plane (source variation `47_e`) is excluded because it is instance-specific.",
-            "Implicit non-negativity assumptions are added for every parameter."
+            "Implicit non-negativity assumptions are added for every parameter.",
+            "The problem is not NP-hard: the number of integer variables is fixed, so it is solvable in polynomial time."
         ]
     }
 }

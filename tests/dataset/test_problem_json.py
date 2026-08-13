@@ -11,6 +11,10 @@ def test_name_and_description_are_present(problem: Problem) -> None:
     assert problem.description.strip(), "empty description.md"
 
 
+def test_np_hard_is_declared(problem: Problem) -> None:
+    assert isinstance(problem.np_hard, bool), "np_hard is missing or not a boolean"
+
+
 def test_parameter_shapes_resolve(problem: Problem) -> None:
     """Every dimension names another declared parameter.
 

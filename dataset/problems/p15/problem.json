@@ -1,5 +1,6 @@
 {
     "name": "Dutch Housing Problem",
+    "np_hard": true,
     "parameters": {
         "nI": {
             "description": "Number of sectors",
