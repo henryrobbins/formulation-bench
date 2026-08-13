@@ -183,8 +183,8 @@ def _source_label(src: object) -> str:
     return head + (f" ({', '.join(extras)})" if extras else "")
 
 
-def _np_hard_label(np_hard: bool | None) -> str:
-    return "unknown" if np_hard is None else ("yes" if np_hard else "no")
+def _np_hard_label(np_hard: bool) -> str:
+    return "yes" if np_hard else "no"
 
 
 def _source_line(src: object) -> str:

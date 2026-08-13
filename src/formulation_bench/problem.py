@@ -26,11 +26,10 @@ class Problem:
         Resolved absolute path to the problem directory.
     name : str
         Human-readable problem name.
-    np_hard : bool or None
+    np_hard : bool
         Whether the underlying optimization problem is NP-hard. This is a
         property of the problem itself, not of any one formulation of it; where
-        the classification is not obvious, ``metadata.notes`` records why. It is
-        ``None`` only for dataset releases predating the field.
+        the classification is not obvious, ``metadata.notes`` records why.
     parameters : dict[str, Parameter]
         Problem data parameters keyed by their names.
     description : str
@@ -88,7 +87,7 @@ class Problem:
         raw = json.loads((self.path / "problem.json").read_text())
 
         self.name: str = raw["name"]
-        self.np_hard: bool | None = raw.get("np_hard")
+        self.np_hard: bool = raw["np_hard"]
         self.parameters: dict[str, Parameter] = {
             k: Parameter.from_dict(v) for k, v in raw["parameters"].items()
         }
