@@ -298,7 +298,7 @@ def _source_short(src: object) -> str:
     if not isinstance(src, dict):
         return str(src)
     cite = src.get("citekey")
-    return f"{{cite:t}}`{cite}`" if cite else src.get("dataset", "?")
+    return f"{{cite:p}}`{cite}`" if cite else src.get("dataset", "?")
 
 
 def _index_page(problems: dict[int, object]) -> str:
