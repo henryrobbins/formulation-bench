@@ -1,5 +1,6 @@
 {
     "name": "Capacitated Warehouse Location Problem (CWLP)",
+    "np_hard": true,
     "parameters": {
         "n": {
             "description": "Number of customers",

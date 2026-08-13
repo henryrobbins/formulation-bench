@@ -1,5 +1,6 @@
 {
     "name": "Job Shop Scheduling Problem (JSSP)",
+    "np_hard": true,
     "parameters": {
         "n": {
             "description": "Number of jobs",

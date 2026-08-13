@@ -1,5 +1,6 @@
 {
     "name": "Park and Bike Hub Location (Mobian)",
+    "np_hard": true,
     "parameters": {
         "N": {
             "description": "Number of existing hubs that must remain open",

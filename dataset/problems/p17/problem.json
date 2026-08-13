@@ -1,5 +1,6 @@
 {
     "name": "Open-Pit Mine Production Scheduling",
+    "np_hard": true,
     "parameters": {
         "n": {
             "description": "Number of blocks",

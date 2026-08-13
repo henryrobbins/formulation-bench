@@ -183,6 +183,10 @@ def _source_label(src: object) -> str:
     return head + (f" ({', '.join(extras)})" if extras else "")
 
 
+def _np_hard_label(np_hard: bool) -> str:
+    return "yes" if np_hard else "no"
+
+
 def _source_line(src: object) -> str:
     return f"**Source:** {_source_label(src)}\n"
 
@@ -277,6 +281,7 @@ def _problem_page(pid: int, problem, reforms: list[Reformulation]) -> str:
     if note_block:
         header += [note_block, ""]
     header += [
+        f"**NP-hard:** {_np_hard_label(problem.np_hard)}\n",
         "## Description\n",
         problem.description.strip() + "\n",
         "## Formulations\n",
@@ -293,7 +298,7 @@ def _source_short(src: object) -> str:
     if not isinstance(src, dict):
         return str(src)
     cite = src.get("citekey")
-    return f"{{cite:t}}`{cite}`" if cite else src.get("dataset", "?")
+    return f"{{cite:p}}`{cite}`" if cite else src.get("dataset", "?")
 
 
 def _index_page(problems: dict[int, object]) -> str:
@@ -303,12 +308,13 @@ def _index_page(problems: dict[int, object]) -> str:
         "source it was adapted from. Each problem page provides detailed information "
         "about the problem and every formulation of it. This documentation is "
         "automatically generated from the dataset to ensure it is up-to-date.\n",
-        "| Problem | Name | Source |",
-        "|---|---|---|",
+        "| Problem | Name | NP-hard | Source |",
+        "|---|---|---|---|",
     ]
     for pid, problem in problems.items():
         src = _source_short(problem.metadata.get("source", {}))
-        lines.append(f"| [p{pid}](p{pid}) | {problem.name} | {src} |")
+        hard = _np_hard_label(problem.np_hard)
+        lines.append(f"| [p{pid}](p{pid}) | {problem.name} | {hard} | {src} |")
     lines += [
         "",
         "```{toctree}",

@@ -31,7 +31,7 @@ Find other problem descriptions in {doc}`/problems/index`.
 
 ## JSON File
 
-The `problem.json` file defines the problem name, data parameters, and additional metadata. See {class}`Parameter <formulation_bench.models.Parameter>` for the parameters schema. The `metadata` field is freeform and typically includes `source` and `notes` fields which populate the source and notes blocks on the {doc}`/problems/index` pages.
+The `problem.json` file defines the problem name, data parameters, and additional metadata. See {class}`Parameter <formulation_bench.models.Parameter>` for the parameters schema. Set the `np_hard` flag to true if the underlying optimization problem is NP-hard, and false otherwise. The `metadata` field is freeform and typically includes `source` and `notes` fields which populate the source and notes blocks on the {doc}`/problems/index` pages.
 
 :::{dropdown} `problems/p1/problem.json`
 :icon: code

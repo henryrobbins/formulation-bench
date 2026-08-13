@@ -1,5 +1,6 @@
 {
     "name": "Garden Bed Soil Hydration",
+    "np_hard": false,
     "parameters": {
         "WaterSubsoil": {
             "description": "Amount of water required to hydrate one bag of subsoil per day",

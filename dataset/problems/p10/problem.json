@@ -1,5 +1,6 @@
 {
     "name": "Pickup and Delivery Problem with Time Windows (PDPTW)",
+    "np_hard": true,
     "parameters": {
         "K": {
             "description": "Number of trucks/vehicles in the fleet",

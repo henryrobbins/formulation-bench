@@ -1,5 +1,6 @@
 {
     "name": "Electricity Generation Experiment",
+    "np_hard": true,
     "parameters": {
         "NumExperiments": {
             "description": "Number of experiments",
@@ -43,7 +44,8 @@
         "notes": [
             "The source variable type is continuous; we correct the variable type to integer.",
             "The cutting plane (source variation `74_e`) is excluded because it is instance-specific.",
-            "Implicit non-negativity assumptions are added for every parameter."
+            "Implicit non-negativity assumptions are added for every parameter.",
+            "The problem is NP-hard: it is a multi-dimensional integer knapsack problem."
         ]
     }
 }

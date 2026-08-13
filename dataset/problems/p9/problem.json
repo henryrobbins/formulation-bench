@@ -1,5 +1,6 @@
 {
     "name": "Multi-Commodity Network Design (MCND)",
+    "np_hard": true,
     "parameters": {
         "n": {
             "description": "Number of network nodes",
