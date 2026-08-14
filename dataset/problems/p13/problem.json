@@ -57,7 +57,8 @@
         },
         "notes": [
             "We identify a number of modeling inconsistencies in the original pair of formulations. To address this, we propose a new pair of flow-based formulations. The efficient formulation `p13.a` is an aggregated version of `p13.b`.",
-            "The original problem is not NP-hard: the flights aggregate into one commodity on a time-expanded flow network, so the constraint matrix is totally unimodular. We introduce multiple plane classes, which earn class-dependent rewards and share the location capacities, to make the problem NP-hard."
+            "The original problem is not NP-hard: the flights aggregate into one commodity on a time-expanded flow network, so it reduces to a single-commodity min-cost flow problem and is solvable in polynomial time. We introduce multiple plane classes, which earn class-dependent rewards and share the location capacities, to make the problem NP-hard.",
+            "We add implicit assumptions that all sets are non-empty ($nK, nA, nT \\geq 1$), that every location is adjacent to itself ($\\text{adj}_{a,a} = 1$), and that $\\text{cap}_{a,t}, nP_k \\geq 0$."
         ]
     }
 }

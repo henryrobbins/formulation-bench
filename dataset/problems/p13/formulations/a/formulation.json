@@ -51,6 +51,30 @@
     },
     "assumptions": [
         {
+            "description": "Number of plane classes is at least one.",
+            "formulation": "nK \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert nK >= 1"
+            }
+        },
+        {
+            "description": "Number of locations is at least one.",
+            "formulation": "nA \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert nA >= 1"
+            }
+        },
+        {
+            "description": "Number of time periods is at least one.",
+            "formulation": "nT \\geq 1",
+            "explicit": false,
+            "code": {
+                "python": "assert nT >= 1"
+            }
+        },
+        {
             "description": "Every location is adjacent to itself.",
             "formulation": "\\text{adj}_{a,a} = 1 \\quad \\forall a \\in A",
             "explicit": false,

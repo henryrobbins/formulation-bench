@@ -299,7 +299,7 @@ private lemma layer_step {nP nA : ℕ} [NeZero nA]
 -- § Parameter Mapping
 -- ============================================================================
 
-/-- Parameter map `b.Params → a.Params` (identical data, distinct types). -/
+/-- Parameter map `a.Params → b.Params` (identical data, distinct types). -/
 private def paramMap (p : P13.a.Params) : P13.b.Params where
   nK := p.nK
   nP := p.nP
@@ -666,46 +666,6 @@ private lemma bwd_obj (p : P13.a.Params) (v : P13.b.Vars (paramMap p)) :
   conv_lhs => enter [2, x]; rw [Finset.sum_comm]
   rw [Finset.sum_comm]
   rfl
-
--- ============================================================================
--- § Round-Trip Identity
--- ============================================================================
-
-/-- Aggregating the per-plane expansion recovers the aggregate solution it
-was built from. -/
-private lemma bwd_fwd (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible p v) :
-    bwd p (fwd p v) = v := by
-  classical
-  set D := Classical.choice (build_layers p v h) with hD
-  have hy : ∀ k pl a t, (fwd p v).y k pl a t = if D.loc k pl t = a then (1 : ℤ) else 0 := by
-    intro k pl a t; simp only [fwd, dif_pos h, ← hD]
-  have hz : ∀ k pl a a' t, (fwd p v).z k pl a a' t
-      = if D.arcCh k pl t = some a' ∧ D.loc k pl t = a then (1 : ℤ) else 0 := by
-    intro k pl a a' t; simp only [fwd, dif_pos h, ← hD]
-  have hn : ∀ k a t, (∑ pl, (fwd p v).y k pl a t) = v.n k a t := by
-    intro k a t
-    simp only [hy]
-    have hcnt : (univ.filter (fun pl : Fin ((paramMap p).nP k) => D.loc k pl t = a)).card
-        = (v.n k a t).toNat := D.hcount k a t
-    rw [Finset.sum_boole, hcnt]
-    exact Int.toNat_of_nonneg (h.hn_nn k a t)
-  have hf : ∀ k a a' t, (∑ pl, (fwd p v).z k pl a a' t) = v.f k a a' t := by
-    intro k a a' t
-    simp only [hz]
-    have hcnt : (univ.filter (fun pl : Fin ((paramMap p).nP k) =>
-        D.arcCh k pl t = some a' ∧ D.loc k pl t = a)).card = (v.f k a a' t).toNat := by
-      rw [show (univ.filter (fun pl : Fin ((paramMap p).nP k) =>
-            D.arcCh k pl t = some a' ∧ D.loc k pl t = a))
-          = univ.filter (fun pl : Fin ((paramMap p).nP k) =>
-            D.loc k pl t = a ∧ D.arcCh k pl t = some a') from by
-        apply Finset.filter_congr; intro pl _; tauto]
-      exact D.harc k a a' t
-    rw [Finset.sum_boole, hcnt]
-    exact Int.toNat_of_nonneg (h.hf_nn k a a' t)
-  cases v
-  simp only [bwd, P13.a.Vars.mk.injEq]
-  exact ⟨funext fun k => funext fun a => funext fun t => hn k a t,
-         funext fun k => funext fun a => funext fun a' => funext fun t => hf k a a' t⟩
 
 -- ============================================================================
 -- § Reformulation Structure
