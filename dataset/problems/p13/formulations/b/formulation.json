@@ -162,7 +162,7 @@
             "formulation_id": "inefficient"
         },
         "notes": [
-            "This is the disaggregate (inefficient) formulation: one binary routing per individual flight."
+            "This is the disaggregate (inefficient) formulation."
         ]
     }
 }
