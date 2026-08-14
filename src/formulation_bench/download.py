@@ -13,7 +13,7 @@ ASSET_NAME = "dataset.tar.gz"
 
 #: The snapshot version of the dataset this package was built against.
 #: The package is compatible with all dataset versions sharing the same major version.
-DEFAULT_DATASET_VERSION = "dataset-v0.3.0"
+DEFAULT_DATASET_VERSION = "dataset-v0.4.0"
 
 
 def _default_cache_dir() -> Path:
@@ -42,7 +42,7 @@ def download_dataset(
     Parameters
     ----------
     version : str, optional
-        Release tag, e.g. ``"dataset-v0.3.0"``. Defaults to
+        Release tag, e.g. ``"dataset-v0.4.0"``. Defaults to
         :data:`DEFAULT_DATASET_VERSION`, the snapshot version this package was built
         against.
     cache_dir : str or pathlib.Path, optional
@@ -64,7 +64,7 @@ def download_dataset(
         >>> from formulation_bench import download_dataset
         >>> path = download_dataset()
         >>> path
-        PosixPath('.../.cache/formulation_bench/dataset-v0.3.0/dataset')
+        PosixPath('.../.cache/formulation_bench/dataset-v0.4.0/dataset')
         >>> from formulation_bench import Dataset
         >>> ds = Dataset(path)
         >>> sorted(ds.problems)[:5]
@@ -74,19 +74,19 @@ def download_dataset(
 
         >>> path = download_dataset()
         >>> path
-        PosixPath('.../.cache/formulation_bench/dataset-v0.3.0/dataset')
+        PosixPath('.../.cache/formulation_bench/dataset-v0.4.0/dataset')
 
     Force re-download and overwrite the cached copy::
 
         >>> path = download_dataset(force=True)
         >>> path
-        PosixPath('.../.cache/formulation_bench/dataset-v0.3.0/dataset')
+        PosixPath('.../.cache/formulation_bench/dataset-v0.4.0/dataset')
 
     Provide a custom cache directory::
 
         >>> path = download_dataset(cache_dir="./custom_cache")
         >>> path
-        PosixPath('custom_cache/dataset-v0.3.0/dataset')
+        PosixPath('custom_cache/dataset-v0.4.0/dataset')
     """
     version = version or DEFAULT_DATASET_VERSION
     cache_root = Path(cache_dir) if cache_dir else _default_cache_dir()
