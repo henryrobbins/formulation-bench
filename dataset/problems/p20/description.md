@@ -53,7 +53,7 @@ No Storage:
 No storage is assumed—food is immediately redirected.
 
 Transshipment Capacity:
-Each transshipment point can handle only a limited total tonnage, counted across all commodities passing through it.
+Each transshipment point can handle only a limited number of kilograms, counted across all commodities passing through it.
 
 Whole-Kilogram Shipments:
 Food is moved in sealed units, so the amount of each commodity shipped along an arc is a whole number of kilograms.

@@ -288,7 +288,7 @@
             }
         },
         {
-            "description": "Total throughput at each transshipment node, summed over all commodities, is within its capacity. Throughput is measured on the node's inflow, which flow conservation makes equal to its outflow.",
+            "description": "Total throughput at each transshipment node, summed over all commodities, is within its capacity.",
             "formulation": "\\sum_{k \\in K} \\sum_{i \\in N} E_{i, T_t} F_{i, T_t, k} \\leq \\mathrm{cap}_t \\quad \\forall t \\in N_T",
             "explicit": true,
             "code": {
@@ -350,7 +350,7 @@
             "formulation_id": "efficient"
         },
         "notes": [
-            "The efficient formulation is node-based with continuous flow variables $F_{ijk}$ on graph edges.",
+            "The efficient formulation is node-based with integral flow variables $F_{ijk}$ on graph edges.",
             "In the {cite:t}`ferchtandiker2025` formulation, the procurement cost was $\\sum_{k \\in K} \\mathrm{pc}_k \\sum_{j \\in N_B} \\mathrm{dem}_j R_k$, which depends only on the ration size $R_k$, while the inefficient formulation charges procurement on the total amount shipped $\\sum_{p \\in P} x_{pk}$. Since the demand constraint $\\sum_{i \\in N} E_{ij} F_{ijk} \\geq \\mathrm{dem}_j R_k$ permits shipping in excess of $\\mathrm{dem}_j R_k$ without additional procurement penalty, the objectives are misaligned. We therefore charge procurement on the supplier outflow $\\sum_{s \\in N_S} \\sum_{j \\in N} E_{S_s, j} F_{S_s, j, k}$."
         ]
     }

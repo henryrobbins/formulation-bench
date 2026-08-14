@@ -457,7 +457,7 @@
             ]
         },
         "y": {
-            "description": "Amount of commodity k shipped along cycle c (kg)",
+            "description": "Amount of commodity $k$ shipped along cycle $c$ (kg)",
             "type": "integer",
             "shape": [
                 "nC",
@@ -537,7 +537,7 @@
         },
         "notes": [
             "The inefficient formulation is path- and cycle-based.",
-            "In {cite:t}`ferchtandiker2025` inefficient formulation only contains path variables $P$. The efficient formulation is node-based with flow variables $F_{ijk}$ on graph edges. Hence, it allows for feasible points that cycle flow around transhipment nodes. To resolve this discrepancy, we introduce cycle variables $C$ for all simple directed cycles in the supply network."
+            "The {cite:t}`ferchtandiker2025` inefficient formulation only ships along paths $p \\in P$. The efficient formulation is node-based with flow variables $F_{ijk}$ on graph edges, so it admits feasible points that cycle flow around transshipment nodes. To resolve this discrepancy, we introduce a shipment variable $y_{ck}$ for every simple directed cycle $c \\in C$ of the supply network."
         ]
     }
 }
