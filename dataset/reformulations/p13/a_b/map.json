@@ -1,7 +1,13 @@
 {
     "parameters": {
+        "nK": {
+            "formulation": "nK = nK",
+            "code": {
+                "python": "nK = nK"
+            }
+        },
         "nP": {
-            "formulation": "nP = nP",
+            "formulation": "nP_k = nP_k",
             "code": {
                 "python": "nP = nP"
             }
@@ -25,7 +31,7 @@
             }
         },
         "r": {
-            "formulation": "r_{ij} = r_{ij}",
+            "formulation": "r_{kij} = r_{kij}",
             "code": {
                 "python": "r = r"
             }

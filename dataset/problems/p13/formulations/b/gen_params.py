@@ -7,6 +7,7 @@ def main(data_path: str, output_path: str) -> None:
         data = json.load(f)
 
     params = {
+        "nK": data["nK"],
         "nP": data["nP"],
         "nA": data["nA"],
         "nT": data["nT"],
