@@ -126,6 +126,7 @@ def main(data_path: str, output_path: str) -> None:
         "nutval": data["nutval"],
         "nutreq": data["nutreq"],
         "dem": data["dem"],
+        "cap": data["cap"],
         "e": [[int(path[-1] == j) for path in paths] for j in B],
     }
 

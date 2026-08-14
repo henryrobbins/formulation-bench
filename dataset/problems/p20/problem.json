@@ -1,9 +1,14 @@
 {
     "name": "World Food Program Food Distribution",
-    "np_hard": false,
+    "np_hard": true,
     "parameters": {
         "nN": {
             "description": "Total number of nodes in the supply network (suppliers, transshipment points, and beneficiary camps)",
+            "type": "integer",
+            "shape": []
+        },
+        "nT": {
+            "description": "Number of transshipment points",
             "type": "integer",
             "shape": []
         },
@@ -44,6 +49,13 @@
                 "nB"
             ]
         },
+        "cap": {
+            "description": "Throughput capacity, in kg, of each transshipment point, in increasing order of node index",
+            "type": "integer",
+            "shape": [
+                "nT"
+            ]
+        },
         "pc": {
             "description": "Procurement cost per kg of each commodity",
             "type": "continuous",
@@ -82,9 +94,10 @@
             "citekey": "ferchtandiker2025"
         },
         "notes": [
-            "We add implicit assumptions that all sets are non-empty and $\\mathrm{dem}_j, \\mathrm{pc}_k, \\mathrm{tc}_{ijk}, \\mathrm{nutreq}_\\ell, \\mathrm{nutval}_{k\\ell} \\geq 0$.",
+            "We add implicit assumptions that all sets are non-empty and $\\mathrm{dem}_j, \\mathrm{cap}_t, \\mathrm{pc}_k, \\mathrm{tc}_{ijk}, \\mathrm{nutreq}_\\ell, \\mathrm{nutval}_{k\\ell} \\geq 0$.",
             "We assume the directed supply graph has no arcs entering suppliers and no arcs leaving beneficiary camps.",
-            "The problem is not NP-hard: with no capacity constraints the commodities decouple, and the problem reduces to a shortest-path computation per beneficiary camp plus a linear program over the ration."
+            "{cite:t}`ferchtandiker2025` state that transshipment points have limited capacity but do not model it, and let shipments be continuous. We add the throughput capacities $\\mathrm{cap}_t$, shared across commodities, and require shipments to be whole numbers of kg.",
+            "The problem is NP-hard: shipments are integral and the transshipment capacities couple the commodities, so the problem contains integral multi-commodity flow, which is NP-hard even for two commodities {cite:t}`even1976`."
         ]
     }
 }

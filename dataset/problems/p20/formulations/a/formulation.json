@@ -67,6 +67,13 @@
                 "nB"
             ]
         },
+        "cap": {
+            "description": "Throughput capacity, in kg, of each transshipment node",
+            "type": "integer",
+            "shape": [
+                "nT"
+            ]
+        },
         "pc": {
             "description": "Procurement cost per kg of each commodity",
             "type": "continuous",
@@ -213,6 +220,14 @@
             }
         },
         {
+            "description": "Throughput capacity of each transshipment node is non-negative.",
+            "formulation": "\\mathrm{cap}_t \\geq 0 \\quad \\forall t \\in N_T",
+            "explicit": false,
+            "code": {
+                "python": "assert all(cap[t] >= 0 for t in range(nT))"
+            }
+        },
+        {
             "description": "Procurement cost per kg of each commodity is non-negative.",
             "formulation": "\\mathrm{pc}_k \\geq 0 \\quad \\forall k \\in K",
             "explicit": false,
@@ -248,7 +263,7 @@
     "variables": {
         "F": {
             "description": "Amount of commodity $k$ shipped from node $i$ to node $j$ (kg)",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "nN",
                 "nN",
@@ -270,6 +285,14 @@
             "explicit": true,
             "code": {
                 "gurobipy": "model.addConstrs(\n    gp.quicksum(E[i][T[j]] * F[i, T[j], k] for i in range(nN)) ==\n    gp.quicksum(E[T[j]][i] * F[T[j], i, k] for i in range(nN))\n    for j in range(nT) for k in range(nK)\n)"
+            }
+        },
+        {
+            "description": "Total throughput at each transshipment node, summed over all commodities, is within its capacity. Throughput is measured on the node's inflow, which flow conservation makes equal to its outflow.",
+            "formulation": "\\sum_{k \\in K} \\sum_{i \\in N} E_{i, T_t} F_{i, T_t, k} \\leq \\mathrm{cap}_t \\quad \\forall t \\in N_T",
+            "explicit": true,
+            "code": {
+                "gurobipy": "model.addConstrs(\n    gp.quicksum(E[i][T[t]] * F[i, T[t], k] for i in range(nN) for k in range(nK)) <= cap[t]\n    for t in range(nT)\n)"
             }
         },
         {

@@ -27,6 +27,7 @@ def main(data_path: str, output_path: str) -> None:
         "B": B,
         "E": data["E"],
         "dem": data["dem"],
+        "cap": data["cap"],
         "pc": data["pc"],
         "tc": data["tc"],
         "nutreq": data["nutreq"],

@@ -3,8 +3,8 @@ Generate data.json for the World Food Program Food Distribution problem (p20).
 
 Produces a small, reproducible instance (1 supplier, 2 transshipment nodes,
 2 beneficiary camps, 3 food commodities, 3 nutrients) adapted from the
-Ferchtandiker2025 data generator. The output keys are the parameters
-declared in problem.json.
+Ferchtandiker2025 data generator, which has no analogue of the transshipment
+capacities. The output keys are the parameters declared in problem.json.
 """
 
 import json
@@ -55,7 +55,10 @@ def generate_data(seed: int = SEED) -> dict:
     # ------------------------------------------------------------------
     # Parameters
     # ------------------------------------------------------------------
-    demand = {b: random.randint(15000, 50000) for b in beneficiary_nodes}
+    # Camps hold a few hundred people, well below the 15k-50k of the source
+    # generator, so that shipping whole kilograms is a meaningful restriction
+    # rather than a rounding artifact on tens of tonnes.
+    demand = {b: random.randint(150, 500) for b in beneficiary_nodes}
 
     nutritional_requirements = {
         "calories": 2500,
@@ -102,6 +105,22 @@ def generate_data(seed: int = SEED) -> dict:
                     base = 1.5
                 edge_costs[i][j][k] = round(base + random.uniform(0.2, 0.5), 2)
 
+    # Throughput capacity per transshipment point. Sized off a nominal ration
+    # so the hubs can jointly serve every beneficiary but none can do so alone,
+    # which forces the flow to split across hubs. Drawn last to keep the values
+    # above independent of this block.
+    NOMINAL_RATION = 1.5
+    total_beneficiaries = sum(demand.values())
+    capacities = {
+        t: round(
+            total_beneficiaries
+            * NOMINAL_RATION
+            / len(transshipment_nodes)
+            * random.uniform(0.95, 1.05)
+        )
+        for t in transshipment_nodes
+    }
+
     # ------------------------------------------------------------------
     # Assemble
     # ------------------------------------------------------------------
@@ -114,12 +133,14 @@ def generate_data(seed: int = SEED) -> dict:
 
     return {
         "nN": len(nodes),
+        "nT": len(transshipment_nodes),
         "nB": len(beneficiary_nodes),
         "nK": len(foods),
         "nL": len(nutrients),
         "node_type": node_type,
         "E": [[edges[i][j] for j in nodes] for i in nodes],
         "dem": [demand[b] for b in beneficiary_nodes],
+        "cap": [capacities[t] for t in transshipment_nodes],
         "pc": [procurement_costs[k] for k in foods],
         "tc": [[[edge_costs[i][j][k] for k in foods] for j in nodes] for i in nodes],
         "nutreq": [nutritional_requirements[l] for l in nutrients],

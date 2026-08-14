@@ -52,6 +52,12 @@ The supply graph has no arcs entering supplier nodes and no arcs leaving benefic
 No Storage:
 No storage is assumed—food is immediately redirected.
 
+Transshipment Capacity:
+Each transshipment point can handle only a limited total tonnage, counted across all commodities passing through it.
+
+Whole-Kilogram Shipments:
+Food is moved in sealed units, so the amount of each commodity shipped along an arc is a whole number of kilograms.
+
 Demand Fulfillment:
 Each camp must receive enough of every commodity to meet its calculated ration size.
 
