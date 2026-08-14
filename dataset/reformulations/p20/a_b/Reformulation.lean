@@ -21,12 +21,20 @@ backward maps.
 
 The analytic heart of the `fwd` (a → b) direction is the **flow-decomposition
 lemma** below: any commodity-`k` flow satisfying `a`'s structural constraints
-decomposes, edge by edge, into a nonnegative combination of valid
+decomposes, edge by edge, into a nonnegative integral combination of valid
 supplier→beneficiary paths and valid transshipment cycles.
 
 The proof below formalizes the classical finite-support argument: extract a
 simple positive path or cycle, subtract its bottleneck flow, and recurse on the
-strictly smaller positive support.
+strictly smaller positive support. The whole argument runs over `ℤ`, matching
+the integrality of `a`'s arc shipments and `b`'s path/cycle amounts: the
+bottleneck of an integral flow along an extracted path or cycle is an integer,
+so subtracting it preserves both integrality and non-negativity.
+
+Since the decomposition reproduces the arc flow *exactly*, the throughput at
+each transshipment node — and hence the capacity constraint `hcap` — transfers
+in both directions by summing the decomposition identity over the node's
+in-arcs and the commodities.
 -/
 
 open BigOperators Finset
@@ -53,24 +61,26 @@ private lemma finite_binary_indicators
 /-- A finite-support subtraction argument: if every nonzero member of `Good`
 contains a nonempty binary atom in its positive support, and subtracting an
 atom preserves `Good`, then every nonnegative member of `Good` is a
-nonnegative conic combination of the atoms. -/
+nonnegative integral conic combination of the atoms. Everything is stated over
+`ℤ`: the bottleneck `d` extracted at each step is an integer, so the recursion
+never leaves the integers. -/
 private lemma finite_conic_decomposition
     {ι α : Type*} [Fintype ι] [DecidableEq ι] [Fintype α] [DecidableEq α]
-    (atom : α → ι → ℝ) (Good : (ι → ℝ) → Prop)
-    (hextract : ∀ f : ι → ℝ, Good f → (∀ i, 0 ≤ f i) →
+    (atom : α → ι → ℤ) (Good : (ι → ℤ) → Prop)
+    (hextract : ∀ f : ι → ℤ, Good f → (∀ i, 0 ≤ f i) →
       (∃ i, 0 < f i) →
       ∃ a : α,
         (∀ i, atom a i = 0 ∨ atom a i = 1) ∧
         (∃ i, atom a i = 1) ∧
         (∀ i, atom a i = 1 → 0 < f i))
-    (hsub : ∀ (f : ι → ℝ) (a : α) (d : ℝ), Good f →
+    (hsub : ∀ (f : ι → ℤ) (a : α) (d : ℤ), Good f →
       Good (fun i => f i - d * atom a i)) :
-    ∀ f : ι → ℝ, Good f → (∀ i, 0 ≤ f i) →
-      ∃ z : α → ℝ, (∀ a, 0 ≤ z a) ∧
+    ∀ f : ι → ℤ, Good f → (∀ i, 0 ≤ f i) →
+      ∃ z : α → ℤ, (∀ a, 0 ≤ z a) ∧
         ∀ i, f i = ∑ a, atom a i * z a := by
   classical
   intro f
-  let suppCard (g : ι → ℝ) : ℕ := (Finset.univ.filter fun i => 0 < g i).card
+  let suppCard (g : ι → ℤ) : ℕ := (Finset.univ.filter fun i => 0 < g i).card
   induction hs : suppCard f using Nat.strong_induction_on generalizing f with
   | h n ih =>
       intro hf hnn
@@ -80,9 +90,9 @@ private lemma finite_conic_decomposition
         have hactive : active.Nonempty := by
           rcases ha_ne with ⟨i, hi⟩
           exact ⟨i, by simp [active, hi]⟩
-        let values : Finset ℝ := active.image f
+        let values : Finset ℤ := active.image f
         have hvalues : values.Nonempty := hactive.image f
-        let d : ℝ := values.min' hvalues
+        let d : ℤ := values.min' hvalues
         have hd_pos : 0 < d := by
           have hdmem : d ∈ values := values.min'_mem hvalues
           obtain ⟨i, hi, hid⟩ := Finset.mem_image.mp hdmem
@@ -91,7 +101,7 @@ private lemma finite_conic_decomposition
         have hd_le (i : ι) (hi : atom a i = 1) : d ≤ f i := by
           apply values.min'_le
           exact Finset.mem_image.mpr ⟨i, by simp [active, hi], rfl⟩
-        let g : ι → ℝ := fun i => f i - d * atom a i
+        let g : ι → ℤ := fun i => f i - d * atom a i
         have hgnn : ∀ i, 0 ≤ g i := by
           intro i
           rcases habin i with hi | hi
@@ -257,6 +267,16 @@ private lemma cycleEnum_zero_of_E_zero (c : Fin (numCycles pa)) (i j : Fin pa.nN
   · exact h
   · omega
 
+/-- Path indicators are non-negative. -/
+private lemma pathEnum_int_nonneg (p : Fin (numPaths pa)) (i j : Fin pa.nN) :
+    (0 : ℤ) ≤ pathEnum pa p i j := by
+  rcases pathEnum_binary pa p i j with h | h <;> omega
+
+/-- Cycle indicators are non-negative. -/
+private lemma cycleEnum_int_nonneg (c : Fin (numCycles pa)) (i j : Fin pa.nN) :
+    (0 : ℤ) ≤ cycleEnum pa c i j := by
+  rcases cycleEnum_binary pa c i j with h | h <;> omega
+
 /-- Path indicators are non-negative (as reals). -/
 private lemma pathEnum_nonneg (p : Fin (numPaths pa)) (i j : Fin pa.nN) :
     (0 : ℝ) ≤ (pathEnum pa p i j : ℝ) := by
@@ -315,6 +335,7 @@ private noncomputable def paramMap (pa : P20.a.Params) : P20.b.Params where
   nutval := pa.nutval
   nutreq := pa.nutreq
   dem := pa.dem
+  cap := pa.cap
   e := fun j p => (∑ i, pathEnum pa p i (pa.B j)) - (∑ k, pathEnum pa p (pa.B j) k)
   hE_bin := pa.hE_bin
   hE_noinflow_S := pa.hE_noinflow_S
@@ -341,6 +362,7 @@ private noncomputable def paramMap (pa : P20.a.Params) : P20.b.Params where
   hnutval_nn := pa.hnutval_nn
   hnutreq_nn := pa.hnutreq_nn
   hdem_nn := pa.hdem_nn
+  hcap_nn := pa.hcap_nn
   hpE_valid := pathEnum_isValidPath pa
   hpE_endE := fun _ _ => rfl
   hpE_complete := fun pE' pRank' h => pathEnum_complete pa pE' pRank' h
@@ -977,7 +999,7 @@ private lemma valid_cycle_of_list
 /-- The homogeneous network constraints used by the decomposition induction.
 Demand and nutrition are deliberately absent: subtracting a path need not
 preserve them. -/
-private structure StructuralFlow (f : Fin pa.nN → Fin pa.nN → ℝ) : Prop where
+private structure StructuralFlow (f : Fin pa.nN → Fin pa.nN → ℤ) : Prop where
   supplier_in : ∀ s : Fin pa.nS, ∑ i, f i (pa.S s) = 0
   transshipment : ∀ t : Fin pa.nT,
     ∑ i, f i (pa.T t) = ∑ j, f (pa.T t) j
@@ -986,9 +1008,9 @@ private structure StructuralFlow (f : Fin pa.nN → Fin pa.nN → ℝ) : Prop wh
 
 private lemma edge_mul_flow_eq (v : P20.a.Vars pa) (h : P20.a.Feasible pa v)
     (i j : Fin pa.nN) (k : Fin pa.nK) :
-    (pa.E i j : ℝ) * v.F i j k = v.F i j k := by
+    pa.E i j * v.F i j k = v.F i j k := by
   rcases pa.hE_bin i j with hE | hE
-  · rw [hE, Int.cast_zero, zero_mul, h.hF_offedge i j k hE]
+  · rw [hE, zero_mul, h.hF_offedge i j k hE]
   · simp [hE]
 
 private lemma feasible_structural (v : P20.a.Vars pa) (h : P20.a.Feasible pa v)
@@ -1007,26 +1029,26 @@ private lemma feasible_structural (v : P20.a.Vars pa) (h : P20.a.Feasible pa v)
     exact h.hF_offedge (pa.B b) j k (pa.hE_nooutflow_B b j)
 
 private lemma sum_eq_zero_term_eq_zero {ι : Type*} [Fintype ι]
-    (g : ι → ℝ) (hnn : ∀ i, 0 ≤ g i) (hsum : ∑ i, g i = 0) (i : ι) :
+    (g : ι → ℤ) (hnn : ∀ i, 0 ≤ g i) (hsum : ∑ i, g i = 0) (i : ι) :
     g i = 0 := by
   have hle : g i ≤ ∑ j, g j := Finset.single_le_sum (fun j _ => hnn j) (Finset.mem_univ i)
   rw [hsum] at hle
   exact le_antisymm hle (hnn i)
 
 private lemma structural_no_supplier_in
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (f : Fin pa.nN → Fin pa.nN → ℤ) (hf : StructuralFlow pa f)
     (hnn : ∀ i j, 0 ≤ f i j) (s : Fin pa.nS) (i : Fin pa.nN) :
     f i (pa.S s) = 0 :=
   sum_eq_zero_term_eq_zero _ (fun j => hnn j (pa.S s)) (hf.supplier_in s) i
 
 private lemma structural_no_beneficiary_out
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (f : Fin pa.nN → Fin pa.nN → ℤ) (hf : StructuralFlow pa f)
     (hnn : ∀ i j, 0 ≤ f i j) (b : Fin pa.nB) (j : Fin pa.nN) :
     f (pa.B b) j = 0 :=
   sum_eq_zero_term_eq_zero _ (hnn (pa.B b)) (hf.beneficiary_out b) j
 
 private lemma exists_pos_of_sum_pos {ι : Type*} [Fintype ι]
-    (g : ι → ℝ) (hnn : ∀ i, 0 ≤ g i) (hpos : 0 < ∑ i, g i) :
+    (g : ι → ℤ) (hnn : ∀ i, 0 ≤ g i) (hpos : 0 < ∑ i, g i) :
     ∃ i, 0 < g i := by
   by_contra h
   push_neg at h
@@ -1034,7 +1056,7 @@ private lemma exists_pos_of_sum_pos {ι : Type*} [Fintype ι]
   simp [hz] at hpos
 
 private lemma structural_pos_out_of_pos_in
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (f : Fin pa.nN → Fin pa.nN → ℤ) (hf : StructuralFlow pa f)
     (hnn : ∀ i j, 0 ≤ f i j) (t : Fin pa.nT) {i : Fin pa.nN}
     (hi : 0 < f i (pa.T t)) :
     ∃ j, 0 < f (pa.T t) j := by
@@ -1046,7 +1068,7 @@ private lemma structural_pos_out_of_pos_in
   exact exists_pos_of_sum_pos _ (hnn (pa.T t)) hin
 
 private lemma structural_pos_in_of_pos_out
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (f : Fin pa.nN → Fin pa.nN → ℤ) (hf : StructuralFlow pa f)
     (hnn : ∀ i j, 0 ≤ f i j) (t : Fin pa.nT) {j : Fin pa.nN}
     (hj : 0 < f (pa.T t) j) :
     ∃ i, 0 < f i (pa.T t) := by
@@ -1058,7 +1080,7 @@ private lemma structural_pos_in_of_pos_out
   exact exists_pos_of_sum_pos _ (fun i => hnn i (pa.T t)) hout
 
 private lemma structural_positive_edge_is_edge
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (f : Fin pa.nN → Fin pa.nN → ℤ) (hf : StructuralFlow pa f)
     {i j : Fin pa.nN} (hpos : 0 < f i j) :
     pa.E i j = 1 := by
   rcases pa.hE_bin i j with hE | hE
@@ -1066,11 +1088,11 @@ private lemma structural_positive_edge_is_edge
   · exact hE
 
 private def PosWalk
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (L : List (Fin pa.nN)) : Prop :=
+    (f : Fin pa.nN → Fin pa.nN → ℤ) (L : List (Fin pa.nN)) : Prop :=
   L.Nodup ∧ 2 ≤ L.length ∧ L.IsChain (fun u w => 0 < f u w)
 
 private lemma exists_maximal_pos_walk
-    (f : Fin pa.nN → Fin pa.nN → ℝ)
+    (f : Fin pa.nN → Fin pa.nN → ℤ)
     {i j : Fin pa.nN} (hij : i ≠ j) (hpos : 0 < f i j) :
     ∃ L : List (Fin pa.nN),
       PosWalk pa f L ∧
@@ -1097,7 +1119,7 @@ private lemma exists_maximal_pos_walk
   rwa [← hlen] at hle
 
 private lemma pred_mem_of_maximal_pos_walk
-    (f : Fin pa.nN → Fin pa.nN → ℝ)
+    (f : Fin pa.nN → Fin pa.nN → ℤ)
     (L : List (Fin pa.nN)) (hL : PosWalk pa f L)
     (hmax : ∀ L', PosWalk pa f L' → L'.length ≤ L.length)
     (hne : L ≠ []) (u : Fin pa.nN) (hu : 0 < f u (L.head hne)) :
@@ -1113,7 +1135,7 @@ private lemma pred_mem_of_maximal_pos_walk
   simp at this
 
 private lemma succ_mem_of_maximal_pos_walk
-    (f : Fin pa.nN → Fin pa.nN → ℝ)
+    (f : Fin pa.nN → Fin pa.nN → ℤ)
     (L : List (Fin pa.nN)) (hL : PosWalk pa f L)
     (hmax : ∀ L', PosWalk pa f L' → L'.length ≤ L.length)
     (hne : L ≠ []) (w : Fin pa.nN) (hw : 0 < f (L.getLast hne) w) :
@@ -1210,7 +1232,7 @@ private lemma closed_suffix_of_mem
   rwa [← hlastL, hheadC]
 
 private lemma exists_positive_path_or_cycle_list
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (f : Fin pa.nN → Fin pa.nN → ℤ) (hf : StructuralFlow pa f)
     (hnn : ∀ i j, 0 ≤ f i j) (i j : Fin pa.nN) (hpos : 0 < f i j) :
     (∃ L : List (Fin pa.nN), ∃ hne : L ≠ [],
       L.Nodup ∧ L.IsChain (fun u w => 0 < f u w) ∧
@@ -1266,7 +1288,7 @@ private lemma exists_positive_path_or_cycle_list
       norm_num at hout_head
 
 private lemma cycleIndicator_list_positive
-    {n : ℕ} (f : Fin n → Fin n → ℝ)
+    {n : ℕ} (f : Fin n → Fin n → ℤ)
     (C : List (Fin n)) (hne : C ≠ [])
     (hchain : C.IsChain (fun u w => 0 < f u w))
     (hclose : 0 < f (C.getLast hne) (C.head hne))
@@ -1298,7 +1320,7 @@ private lemma cycleIndicator_list_positive
       simpa [← hiu, ← hiw] using hedge
 
 private lemma exists_positive_enumerated_atom
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (f : Fin pa.nN → Fin pa.nN → ℤ) (hf : StructuralFlow pa f)
     (hnn : ∀ i j, 0 ≤ f i j) (i j : Fin pa.nN) (hpos : 0 < f i j) :
     (∃ p : Fin (numPaths pa),
       ∀ u w, pathEnum pa p u w = 1 → 0 < f u w) ∨
@@ -1381,7 +1403,7 @@ private lemma cycle_beneficiary_outdeg_zero
 
 private noncomputable def decompAtom
     (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa)))
-    (e : Fin pa.nN × Fin pa.nN) : ℝ :=
+    (e : Fin pa.nN × Fin pa.nN) : ℤ :=
   match a with
   | .inl p => pathEnum pa p e.1 e.2
   | .inr c => cycleEnum pa c e.1 e.2
@@ -1394,34 +1416,28 @@ private lemma decompAtom_binary
   · rcases cycleEnum_binary pa c e.1 e.2 with h | h <;> simp [decompAtom, h]
 
 private lemma path_atom_structural (p : Fin (numPaths pa)) :
-    StructuralFlow pa (fun i j => (pathEnum pa p i j : ℝ)) := by
+    StructuralFlow pa (fun i j => pathEnum pa p i j) := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro s
-    exact_mod_cast path_supplier_indeg_zero pa p s
+    exact path_supplier_indeg_zero pa p s
   · intro t
-    exact_mod_cast path_transshipment_deg pa p t
+    exact path_transshipment_deg pa p t
   · intro b
-    exact_mod_cast path_beneficiary_outdeg_zero pa p b
+    exact path_beneficiary_outdeg_zero pa p b
   · intro i j hE
-    have hle := (pathEnum_isValidPath pa p).2.1 i j
-    rcases pathEnum_binary pa p i j with h | h
-    · simp [h]
-    · omega
+    exact pathEnum_zero_of_E_zero pa p i j hE
 
 private lemma cycle_atom_structural (c : Fin (numCycles pa)) :
-    StructuralFlow pa (fun i j => (cycleEnum pa c i j : ℝ)) := by
+    StructuralFlow pa (fun i j => cycleEnum pa c i j) := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro s
-    exact_mod_cast cycle_supplier_deg_zero pa c s
+    exact cycle_supplier_deg_zero pa c s
   · intro t
-    exact_mod_cast (cycleEnum_isValid pa c).2.2.2.2.1 (pa.T t)
+    exact (cycleEnum_isValid pa c).2.2.2.2.1 (pa.T t)
   · intro b
-    exact_mod_cast cycle_beneficiary_outdeg_zero pa c b
+    exact cycle_beneficiary_outdeg_zero pa c b
   · intro i j hE
-    have hle := (cycleEnum_isValid pa c).2.1 i j
-    rcases cycleEnum_binary pa c i j with h | h
-    · simp [h]
-    · omega
+    exact cycleEnum_zero_of_E_zero pa c i j hE
 
 private lemma decompAtom_structural
     (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa))) :
@@ -1431,8 +1447,8 @@ private lemma decompAtom_structural
   · exact cycle_atom_structural pa c
 
 private lemma structural_sub_atom
-    (f : Fin pa.nN × Fin pa.nN → ℝ)
-    (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa))) (d : ℝ)
+    (f : Fin pa.nN × Fin pa.nN → ℤ)
+    (a : Sum (Fin (numPaths pa)) (Fin (numCycles pa))) (d : ℤ)
     (hf : StructuralFlow pa (fun i j => f (i, j))) :
     StructuralFlow pa (fun i j => f (i, j) - d * decompAtom pa a (i, j)) := by
   have ha := decompAtom_structural pa a
@@ -1479,7 +1495,7 @@ private lemma decompAtom_has_edge
   · simpa [decompAtom] using cycleEnum_has_edge pa c
 
 private lemma extract_decompAtom
-    (f : Fin pa.nN × Fin pa.nN → ℝ)
+    (f : Fin pa.nN × Fin pa.nN → ℤ)
     (hf : StructuralFlow pa (fun i j => f (i, j)))
     (hnn : ∀ e, 0 ≤ f e) (hpos : ∃ e, 0 < f e) :
     ∃ a : Sum (Fin (numPaths pa)) (Fin (numCycles pa)),
@@ -1497,15 +1513,15 @@ private lemma extract_decompAtom
     exact hc u w (by simpa [decompAtom] using huw)
 
 private lemma single_commodity_decomposition
-    (f : Fin pa.nN → Fin pa.nN → ℝ) (hf : StructuralFlow pa f)
+    (f : Fin pa.nN → Fin pa.nN → ℤ) (hf : StructuralFlow pa f)
     (hnn : ∀ i j, 0 ≤ f i j) :
-    ∃ (x : Fin (numPaths pa) → ℝ) (y : Fin (numCycles pa) → ℝ),
+    ∃ (x : Fin (numPaths pa) → ℤ) (y : Fin (numCycles pa) → ℤ),
       (∀ p, 0 ≤ x p) ∧ (∀ c, 0 ≤ y c) ∧
       ∀ i j, f i j =
-        (∑ p, (pathEnum pa p i j : ℝ) * x p) +
-        (∑ c, (cycleEnum pa c i j : ℝ) * y c) := by
+        (∑ p, pathEnum pa p i j * x p) +
+        (∑ c, cycleEnum pa c i j * y c) := by
   classical
-  let F : Fin pa.nN × Fin pa.nN → ℝ := fun e => f e.1 e.2
+  let F : Fin pa.nN × Fin pa.nN → ℤ := fun e => f e.1 e.2
   obtain ⟨z, hz, hrec⟩ := finite_conic_decomposition
     (decompAtom pa)
     (fun g => StructuralFlow pa (fun i j => g (i, j)))
@@ -1518,8 +1534,8 @@ private lemma single_commodity_decomposition
   · intro i j
     have hr := hrec (i, j)
     rw [show (∑ a, decompAtom pa a (i, j) * z a) =
-        (∑ p, (pathEnum pa p i j : ℝ) * z (.inl p)) +
-        (∑ c, (cycleEnum pa c i j : ℝ) * z (.inr c)) by
+        (∑ p, pathEnum pa p i j * z (.inl p)) +
+        (∑ c, cycleEnum pa c i j * z (.inr c)) by
       rw [Fintype.sum_sum_type]
       rfl] at hr
     exact hr
@@ -1529,15 +1545,15 @@ private lemma single_commodity_decomposition
 -- ============================================================================
 
 /-- **Flow decomposition (fixed-index form).** Any `a`-feasible flow decomposes,
-edge by edge and for every commodity, into a nonnegative combination of the
-enumerated paths and cycles. -/
+edge by edge and for every commodity, into a nonnegative integral combination of
+the enumerated paths and cycles. -/
 private lemma flow_decomposition (v : P20.a.Vars pa) (h : P20.a.Feasible pa v) :
-    ∃ (x : Fin (numPaths pa) → Fin pa.nK → ℝ) (y : Fin (numCycles pa) → Fin pa.nK → ℝ),
+    ∃ (x : Fin (numPaths pa) → Fin pa.nK → ℤ) (y : Fin (numCycles pa) → Fin pa.nK → ℤ),
       (∀ p k, 0 ≤ x p k) ∧ (∀ c k, 0 ≤ y c k) ∧
       (∀ i j : Fin pa.nN, ∀ k : Fin pa.nK,
         v.F i j k
-          = (∑ p, (pathEnum pa p i j : ℝ) * x p k)
-            + (∑ c, (cycleEnum pa c i j : ℝ) * y c k)) := by
+          = (∑ p, pathEnum pa p i j * x p k)
+            + (∑ c, cycleEnum pa c i j * y c k)) := by
   classical
   let D (k : Fin pa.nK) :=
     single_commodity_decomposition pa
@@ -1569,8 +1585,8 @@ private noncomputable def fwd (v : P20.a.Vars pa) : P20.b.Vars (paramMap pa) := 
 /-- Backward map (b → a): rebuild the arc flow by summing path/cycle contributions. -/
 private noncomputable def bwd (vb : P20.b.Vars (paramMap pa)) : P20.a.Vars pa where
   F := fun i j k =>
-    (∑ p, (pathEnum pa p i j : ℝ) * vb.x p k)
-      + (∑ c, (cycleEnum pa c i j : ℝ) * vb.y c k)
+    (∑ p, pathEnum pa p i j * vb.x p k)
+      + (∑ c, cycleEnum pa c i j * vb.y c k)
   R := vb.R
 
 /-- In the feasible case, `fwd`'s components are a valid flow decomposition. -/
@@ -1578,8 +1594,8 @@ private lemma fwd_spec (v : P20.a.Vars pa) (h : P20.a.Feasible pa v) :
     (∀ p k, 0 ≤ (fwd pa v).x p k) ∧ (∀ c k, 0 ≤ (fwd pa v).y c k) ∧
     (∀ i j : Fin pa.nN, ∀ k : Fin pa.nK,
       v.F i j k
-        = (∑ p, (pathEnum pa p i j : ℝ) * (fwd pa v).x p k)
-          + (∑ c, (cycleEnum pa c i j : ℝ) * (fwd pa v).y c k)) := by
+        = (∑ p, pathEnum pa p i j * (fwd pa v).x p k)
+          + (∑ c, cycleEnum pa c i j * (fwd pa v).y c k)) := by
   have hx : (fwd pa v).x = (flow_decomposition pa v h).choose := by
     simp only [fwd, dif_pos h]
   have hy : (fwd pa v).y = (flow_decomposition pa v h).choose_spec.choose := by
@@ -1595,64 +1611,62 @@ private lemma fwd_spec (v : P20.a.Vars pa) (h : P20.a.Feasible pa v) :
 private lemma bwd_F_zero_offedge (vb : P20.b.Vars (paramMap pa))
     (i j : Fin pa.nN) (k : Fin pa.nK)
     (hE : pa.E i j = 0) : (bwd pa vb).F i j k = 0 := by
-  have hpz : ∀ p, (pathEnum pa p i j : ℝ) = 0 := by
-    intro p
-    have hle := (pathEnum_isValidPath pa p).2.1 i j
-    rcases pathEnum_binary pa p i j with h | h
-    · simp [h]
-    · exfalso; rw [h, hE] at hle; omega
-  have hcz : ∀ c, (cycleEnum pa c i j : ℝ) = 0 := by
-    intro c
-    have hle := (cycleEnum_isValid pa c).2.1 i j
-    rcases cycleEnum_binary pa c i j with h | h
-    · simp [h]
-    · exfalso; rw [h, hE] at hle; omega
-  show (∑ p, (pathEnum pa p i j : ℝ) * vb.x p k) + (∑ c, (cycleEnum pa c i j : ℝ) * vb.y c k) = 0
-  have h1 : (∑ p, (pathEnum pa p i j : ℝ) * vb.x p k) = 0 :=
-    Finset.sum_eq_zero fun p _ => by rw [hpz p]; ring
-  have h2 : (∑ c, (cycleEnum pa c i j : ℝ) * vb.y c k) = 0 :=
-    Finset.sum_eq_zero fun c _ => by rw [hcz c]; ring
+  show (∑ p, pathEnum pa p i j * vb.x p k) + (∑ c, cycleEnum pa c i j * vb.y c k) = 0
+  have h1 : (∑ p, pathEnum pa p i j * vb.x p k) = 0 :=
+    Finset.sum_eq_zero fun p _ => by
+      rw [pathEnum_zero_of_E_zero pa p i j hE, zero_mul]
+  have h2 : (∑ c, cycleEnum pa c i j * vb.y c k) = 0 :=
+    Finset.sum_eq_zero fun c _ => by
+      rw [cycleEnum_zero_of_E_zero pa c i j hE, zero_mul]
   rw [h1, h2, add_zero]
 
 /-- The graph-edge indicator is redundant against the reconstructed flow. -/
 private lemma bwd_E_mul (vb : P20.b.Vars (paramMap pa))
     (i j : Fin pa.nN) (k : Fin pa.nK) :
-    (pa.E i j : ℝ) * (bwd pa vb).F i j k = (bwd pa vb).F i j k := by
+    pa.E i j * (bwd pa vb).F i j k = (bwd pa vb).F i j k := by
   rcases pa.hE_bin i j with h | h
-  · rw [bwd_F_zero_offedge pa vb i j k h]; ring
-  · rw [h]; simp
+  · rw [bwd_F_zero_offedge pa vb i j k h, mul_zero]
+  · rw [h, one_mul]
 
 /-- Total in-flow at a node is the path/cycle in-degrees weighted by amounts. -/
 private lemma sum_bwd_F_in (vb : P20.b.Vars (paramMap pa))
     (w : Fin pa.nN) (k : Fin pa.nK) :
     ∑ i, (bwd pa vb).F i w k
-      = (∑ p, (↑(∑ i, pathEnum pa p i w) : ℝ) * vb.x p k)
-        + (∑ c, (↑(∑ i, cycleEnum pa c i w) : ℝ) * vb.y c k) := by
+      = (∑ p, (∑ i, pathEnum pa p i w) * vb.x p k)
+        + (∑ c, (∑ i, cycleEnum pa c i w) * vb.y c k) := by
   simp only [bwd]
   rw [Finset.sum_add_distrib]
   congr 1
   · rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun p _ => ?_
-    rw [← Finset.sum_mul]; push_cast; ring
+    rw [← Finset.sum_mul]
   · rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun c _ => ?_
-    rw [← Finset.sum_mul]; push_cast; ring
+    rw [← Finset.sum_mul]
 
 /-- Total out-flow at a node is the path/cycle out-degrees weighted by amounts. -/
 private lemma sum_bwd_F_out (vb : P20.b.Vars (paramMap pa))
     (w : Fin pa.nN) (k : Fin pa.nK) :
     ∑ i, (bwd pa vb).F w i k
-      = (∑ p, (↑(∑ i, pathEnum pa p w i) : ℝ) * vb.x p k)
-        + (∑ c, (↑(∑ i, cycleEnum pa c w i) : ℝ) * vb.y c k) := by
+      = (∑ p, (∑ i, pathEnum pa p w i) * vb.x p k)
+        + (∑ c, (∑ i, cycleEnum pa c w i) * vb.y c k) := by
   simp only [bwd]
   rw [Finset.sum_add_distrib]
   congr 1
   · rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun p _ => ?_
-    rw [← Finset.sum_mul]; push_cast; ring
+    rw [← Finset.sum_mul]
   · rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun c _ => ?_
-    rw [← Finset.sum_mul]; push_cast; ring
+    rw [← Finset.sum_mul]
+
+/-- In-degree of a valid cycle at a beneficiary camp is zero: a cycle conserving
+degree at every node cannot enter a camp it can never leave. -/
+private lemma cycle_beneficiary_indeg_zero (c : Fin (numCycles pa)) (b : Fin pa.nB) :
+    ∑ i, cycleEnum pa c i (pa.B b) = 0 := by
+  obtain ⟨-, -, -, -, hcons, -⟩ := cycleEnum_isValid pa c
+  rw [hcons (pa.B b)]
+  exact cycle_beneficiary_outdeg_zero pa c b
 
 /-- **Backward feasibility.** A `b`-feasible solution maps to an `a`-feasible one. -/
 private lemma bwd_feas (vb : P20.b.Vars (paramMap pa))
@@ -1668,32 +1682,51 @@ private lemma bwd_feas (vb : P20.b.Vars (paramMap pa))
     · refine Finset.sum_congr rfl fun c _ => ?_
       obtain ⟨-, -, -, -, hcons, -⟩ := cycleEnum_isValid pa c
       rw [hcons (pa.T t)]
+  hcap := fun t => by
+    -- The decomposition is an exact identity, so the node throughput of the
+    -- reconstructed flow is `b`'s path/cycle throughput at the same node.
+    have hk : ∀ k, (∑ i, pa.E i (pa.T t) * (bwd pa vb).F i (pa.T t) k)
+        = (∑ p, (∑ i, pathEnum pa p i (pa.T t)) * vb.x p k)
+          + (∑ c, (∑ i, cycleEnum pa c i (pa.T t)) * vb.y c k) := by
+      intro k
+      rw [Finset.sum_congr rfl (fun i _ => bwd_E_mul pa vb i (pa.T t) k),
+          sum_bwd_F_in pa vb (pa.T t) k]
+    calc (∑ k, ∑ i, pa.E i (pa.T t) * (bwd pa vb).F i (pa.T t) k)
+        = ∑ k, ((∑ p, (∑ i, pathEnum pa p i (pa.T t)) * vb.x p k)
+            + (∑ c, (∑ i, cycleEnum pa c i (pa.T t)) * vb.y c k)) :=
+          Finset.sum_congr rfl fun k _ => hk k
+      _ ≤ pa.cap t := hb.hcap t
   hdemand := fun j k => by
-    rw [Finset.sum_congr rfl (fun i _ => bwd_E_mul pa vb i (pa.B j) k),
-        sum_bwd_F_in pa vb (pa.B j) k]
-    have hcyc0 : (∑ c, (↑(∑ i, cycleEnum pa c i (pa.B j)) : ℝ) * vb.y c k) = 0 := by
-      apply Finset.sum_eq_zero; intro c _
-      obtain ⟨-, -, -, -, hcons, -⟩ := cycleEnum_isValid pa c
-      rw [hcons (pa.B j), cycle_beneficiary_outdeg_zero pa c j]; simp
-    rw [hcyc0, add_zero]
-    have hep : (∑ p, (↑(∑ i, pathEnum pa p i (pa.B j)) : ℝ) * vb.x p k)
-        = ∑ p, ((paramMap pa).e j p : ℝ) * vb.x p k := by
+    have hZ : (∑ i, pa.E i (pa.B j) * (bwd pa vb).F i (pa.B j) k)
+        = ∑ p, (paramMap pa).e j p * vb.x p k := by
+      rw [Finset.sum_congr rfl (fun i _ => bwd_E_mul pa vb i (pa.B j) k),
+          sum_bwd_F_in pa vb (pa.B j) k]
+      have hcyc0 : (∑ c, (∑ i, cycleEnum pa c i (pa.B j)) * vb.y c k) = 0 := by
+        apply Finset.sum_eq_zero; intro c _
+        rw [cycle_beneficiary_indeg_zero pa c j, zero_mul]
+      rw [hcyc0, add_zero]
       apply Finset.sum_congr rfl; intro p _
       have he : (paramMap pa).e j p = ∑ i, pathEnum pa p i (pa.B j) := by
         show (∑ i, pathEnum pa p i (pa.B j)) - (∑ k, pathEnum pa p (pa.B j) k)
               = ∑ i, pathEnum pa p i (pa.B j)
         rw [path_beneficiary_outdeg_zero pa p j]; ring
       rw [he]
-    rw [hep]
-    exact hb.hdemand j k
+    -- `a`'s demand constraint lives in `ℝ`; move the integral identity across
+    -- the cast boundary.
+    calc pa.dem j * vb.R k
+        ≤ ∑ p, ((paramMap pa).e j p : ℝ) * (vb.x p k : ℝ) := hb.hdemand j k
+      _ = ((∑ p, (paramMap pa).e j p * vb.x p k : ℤ) : ℝ) := by push_cast; ring
+      _ = ((∑ i, pa.E i (pa.B j) * (bwd pa vb).F i (pa.B j) k : ℤ) : ℝ) := by rw [hZ]
+      _ = ∑ i, (pa.E i (pa.B j) : ℝ) * ((bwd pa vb).F i (pa.B j) k : ℝ) := by
+          push_cast; ring
   hnutrition := fun l => hb.hnutrition l
   hF_offedge := fun i j k hE => bwd_F_zero_offedge pa vb i j k hE
   hF_nn := fun i j k => by
-    show 0 ≤ (∑ p, (pathEnum pa p i j : ℝ) * vb.x p k)
-          + (∑ c, (cycleEnum pa c i j : ℝ) * vb.y c k)
+    show 0 ≤ (∑ p, pathEnum pa p i j * vb.x p k)
+          + (∑ c, cycleEnum pa c i j * vb.y c k)
     exact add_nonneg
-      (Finset.sum_nonneg fun p _ => mul_nonneg (pathEnum_nonneg pa p i j) (hb.hx_nn p k))
-      (Finset.sum_nonneg fun c _ => mul_nonneg (cycleEnum_nonneg pa c i j) (hb.hy_nn c k))
+      (Finset.sum_nonneg fun p _ => mul_nonneg (pathEnum_int_nonneg pa p i j) (hb.hx_nn p k))
+      (Finset.sum_nonneg fun c _ => mul_nonneg (cycleEnum_int_nonneg pa c i j) (hb.hy_nn c k))
   hR_nn := fun k => hb.hR_nn k
 
 -- ============================================================================
@@ -1704,26 +1737,47 @@ private lemma bwd_feas (vb : P20.b.Vars (paramMap pa))
 private lemma fwd_R (v : P20.a.Vars pa) : (fwd pa v).R = v.R := by
   simp only [fwd]; split <;> rfl
 
+/-- On a feasible solution, `bwd` inverts `fwd` arc by arc: this is exactly the
+decomposition identity of `fwd_spec`. -/
+private lemma bwd_fwd_F (v : P20.a.Vars pa) (ha : P20.a.Feasible pa v)
+    (i j : Fin pa.nN) (k : Fin pa.nK) :
+    (bwd pa (fwd pa v)).F i j k = v.F i j k :=
+  ((fwd_spec pa v ha).2.2 i j k).symm
+
+/-- With the graph-edge indicator absorbed, node in-flow of `v` is the in-flow of
+its reconstruction. -/
+private lemma fwd_E_mul (v : P20.a.Vars pa) (ha : P20.a.Feasible pa v)
+    (i j : Fin pa.nN) (k : Fin pa.nK) :
+    pa.E i j * v.F i j k = (bwd pa (fwd pa v)).F i j k := by
+  rw [← bwd_fwd_F pa v ha i j k]
+  exact bwd_E_mul pa (fwd pa v) i j k
+
 /-- **Forward feasibility.** An `a`-feasible solution maps to a `b`-feasible one. -/
 private lemma fwd_feas (v : P20.a.Vars pa) (ha : P20.a.Feasible pa v) :
     P20.b.Feasible (paramMap pa) (fwd pa v) where
+  hcap := fun t => by
+    -- Node throughput is preserved exactly by the decomposition identity.
+    have hk : ∀ k, ((∑ p, (∑ i, pathEnum pa p i (pa.T t)) * (fwd pa v).x p k)
+          + (∑ c, (∑ i, cycleEnum pa c i (pa.T t)) * (fwd pa v).y c k))
+        = ∑ i, pa.E i (pa.T t) * v.F i (pa.T t) k := by
+      intro k
+      rw [← sum_bwd_F_in pa (fwd pa v) (pa.T t) k]
+      exact Finset.sum_congr rfl fun i _ => (fwd_E_mul pa v ha i (pa.T t) k).symm
+    calc (∑ k, ((∑ p, (∑ i, pathEnum pa p i (pa.T t)) * (fwd pa v).x p k)
+            + (∑ c, (∑ i, cycleEnum pa c i (pa.T t)) * (fwd pa v).y c k)))
+        = ∑ k, ∑ i, pa.E i (pa.T t) * v.F i (pa.T t) k :=
+          Finset.sum_congr rfl fun k _ => hk k
+      _ ≤ pa.cap t := ha.hcap t
   hdemand := fun j k => by
-    obtain ⟨-, -, hrec⟩ := fwd_spec pa v ha
     rw [fwd_R pa v]
-    have hkey :
-        (∑ i, (pa.E i (pa.B j) : ℝ) * v.F i (pa.B j) k)
-          = ∑ p, ((paramMap pa).e j p : ℝ) * (fwd pa v).x p k := by
-      have hcast : ∀ i, (pa.E i (pa.B j) : ℝ) * v.F i (pa.B j) k
-          = (bwd pa (fwd pa v)).F i (pa.B j) k := by
-        intro i
-        rw [hrec i (pa.B j) k]
-        exact bwd_E_mul pa (fwd pa v) i (pa.B j) k
-      rw [Finset.sum_congr rfl (fun i _ => hcast i), sum_bwd_F_in pa (fwd pa v) (pa.B j) k]
+    have hZ : (∑ i, pa.E i (pa.B j) * v.F i (pa.B j) k)
+        = ∑ p, (paramMap pa).e j p * (fwd pa v).x p k := by
+      rw [Finset.sum_congr rfl (fun i _ => fwd_E_mul pa v ha i (pa.B j) k),
+          sum_bwd_F_in pa (fwd pa v) (pa.B j) k]
       have hcyc0 :
-          (∑ c, (↑(∑ i, cycleEnum pa c i (pa.B j)) : ℝ) * (fwd pa v).y c k) = 0 := by
+          (∑ c, (∑ i, cycleEnum pa c i (pa.B j)) * (fwd pa v).y c k) = 0 := by
         apply Finset.sum_eq_zero; intro c _
-        obtain ⟨-, -, -, -, hcons, -⟩ := cycleEnum_isValid pa c
-        rw [hcons (pa.B j), cycle_beneficiary_outdeg_zero pa c j]; simp
+        rw [cycle_beneficiary_indeg_zero pa c j, zero_mul]
       rw [hcyc0, add_zero]
       apply Finset.sum_congr rfl; intro p _
       have he : (paramMap pa).e j p = ∑ i, pathEnum pa p i (pa.B j) := by
@@ -1731,8 +1785,11 @@ private lemma fwd_feas (v : P20.a.Vars pa) (ha : P20.a.Feasible pa v) :
               = ∑ i, pathEnum pa p i (pa.B j)
         rw [path_beneficiary_outdeg_zero pa p j]; ring
       rw [he]
-    rw [← hkey]
-    exact ha.hdemand j k
+    calc pa.dem j * v.R k
+        ≤ ∑ i, (pa.E i (pa.B j) : ℝ) * (v.F i (pa.B j) k : ℝ) := ha.hdemand j k
+      _ = ((∑ i, pa.E i (pa.B j) * v.F i (pa.B j) k : ℤ) : ℝ) := by push_cast; ring
+      _ = ((∑ p, (paramMap pa).e j p * (fwd pa v).x p k : ℤ) : ℝ) := by rw [hZ]
+      _ = ∑ p, ((paramMap pa).e j p : ℝ) * ((fwd pa v).x p k : ℝ) := by push_cast; ring
   hnutrition := fun l => by
     rw [fwd_R pa v]; exact ha.hnutrition l
   hx_nn := (fwd_spec pa v ha).1
@@ -1775,9 +1832,9 @@ private lemma path_supplier_total_outdeg (p : Fin (numPaths pa)) :
 
 /-- Total supplier out-flow of commodity `k` in the reconstructed flow equals the
 total path amount (each path leaves one supplier; cycles avoid suppliers). -/
-private lemma supplier_outflow (vb : P20.b.Vars (paramMap pa)) (k : Fin pa.nK) :
-    (∑ s, ∑ j, (pa.E (pa.S s) j : ℝ) * (bwd pa vb).F (pa.S s) j k) = ∑ p, vb.x p k := by
-  have hE : (∑ s, ∑ j, (pa.E (pa.S s) j : ℝ) * (bwd pa vb).F (pa.S s) j k)
+private lemma supplier_outflow_int (vb : P20.b.Vars (paramMap pa)) (k : Fin pa.nK) :
+    (∑ s, ∑ j, pa.E (pa.S s) j * (bwd pa vb).F (pa.S s) j k) = ∑ p, vb.x p k := by
+  have hE : (∑ s, ∑ j, pa.E (pa.S s) j * (bwd pa vb).F (pa.S s) j k)
       = ∑ s, ∑ j, (bwd pa vb).F (pa.S s) j k := by
     apply Finset.sum_congr rfl; intro s _
     apply Finset.sum_congr rfl; intro j _
@@ -1785,75 +1842,90 @@ private lemma supplier_outflow (vb : P20.b.Vars (paramMap pa)) (k : Fin pa.nK) :
   rw [hE]
   simp only [bwd]
   have hsplit :
-      (∑ s, ∑ j, ((∑ p, (pathEnum pa p (pa.S s) j : ℝ) * vb.x p k)
-          + (∑ c, (cycleEnum pa c (pa.S s) j : ℝ) * vb.y c k)))
-        = (∑ s, ∑ j, ∑ p, (pathEnum pa p (pa.S s) j : ℝ) * vb.x p k)
-          + (∑ s, ∑ j, ∑ c, (cycleEnum pa c (pa.S s) j : ℝ) * vb.y c k) := by
+      (∑ s, ∑ j, ((∑ p, pathEnum pa p (pa.S s) j * vb.x p k)
+          + (∑ c, cycleEnum pa c (pa.S s) j * vb.y c k)))
+        = (∑ s, ∑ j, ∑ p, pathEnum pa p (pa.S s) j * vb.x p k)
+          + (∑ s, ∑ j, ∑ c, cycleEnum pa c (pa.S s) j * vb.y c k) := by
     rw [← Finset.sum_add_distrib]; apply Finset.sum_congr rfl; intro s _
     rw [← Finset.sum_add_distrib]
   rw [hsplit]
-  have hcyc : (∑ s, ∑ j, ∑ c, (cycleEnum pa c (pa.S s) j : ℝ) * vb.y c k) = 0 := by
+  have hcyc : (∑ s, ∑ j, ∑ c, cycleEnum pa c (pa.S s) j * vb.y c k) = 0 := by
     apply Finset.sum_eq_zero; intro s _
     rw [Finset.sum_comm]
     apply Finset.sum_eq_zero; intro c _
-    have hz : (∑ j, (cycleEnum pa c (pa.S s) j : ℝ)) = 0 := by
-      exact_mod_cast cycle_supplier_outdeg_zero pa c s
-    rw [← Finset.sum_mul, hz, zero_mul]
-  have hpath : (∑ s, ∑ j, ∑ p, (pathEnum pa p (pa.S s) j : ℝ) * vb.x p k) = ∑ p, vb.x p k := by
+    rw [← Finset.sum_mul, cycle_supplier_outdeg_zero pa c s, zero_mul]
+  have hpath : (∑ s, ∑ j, ∑ p, pathEnum pa p (pa.S s) j * vb.x p k) = ∑ p, vb.x p k := by
     rw [Finset.sum_congr rfl (fun s _ => Finset.sum_comm), Finset.sum_comm]
     apply Finset.sum_congr rfl; intro p _
-    have hfac : (∑ s, ∑ j, (pathEnum pa p (pa.S s) j : ℝ) * vb.x p k)
-        = (∑ s, ∑ j, (pathEnum pa p (pa.S s) j : ℝ)) * vb.x p k := by
+    have hfac : (∑ s, ∑ j, pathEnum pa p (pa.S s) j * vb.x p k)
+        = (∑ s, ∑ j, pathEnum pa p (pa.S s) j) * vb.x p k := by
       rw [Finset.sum_mul]; apply Finset.sum_congr rfl; intro s _; rw [Finset.sum_mul]
-    rw [hfac]
-    have h1 : (∑ s, ∑ j, (pathEnum pa p (pa.S s) j : ℝ)) = 1 := by
-      exact_mod_cast path_supplier_total_outdeg pa p
-    rw [h1, one_mul]
+    rw [hfac, path_supplier_total_outdeg pa p, one_mul]
   rw [hcyc, hpath, add_zero]
+
+/-- The real-valued form of `supplier_outflow_int`, as it appears in `a.obj`. -/
+private lemma supplier_outflow (vb : P20.b.Vars (paramMap pa)) (k : Fin pa.nK) :
+    (∑ s, ∑ j, (pa.E (pa.S s) j : ℝ) * ((bwd pa vb).F (pa.S s) j k : ℝ))
+      = ∑ p, (vb.x p k : ℝ) := by
+  calc (∑ s, ∑ j, (pa.E (pa.S s) j : ℝ) * ((bwd pa vb).F (pa.S s) j k : ℝ))
+      = ((∑ s, ∑ j, pa.E (pa.S s) j * (bwd pa vb).F (pa.S s) j k : ℤ) : ℝ) := by
+        push_cast; ring
+    _ = ((∑ p, vb.x p k : ℤ) : ℝ) := by rw [supplier_outflow_int pa vb k]
+    _ = ∑ p, (vb.x p k : ℝ) := by push_cast; ring
 
 /-- Transportation cost of the reconstructed flow splits into path and cycle
 shipping costs (`pCost` / `cCost`). -/
 private lemma transport_decomp (vb : P20.b.Vars (paramMap pa)) :
-    (∑ i, ∑ j, ∑ k, pa.tc i j k * (bwd pa vb).F i j k)
-      = (∑ p, ∑ k, (paramMap pa).pCost p k * vb.x p k)
-        + (∑ c, ∑ k, (paramMap pa).cCost c k * vb.y c k) := by
+    (∑ i, ∑ j, ∑ k, pa.tc i j k * ((bwd pa vb).F i j k : ℝ))
+      = (∑ p, ∑ k, (paramMap pa).pCost p k * (vb.x p k : ℝ))
+        + (∑ c, ∑ k, (paramMap pa).cCost c k * (vb.y c k : ℝ)) := by
   rw [Finset.sum_congr rfl (fun i _ => Finset.sum_comm), Finset.sum_comm,
-      show (∑ p, ∑ k, (paramMap pa).pCost p k * vb.x p k)
-          = ∑ k, ∑ p, (paramMap pa).pCost p k * vb.x p k from Finset.sum_comm,
-      show (∑ c, ∑ k, (paramMap pa).cCost c k * vb.y c k)
-          = ∑ k, ∑ c, (paramMap pa).cCost c k * vb.y c k from Finset.sum_comm,
+      show (∑ p, ∑ k, (paramMap pa).pCost p k * (vb.x p k : ℝ))
+          = ∑ k, ∑ p, (paramMap pa).pCost p k * (vb.x p k : ℝ) from Finset.sum_comm,
+      show (∑ c, ∑ k, (paramMap pa).cCost c k * (vb.y c k : ℝ))
+          = ∑ k, ∑ c, (paramMap pa).cCost c k * (vb.y c k : ℝ) from Finset.sum_comm,
       ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl; intro k _
+  -- Push the reconstruction across the `ℤ → ℝ` cast once, then work in `ℝ`.
+  have hFcast : ∀ i j : Fin pa.nN, (((bwd pa vb).F i j k : ℤ) : ℝ)
+      = (∑ p, (pathEnum pa p i j : ℝ) * (vb.x p k : ℝ))
+        + (∑ c, (cycleEnum pa c i j : ℝ) * (vb.y c k : ℝ)) := by
+    intro i j
+    show (((∑ p, pathEnum pa p i j * vb.x p k)
+            + (∑ c, cycleEnum pa c i j * vb.y c k) : ℤ) : ℝ) = _
+    push_cast
+    ring
+  simp only [hFcast]
   show ∑ i, ∑ j, pa.tc i j k
-        * ((∑ p, (pathEnum pa p i j : ℝ) * vb.x p k)
-            + (∑ c, (cycleEnum pa c i j : ℝ) * vb.y c k))
-      = (∑ p, (∑ i, ∑ j, pa.tc i j k * (pathEnum pa p i j : ℝ)) * vb.x p k)
-        + (∑ c, (∑ i, ∑ j, pa.tc i j k * (cycleEnum pa c i j : ℝ)) * vb.y c k)
-  have hP : (∑ i, ∑ j, ∑ p, pa.tc i j k * (pathEnum pa p i j : ℝ) * vb.x p k)
-      = ∑ p, (∑ i, ∑ j, pa.tc i j k * (pathEnum pa p i j : ℝ)) * vb.x p k := by
+        * ((∑ p, (pathEnum pa p i j : ℝ) * (vb.x p k : ℝ))
+            + (∑ c, (cycleEnum pa c i j : ℝ) * (vb.y c k : ℝ)))
+      = (∑ p, (∑ i, ∑ j, pa.tc i j k * (pathEnum pa p i j : ℝ)) * (vb.x p k : ℝ))
+        + (∑ c, (∑ i, ∑ j, pa.tc i j k * (cycleEnum pa c i j : ℝ)) * (vb.y c k : ℝ))
+  have hP : (∑ i, ∑ j, ∑ p, pa.tc i j k * (pathEnum pa p i j : ℝ) * (vb.x p k : ℝ))
+      = ∑ p, (∑ i, ∑ j, pa.tc i j k * (pathEnum pa p i j : ℝ)) * (vb.x p k : ℝ) := by
     rw [Finset.sum_congr rfl (fun i _ => Finset.sum_comm), Finset.sum_comm]
     refine Finset.sum_congr rfl fun p _ => ?_
     rw [Finset.sum_mul]; refine Finset.sum_congr rfl fun i _ => ?_
     rw [Finset.sum_mul]
-  have hC : (∑ i, ∑ j, ∑ c, pa.tc i j k * (cycleEnum pa c i j : ℝ) * vb.y c k)
-      = ∑ c, (∑ i, ∑ j, pa.tc i j k * (cycleEnum pa c i j : ℝ)) * vb.y c k := by
+  have hC : (∑ i, ∑ j, ∑ c, pa.tc i j k * (cycleEnum pa c i j : ℝ) * (vb.y c k : ℝ))
+      = ∑ c, (∑ i, ∑ j, pa.tc i j k * (cycleEnum pa c i j : ℝ)) * (vb.y c k : ℝ) := by
     rw [Finset.sum_congr rfl (fun i _ => Finset.sum_comm), Finset.sum_comm]
     refine Finset.sum_congr rfl fun c _ => ?_
     rw [Finset.sum_mul]; refine Finset.sum_congr rfl fun i _ => ?_
     rw [Finset.sum_mul]
   calc
     ∑ i, ∑ j, pa.tc i j k
-          * ((∑ p, (pathEnum pa p i j : ℝ) * vb.x p k)
-              + (∑ c, (cycleEnum pa c i j : ℝ) * vb.y c k))
-        = ∑ i, ∑ j, ((∑ p, pa.tc i j k * (pathEnum pa p i j : ℝ) * vb.x p k)
-              + (∑ c, pa.tc i j k * (cycleEnum pa c i j : ℝ) * vb.y c k)) := by
+          * ((∑ p, (pathEnum pa p i j : ℝ) * (vb.x p k : ℝ))
+              + (∑ c, (cycleEnum pa c i j : ℝ) * (vb.y c k : ℝ)))
+        = ∑ i, ∑ j, ((∑ p, pa.tc i j k * (pathEnum pa p i j : ℝ) * (vb.x p k : ℝ))
+              + (∑ c, pa.tc i j k * (cycleEnum pa c i j : ℝ) * (vb.y c k : ℝ))) := by
           refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
           rw [mul_add, Finset.mul_sum, Finset.mul_sum]
           congr 1
           · exact Finset.sum_congr rfl fun p _ => by ring
           · exact Finset.sum_congr rfl fun c _ => by ring
-      _ = (∑ i, ∑ j, ∑ p, pa.tc i j k * (pathEnum pa p i j : ℝ) * vb.x p k)
-          + (∑ i, ∑ j, ∑ c, pa.tc i j k * (cycleEnum pa c i j : ℝ) * vb.y c k) := by
+      _ = (∑ i, ∑ j, ∑ p, pa.tc i j k * (pathEnum pa p i j : ℝ) * (vb.x p k : ℝ))
+          + (∑ i, ∑ j, ∑ c, pa.tc i j k * (cycleEnum pa c i j : ℝ) * (vb.y c k : ℝ)) := by
           rw [← Finset.sum_add_distrib]
           refine Finset.sum_congr rfl fun i _ => ?_
           rw [← Finset.sum_add_distrib]
@@ -1864,8 +1936,9 @@ reconstruction. This gives `bwd_obj` directly and `fwd_obj` via `fwd_spec`. -/
 private lemma obj_corr (vb : P20.b.Vars (paramMap pa)) :
     P20.b.obj (paramMap pa) vb = P20.a.obj pa (bwd pa vb) := by
   have hproc :
-      (∑ k, pa.pc k * (∑ s, ∑ j, (pa.E (pa.S s) j : ℝ) * (bwd pa vb).F (pa.S s) j k))
-        = ∑ k, (paramMap pa).q k * (∑ p, vb.x p k) := by
+      (∑ k, pa.pc k
+          * (∑ s, ∑ j, (pa.E (pa.S s) j : ℝ) * ((bwd pa vb).F (pa.S s) j k : ℝ)))
+        = ∑ k, (paramMap pa).q k * (∑ p, (vb.x p k : ℝ)) := by
     apply Finset.sum_congr rfl; intro k _
     rw [supplier_outflow pa vb k]; rfl
   simp only [P20.b.obj, P20.a.obj]
@@ -1881,9 +1954,8 @@ private lemma fwd_obj (v : P20.a.Vars pa) (ha : P20.a.Feasible pa v) :
     P20.b.obj (paramMap pa) (fwd pa v) = P20.a.obj pa v := by
   rw [obj_corr pa (fwd pa v)]
   apply a_obj_congr
-  obtain ⟨-, -, hrec⟩ := fwd_spec pa v ha
   funext i j k
-  exact (hrec i j k).symm
+  exact bwd_fwd_F pa v ha i j k
 
 /-- **The reformulation.** `P20.a` (arc flow) ⇄ `P20.b` (path + cycle), with the
 identity objective map. -/

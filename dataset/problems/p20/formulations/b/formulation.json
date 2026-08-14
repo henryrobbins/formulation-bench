@@ -141,6 +141,13 @@
                 "nB"
             ]
         },
+        "cap": {
+            "description": "Throughput capacity, in kg, of transshipment node $t$",
+            "type": "integer",
+            "shape": [
+                "nT"
+            ]
+        },
         "e": {
             "description": "Indicator: $1$ if path $p$ ends at beneficiary camp $j$, $0$ otherwise",
             "type": "binary",
@@ -430,20 +437,28 @@
             "code": {
                 "python": "assert all(dem[j] >= 0 for j in range(nB))"
             }
+        },
+        {
+            "description": "Throughput capacity of each transshipment node is non-negative.",
+            "formulation": "\\mathrm{cap}_t \\geq 0 \\quad \\forall t \\in N_T",
+            "explicit": false,
+            "code": {
+                "python": "assert all(cap[t] >= 0 for t in range(nT))"
+            }
         }
     ],
     "variables": {
         "x": {
             "description": "Amount of commodity $k$ shipped along path $p$ (kg)",
-            "type": "continuous",
+            "type": "integer",
             "shape": [
                 "nP",
                 "nK"
             ]
         },
         "y": {
-            "description": "Amount of commodity k shipped along cycle c (kg)",
-            "type": "continuous",
+            "description": "Amount of commodity $k$ shipped along cycle $c$ (kg)",
+            "type": "integer",
             "shape": [
                 "nC",
                 "nK"
@@ -458,6 +473,14 @@
         }
     },
     "constraints": [
+        {
+            "description": "Total throughput at each transshipment node, summed over all commodities, is within its capacity. A route through the node carries its shipment through that node exactly once, so the node's in-degree within a path or cycle indicates whether the route consumes its capacity.",
+            "formulation": "\\sum_{k \\in K} \\left( \\sum_{p \\in P} \\left( \\sum_{i \\in N} pE_{p,i,T_t} \\right) x_{pk} + \\sum_{c \\in C} \\left( \\sum_{i \\in N} cE_{c,i,T_t} \\right) y_{ck} \\right) \\leq \\mathrm{cap}_t \\quad \\forall t \\in N_T",
+            "explicit": true,
+            "code": {
+                "gurobipy": "model.addConstrs(\n    gp.quicksum(sum(pE[p][i][T[t]] for i in range(nN)) * x[p, k] for p in range(nP) for k in range(nK))\n    + gp.quicksum(sum(cE[c][i][T[t]] for i in range(nN)) * y[c, k] for c in range(nC) for k in range(nK))\n    <= cap[t]\n    for t in range(nT)\n)"
+            }
+        },
         {
             "description": "Each beneficiary camp receives at least its ration demand from paths ending there for each commodity.",
             "formulation": "\\sum_{p \\in P} e_{jp} x_{pk} \\geq \\mathrm{dem}_j R_k \\quad \\forall j \\in N_B, k \\in K",
@@ -514,7 +537,7 @@
         },
         "notes": [
             "The inefficient formulation is path- and cycle-based.",
-            "In {cite:t}`ferchtandiker2025` inefficient formulation only contains path variables $P$. The efficient formulation is node-based with flow variables $F_{ijk}$ on graph edges. Hence, it allows for feasible points that cycle flow around transhipment nodes. To resolve this discrepancy, we introduce cycle variables $C$ for all simple directed cycles in the supply network."
+            "The {cite:t}`ferchtandiker2025` inefficient formulation only ships along paths $p \\in P$. The efficient formulation is node-based with flow variables $F_{ijk}$ on graph edges, so it admits feasible points that cycle flow around transshipment nodes. To resolve this discrepancy, we introduce a shipment variable $y_{ck}$ for every simple directed cycle $c \\in C$ of the supply network."
         ]
     }
 }

@@ -140,6 +140,12 @@
                 "python": "dem = dem"
             }
         },
+        "cap": {
+            "formulation": "\\mathrm{cap}_t = \\mathrm{cap}_t",
+            "code": {
+                "python": "cap = cap"
+            }
+        },
         "e": {
             "formulation": "e_{jp} = 1 \\iff \\text{path } p \\text{ ends at } B_j",
             "code": {

@@ -88,6 +88,7 @@ structure Params where
   nutval : Fin nK → Fin nL → ℝ  -- nutritional value per kg of each commodity for each nutrient
   nutreq : Fin nL → ℝ  -- per-person nutritional requirement for each nutrient
   dem : Fin nB → ℝ  -- number of beneficiaries at each camp
+  cap : Fin nT → ℤ  -- throughput capacity in kg of each transshipment node
   e : Fin nB → Fin nP → ℤ  -- indicator: 1 if path p ends at camp j, 0 otherwise
   -- Assumptions
   hE_bin : ∀ i j : Fin nN, E i j = 0 ∨ E i j = 1
@@ -118,6 +119,7 @@ structure Params where
   hnutval_nn : ∀ k : Fin nK, ∀ l : Fin nL, 0 ≤ nutval k l
   hnutreq_nn : ∀ l : Fin nL, 0 ≤ nutreq l
   hdem_nn : ∀ j : Fin nB, 0 ≤ dem j
+  hcap_nn : ∀ t : Fin nT, 0 ≤ cap t
   -- Path validity: every indexed path is a valid simple S-to-B path
   hpE_valid : ∀ p : Fin nP, IsValidPath S B E (pE p) (pRank p)
   -- End indicator e agrees with pE: e_{b,p} = pIn_p(B b) - pOut_p(B b)
@@ -141,14 +143,22 @@ structure Params where
     (∀ i j : Fin nN, cE c₁ i j = cE c₂ i j) → c₁ = c₂
 
 structure Vars (p : Params) where
-  x : Fin p.nP → Fin p.nK → ℝ  -- amount of commodity k shipped along path p (kg)
-  y : Fin p.nC → Fin p.nK → ℝ  -- amount of commodity k shipped along cycle c (kg)
+  x : Fin p.nP → Fin p.nK → ℤ  -- amount of commodity k shipped along path p (kg)
+  y : Fin p.nC → Fin p.nK → ℤ  -- amount of commodity k shipped along cycle c (kg)
   R : Fin p.nK → ℝ  -- ration size per person of each commodity (kg)
 
 structure Feasible (p : Params) (v : Vars p) : Prop where
+  -- Total throughput at each transshipment node, over all commodities, is
+  -- within capacity. A path or cycle carries its shipment through the node
+  -- exactly once, so the node's in-degree within it is the visit indicator.
+  hcap : ∀ t : Fin p.nT,
+    (∑ k : Fin p.nK,
+      ((∑ π : Fin p.nP, (∑ i : Fin p.nN, p.pE π i (p.T t)) * v.x π k)
+        + ∑ c : Fin p.nC, (∑ i : Fin p.nN, p.cE c i (p.T t)) * v.y c k))
+      ≤ p.cap t
   -- Each camp receives at least its ration demand from paths ending there
   hdemand : ∀ j : Fin p.nB, ∀ k : Fin p.nK,
-    p.dem j * v.R k ≤ ∑ π : Fin p.nP, (p.e j π : ℝ) * v.x π k
+    p.dem j * v.R k ≤ ∑ π : Fin p.nP, (p.e j π : ℝ) * (v.x π k : ℝ)
   -- Rations satisfy all nutritional requirements
   hnutrition : ∀ l : Fin p.nL,
     p.nutreq l ≤ ∑ k : Fin p.nK, p.nutval k l * v.R k
@@ -159,9 +169,9 @@ structure Feasible (p : Params) (v : Vars p) : Prop where
 
 -- Minimize total shipping (path and cycle) and procurement cost
 def obj (p : Params) (v : Vars p) : ℝ :=
-  (∑ π : Fin p.nP, ∑ k : Fin p.nK, p.pCost π k * v.x π k)
-    + (∑ c : Fin p.nC, ∑ k : Fin p.nK, p.cCost c k * v.y c k)
-    + ∑ k : Fin p.nK, p.q k * (∑ π : Fin p.nP, v.x π k)
+  (∑ π : Fin p.nP, ∑ k : Fin p.nK, p.pCost π k * (v.x π k : ℝ))
+    + (∑ c : Fin p.nC, ∑ k : Fin p.nK, p.cCost c k * (v.y c k : ℝ))
+    + ∑ k : Fin p.nK, p.q k * (∑ π : Fin p.nP, (v.x π k : ℝ))
 
 def formulation : MILPFormulation where
   Params   := Params

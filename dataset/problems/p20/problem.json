@@ -1,9 +1,14 @@
 {
     "name": "World Food Program Food Distribution",
-    "np_hard": false,
+    "np_hard": true,
     "parameters": {
         "nN": {
             "description": "Total number of nodes in the supply network (suppliers, transshipment points, and beneficiary camps)",
+            "type": "integer",
+            "shape": []
+        },
+        "nT": {
+            "description": "Number of transshipment points",
             "type": "integer",
             "shape": []
         },
@@ -44,6 +49,13 @@
                 "nB"
             ]
         },
+        "cap": {
+            "description": "Throughput capacity, in kg, of each transshipment point, in increasing order of node index",
+            "type": "integer",
+            "shape": [
+                "nT"
+            ]
+        },
         "pc": {
             "description": "Procurement cost per kg of each commodity",
             "type": "continuous",
@@ -82,9 +94,9 @@
             "citekey": "ferchtandiker2025"
         },
         "notes": [
-            "We add implicit assumptions that all sets are non-empty and $\\mathrm{dem}_j, \\mathrm{pc}_k, \\mathrm{tc}_{ijk}, \\mathrm{nutreq}_\\ell, \\mathrm{nutval}_{k\\ell} \\geq 0$.",
+            "We add implicit assumptions that all sets are non-empty and $\\mathrm{dem}_j, \\mathrm{cap}_t, \\mathrm{pc}_k, \\mathrm{tc}_{ijk}, \\mathrm{nutreq}_\\ell, \\mathrm{nutval}_{k\\ell} \\geq 0$.",
             "We assume the directed supply graph has no arcs entering suppliers and no arcs leaving beneficiary camps.",
-            "The problem is not NP-hard: with no capacity constraints the commodities decouple, and the problem reduces to a shortest-path computation per beneficiary camp plus a linear program over the ration."
+            "The original problem is not NP-hard: shipments are continuous and the transshipment points have unlimited capacity, so the problem reduces to a linear program and is solvable in polynomial time. We restrict to integral shipments and add throughput capacities (mentioned in the original {cite:t}`ferchtandiker2025` description), which couple the commodities and make the problem NP-hard."
         ]
     }
 }
