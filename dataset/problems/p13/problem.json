@@ -57,7 +57,7 @@
         },
         "notes": [
             "We identify a number of modeling inconsistencies in the original pair of formulations. To address this, we propose a new pair of flow-based formulations. The efficient formulation `p13.a` is an aggregated version of `p13.b`.",
-            "The original problem has a single interchangeable fleet and is not NP-hard: the flights aggregate into one commodity on a time-expanded flow network with node capacities, so the constraint matrix is totally unimodular. We depart from the source by partitioning the fleet into $nK$ plane classes, which earn class-dependent rewards and share the location capacities. The classes are no longer interchangeable, and the problem becomes an integral multi-commodity flow problem: giving a class a large reward at one location in the first time period and at another in the last forces it to fly between them, so the two-commodity integral flow problem, which is NP-complete {cite:t}`even1976`, reduces to it."
+            "The original problem is not NP-hard: the flights aggregate into one commodity on a time-expanded flow network, so the constraint matrix is totally unimodular. We introduce multiple plane classes, which earn class-dependent rewards and share the location capacities, to make the problem NP-hard."
         ]
     }
 }
