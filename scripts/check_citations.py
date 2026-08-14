@@ -2,8 +2,9 @@
 """Verify every citekey used in the dataset resolves against `dataset/ref.bib`.
 
 Walks the `metadata.source` of each `problem.json` and `formulation.json`
-(including nested `origin` sources) and reports keys with no matching BibTeX
-entry, plus entries in the bibliography that nothing cites.
+(including nested `origin` sources) along with the roles cited from their
+`metadata.notes`, and reports keys with no matching BibTeX entry, plus entries
+in the bibliography that nothing cites.
 """
 
 import argparse
@@ -16,6 +17,9 @@ REPO = Path(__file__).resolve().parent.parent
 DATASET_DIR = REPO / "dataset"
 
 BIB_ENTRY = re.compile(r"^@\w+\{([^,\s]+)\s*,", re.M)
+
+#: A MyST citation role, as notes write it: ``{cite:t}`key```.
+CITE_ROLE = re.compile(r"\{cite:\w+\}`([^`]+)`")
 
 
 def _cited_keys(source: object) -> set[str]:
@@ -39,7 +43,10 @@ def main() -> int:
     files += list(args.dataset.glob("problems/p*/formulations/*/formulation.json"))
     for path in sorted(files):
         metadata = json.loads(path.read_text()).get("metadata", {})
-        for key in _cited_keys(metadata.get("source")):
+        keys = _cited_keys(metadata.get("source"))
+        for note in metadata.get("notes", []):
+            keys |= set(CITE_ROLE.findall(note))
+        for key in keys:
             used.setdefault(key, []).append(str(path.relative_to(args.dataset)))
 
     missing = {k: v for k, v in used.items() if k not in defined}
