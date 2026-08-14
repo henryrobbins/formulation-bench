@@ -22,6 +22,12 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      # actions/checkout writes the pushed tag as a lightweight ref pointing at the
+      # commit, so reading the annotation below would yield the commit message
+      # instead. Re-fetching replaces it with the real tag object.
+      - name: Fetch tag annotations
+        run: git fetch --force --tags origin
+
       - name: Resolve tag
         id: tag
         run: |
@@ -45,8 +51,10 @@ jobs:
           TAG="${{ steps.tag.outputs.tag }}"
           SHA=$(awk '{print $1}' dist/dataset.tar.gz.sha256)
           SHORT=$(git rev-parse --short "$TAG^{commit}")
-          # Strip the leading "<tag>\n\n" subject git prepends for annotated tags,
-          # leaving just the body. Falls back to empty for lightweight tags.
+          # The release notes are the tag annotation's body: its first paragraph is
+          # the subject (by convention the tag name) and is dropped here. Falls back
+          # to empty for lightweight tags. Tag with `--cleanup=verbatim` so markdown
+          # headings survive; git otherwise strips `#` lines as comments.
           MSG=$(git tag -l --format='%(contents:body)' "$TAG")
           {
             echo "$MSG"
