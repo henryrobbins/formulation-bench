@@ -19,6 +19,10 @@ This file proves that the per-plane formulation `P13.b.formulation`
 `MILPReformulation` of the aggregate formulation `P13.a.formulation`
 (variables `n`, `f` counting flights per location and per arc).
 
+Each plane class carries its own flow network, so the decomposition runs one
+class at a time; the location capacities, the only coupling between classes,
+are preserved because the per-class node counts are.
+
 Because the P13 transition graph is layered in time, no general graph
 flow-decomposition theorem is needed: the forward map is built by
 induction over the time layers. The key ingredients are:
@@ -297,6 +301,7 @@ private lemma layer_step {nP nA : ℕ} [NeZero nA]
 
 /-- Parameter map `b.Params → a.Params` (identical data, distinct types). -/
 private def paramMap (p : P13.a.Params) : P13.b.Params where
+  nK := p.nK
   nP := p.nP
   nA := p.nA
   nT := p.nT
@@ -304,7 +309,7 @@ private def paramMap (p : P13.a.Params) : P13.b.Params where
   r := p.r
   cap := p.cap
   hadj_bin := p.hadj_bin
-  hnP := p.hnP
+  hnK := p.hnK
   hnA := p.hnA
   hnT := p.hnT
   hadj_self := p.hadj_self
@@ -316,79 +321,82 @@ private def paramMap (p : P13.a.Params) : P13.b.Params where
 
 section ForwardHelpers
 
-/-- Single-layer data extracted from `layer_step` at time `k`, with the
-next-layer count invariant rewritten via aggregate flow conservation. -/
+/-- Single-layer data extracted from `layer_step` for class `k` at time `j`,
+with the next-layer count invariant rewritten via aggregate flow
+conservation. -/
 private noncomputable def layerData (p : P13.a.Params) (v : P13.a.Vars p)
-    (h : P13.a.Feasible p v) (k : ℕ) (hk1 : k + 1 < p.nT)
-    (curLoc : Fin p.nP → Fin p.nA)
+    (h : P13.a.Feasible p v) (k : Fin p.nK) (j : ℕ) (hj1 : j + 1 < p.nT)
+    (curLoc : Fin (p.nP k) → Fin p.nA)
     (hinv : ∀ a, (univ.filter (fun pl => curLoc pl = a)).card
-        = (v.n a ⟨k, by omega⟩).toNat) :
-    {d : (Fin p.nP → Fin p.nA) × (Fin p.nP → Option (Fin p.nA)) //
-      (∀ a a', (univ.filter (fun pl => curLoc pl = a ∧ d.2 pl = some a')).card
-          = (v.f a a' ⟨k, by omega⟩).toNat) ∧
-      (∀ pl a', d.2 pl = some a' → d.1 pl = a') ∧
-      (∀ pl, d.2 pl = none → d.1 pl = curLoc pl) ∧
-      (∀ a', (univ.filter (fun pl => d.1 pl = a')).card
-          = (v.n a' ⟨k + 1, hk1⟩).toNat)} := by
+        = (v.n k a ⟨j, by omega⟩).toNat) :
+    {dt : (Fin (p.nP k) → Fin p.nA) × (Fin (p.nP k) → Option (Fin p.nA)) //
+      (∀ a a', (univ.filter (fun pl => curLoc pl = a ∧ dt.2 pl = some a')).card
+          = (v.f k a a' ⟨j, by omega⟩).toNat) ∧
+      (∀ pl a', dt.2 pl = some a' → dt.1 pl = a') ∧
+      (∀ pl, dt.2 pl = none → dt.1 pl = curLoc pl) ∧
+      (∀ a', (univ.filter (fun pl => dt.1 pl = a')).card
+          = (v.n k a' ⟨j + 1, hj1⟩).toNat)} := by
   haveI := p.hnA
-  have hstep := layer_step curLoc (fun a => v.n a ⟨k, by omega⟩)
-    (fun a a' => v.f a a' ⟨k, by omega⟩)
-    (fun a => h.hn_nn a _) (fun a a' => h.hf_nn a a' _)
-    (fun a => h.hstay_nn a _) hinv
+  have hstep := layer_step curLoc (fun a => v.n k a ⟨j, by omega⟩)
+    (fun a a' => v.f k a a' ⟨j, by omega⟩)
+    (fun a => h.hn_nn k a _) (fun a a' => h.hf_nn k a a' _)
+    (fun a => h.hstay_nn k a _) hinv
   choose nextLoc arcCh harccount hmove hstayloc hnextcount using hstep
   refine ⟨(nextLoc, arcCh), harccount, hmove, hstayloc, ?_⟩
   intro a'
   rw [hnextcount a']
-  have hf : v.n a' ⟨k + 1, hk1⟩
-      = v.n a' ⟨k, by omega⟩ + (∑ a, v.f a a' ⟨k, by omega⟩)
-        - (∑ a'', v.f a' a'' ⟨k, by omega⟩) :=
-    h.hflow a' ⟨k + 1, hk1⟩ (Nat.succ_pos k)
+  have hf : v.n k a' ⟨j + 1, hj1⟩
+      = v.n k a' ⟨j, by omega⟩ + (∑ a, v.f k a a' ⟨j, by omega⟩)
+        - (∑ a'', v.f k a' a'' ⟨j, by omega⟩) :=
+    h.hflow k a' ⟨j + 1, hj1⟩ (Nat.succ_pos j)
   rw [hf]
 
-/-- The layer placement at time `k`, built by recursion over the layers,
-carrying the per-location count invariant. -/
+/-- The class `k` layer placement at time `j`, built by recursion over the
+layers, carrying the per-location count invariant. -/
 private noncomputable def buildAux (p : P13.a.Params) (v : P13.a.Vars p)
-    (h : P13.a.Feasible p v) :
-    (k : ℕ) → (hk : k < p.nT) →
-    {lc : Fin p.nP → Fin p.nA //
-      ∀ a, (univ.filter (fun pl => lc pl = a)).card = (v.n a ⟨k, hk⟩).toNat}
-  | 0, hk => by
+    (h : P13.a.Feasible p v) (k : Fin p.nK) :
+    (j : ℕ) → (hj : j < p.nT) →
+    {lc : Fin (p.nP k) → Fin p.nA //
+      ∀ a, (univ.filter (fun pl => lc pl = a)).card = (v.n k a ⟨j, hj⟩).toNat}
+  | 0, hj => by
       haveI := p.hnA
-      have hsum : (∑ a, v.n a ⟨0, hk⟩) = (p.nP : ℤ) := h.hcount ⟨0, hk⟩
-      have hb := layer_base (nP := p.nP) (fun a => v.n a ⟨0, hk⟩)
-        (fun a => h.hn_nn a _) hsum
+      have hsum : (∑ a, v.n k a ⟨0, hj⟩) = (p.nP k : ℤ) := h.hcount k ⟨0, hj⟩
+      have hb := layer_base (nP := p.nP k) (fun a => v.n k a ⟨0, hj⟩)
+        (fun a => h.hn_nn k a _) hsum
       exact ⟨hb.choose, hb.choose_spec⟩
-  | (k + 1), hk => by
-      have prev := buildAux p v h k (by omega)
-      exact ⟨(layerData p v h k hk prev.val prev.property).val.1,
-             (layerData p v h k hk prev.val prev.property).property.2.2.2⟩
+  | (j + 1), hj => by
+      have prev := buildAux p v h k j (by omega)
+      exact ⟨(layerData p v h k j hj prev.val prev.property).val.1,
+             (layerData p v h k j hj prev.val prev.property).property.2.2.2⟩
 
 /-- Per-plane placement at each time layer. -/
 private noncomputable def locF (p : P13.a.Params) (v : P13.a.Vars p)
-    (h : P13.a.Feasible p v) (pl : Fin p.nP) (t : Fin p.nT) : Fin p.nA :=
-  (buildAux p v h t.val t.isLt).val pl
+    (h : P13.a.Feasible p v) (k : Fin p.nK) (pl : Fin (p.nP k)) (t : Fin p.nT) : Fin p.nA :=
+  (buildAux p v h k t.val t.isLt).val pl
 
 /-- Per-plane arc choice at each time layer (none on the last layer). -/
 private noncomputable def arcF (p : P13.a.Params) (v : P13.a.Vars p)
-    (h : P13.a.Feasible p v) (pl : Fin p.nP) (t : Fin p.nT) : Option (Fin p.nA) :=
+    (h : P13.a.Feasible p v) (k : Fin p.nK) (pl : Fin (p.nP k)) (t : Fin p.nT) :
+    Option (Fin p.nA) :=
   if ht : t.val + 1 < p.nT then
-    (layerData p v h t.val ht (buildAux p v h t.val t.isLt).val
-      (buildAux p v h t.val t.isLt).property).val.2 pl
+    (layerData p v h k t.val ht (buildAux p v h k t.val t.isLt).val
+      (buildAux p v h k t.val t.isLt).property).val.2 pl
   else none
 
 /-- Bundled layered decomposition of an aggregate solution into a per-plane
-routing over the time layers. -/
+routing over the time layers, one class at a time. -/
 private structure LayerDecomp (p : P13.a.Params) (v : P13.a.Vars p) where
-  loc   : Fin p.nP → Fin p.nT → Fin p.nA
-  arcCh : Fin p.nP → Fin p.nT → Option (Fin p.nA)
-  hcount : ∀ a t, (univ.filter (fun pl => loc pl t = a)).card = (v.n a t).toNat
-  harc   : ∀ a a' t,
-    (univ.filter (fun pl => loc pl t = a ∧ arcCh pl t = some a')).card = (v.f a a' t).toNat
-  hmove  : ∀ pl (t : Fin p.nT) (ht : t.val + 1 < p.nT) a',
-    arcCh pl t = some a' → loc pl ⟨t.val + 1, ht⟩ = a'
-  hstayloc : ∀ pl (t : Fin p.nT) (ht : t.val + 1 < p.nT),
-    arcCh pl t = none → loc pl ⟨t.val + 1, ht⟩ = loc pl t
-  hlast  : ∀ pl (t : Fin p.nT), t.val + 1 = p.nT → arcCh pl t = none
+  loc   : (k : Fin p.nK) → Fin (p.nP k) → Fin p.nT → Fin p.nA
+  arcCh : (k : Fin p.nK) → Fin (p.nP k) → Fin p.nT → Option (Fin p.nA)
+  hcount : ∀ k a t, (univ.filter (fun pl => loc k pl t = a)).card = (v.n k a t).toNat
+  harc   : ∀ k a a' t,
+    (univ.filter (fun pl => loc k pl t = a ∧ arcCh k pl t = some a')).card
+      = (v.f k a a' t).toNat
+  hmove  : ∀ k pl (t : Fin p.nT) (ht : t.val + 1 < p.nT) a',
+    arcCh k pl t = some a' → loc k pl ⟨t.val + 1, ht⟩ = a'
+  hstayloc : ∀ k pl (t : Fin p.nT) (ht : t.val + 1 < p.nT),
+    arcCh k pl t = none → loc k pl ⟨t.val + 1, ht⟩ = loc k pl t
+  hlast  : ∀ k pl (t : Fin p.nT), t.val + 1 = p.nT → arcCh k pl t = none
 
 /-- Every feasible aggregate solution admits a layered per-plane
 decomposition. -/
@@ -403,40 +411,40 @@ private lemma build_layers (p : P13.a.Params) (v : P13.a.Vars p)
     hstayloc := ?_
     hlast := ?_ }⟩
   · -- hcount
-    intro a t
-    simpa only [locF] using (buildAux p v h t.val t.isLt).property a
+    intro k a t
+    simpa only [locF] using (buildAux p v h k t.val t.isLt).property a
   · -- harc
-    intro a a' t
+    intro k a a' t
     by_cases ht : t.val + 1 < p.nT
-    · have hL := (layerData p v h t.val ht (buildAux p v h t.val t.isLt).val
-        (buildAux p v h t.val t.isLt).property).property.1 a a'
+    · have hL := (layerData p v h k t.val ht (buildAux p v h k t.val t.isLt).val
+        (buildAux p v h k t.val t.isLt).property).property.1 a a'
       simpa only [locF, arcF, dif_pos ht] using hL
     · have hlt : t.val + 1 = p.nT := by omega
-      have hz : v.f a a' t = 0 := h.hno_depart_last a a' t hlt
+      have hz : v.f k a a' t = 0 := h.hno_depart_last k a a' t hlt
       simp [arcF, dif_neg ht, hz]
   · -- hmove
-    intro pl t ht a' harcpl
-    have key : locF p v h pl ⟨t.val + 1, ht⟩
-        = (layerData p v h t.val ht (buildAux p v h t.val t.isLt).val
-            (buildAux p v h t.val t.isLt).property).val.1 pl := by
+    intro k pl t ht a' harcpl
+    have key : locF p v h k pl ⟨t.val + 1, ht⟩
+        = (layerData p v h k t.val ht (buildAux p v h k t.val t.isLt).val
+            (buildAux p v h k t.val t.isLt).property).val.1 pl := by
       simp only [locF, buildAux]
     rw [key]
-    refine (layerData p v h t.val ht (buildAux p v h t.val t.isLt).val
-      (buildAux p v h t.val t.isLt).property).property.2.1 pl a' ?_
+    refine (layerData p v h k t.val ht (buildAux p v h k t.val t.isLt).val
+      (buildAux p v h k t.val t.isLt).property).property.2.1 pl a' ?_
     simpa only [arcF, dif_pos ht] using harcpl
   · -- hstayloc
-    intro pl t ht harcpl
-    have key : locF p v h pl ⟨t.val + 1, ht⟩
-        = (layerData p v h t.val ht (buildAux p v h t.val t.isLt).val
-            (buildAux p v h t.val t.isLt).property).val.1 pl := by
+    intro k pl t ht harcpl
+    have key : locF p v h k pl ⟨t.val + 1, ht⟩
+        = (layerData p v h k t.val ht (buildAux p v h k t.val t.isLt).val
+            (buildAux p v h k t.val t.isLt).property).val.1 pl := by
       simp only [locF, buildAux]
     rw [key]
-    have := (layerData p v h t.val ht (buildAux p v h t.val t.isLt).val
-      (buildAux p v h t.val t.isLt).property).property.2.2.1 pl
+    have := (layerData p v h k t.val ht (buildAux p v h k t.val t.isLt).val
+      (buildAux p v h k t.val t.isLt).property).property.2.2.1 pl
         (by simpa only [arcF, dif_pos ht] using harcpl)
     simpa only [locF] using this
   · -- hlast
-    intro pl t hlt
+    intro k pl t hlt
     simp only [arcF, dif_neg (by omega : ¬ t.val + 1 < p.nT)]
 
 end ForwardHelpers
@@ -448,13 +456,13 @@ private noncomputable def fwd (p : P13.a.Params) (v : P13.a.Vars p) :
   classical
   exact
     if h : P13.a.Feasible p v then
-      { y := fun pl a t =>
-          if (Classical.choice (build_layers p v h)).loc pl t = a then 1 else 0
-        z := fun pl a a' t =>
-          if (Classical.choice (build_layers p v h)).arcCh pl t = some a'
-              ∧ (Classical.choice (build_layers p v h)).loc pl t = a then 1 else 0 }
+      { y := fun k pl a t =>
+          if (Classical.choice (build_layers p v h)).loc k pl t = a then 1 else 0
+        z := fun k pl a a' t =>
+          if (Classical.choice (build_layers p v h)).arcCh k pl t = some a'
+              ∧ (Classical.choice (build_layers p v h)).loc k pl t = a then 1 else 0 }
     else
-      { y := fun _ _ _ => 0, z := fun _ _ _ _ => 0 }
+      { y := fun _ _ _ _ => 0, z := fun _ _ _ _ _ => 0 }
 
 /-- The forward map sends feasible aggregate solutions to feasible per-plane
 solutions. -/
@@ -462,94 +470,104 @@ private lemma fwd_feas (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible
     P13.b.Feasible (paramMap p) (fwd p v) := by
   classical
   set D := Classical.choice (build_layers p v h) with hD
-  have hy : ∀ pl a t, (fwd p v).y pl a t = if D.loc pl t = a then (1 : ℤ) else 0 := by
-    intro pl a t; simp only [fwd, dif_pos h, ← hD]
-  have hz : ∀ pl a a' t, (fwd p v).z pl a a' t
-      = if D.arcCh pl t = some a' ∧ D.loc pl t = a then (1 : ℤ) else 0 := by
-    intro pl a a' t; simp only [fwd, dif_pos h, ← hD]
-  have sum_in : ∀ (pl : Fin (paramMap p).nP) (s : Fin (paramMap p).nT) (b : Fin (paramMap p).nA),
-      (∑ a' : Fin (paramMap p).nA, if D.arcCh pl s = some b ∧ D.loc pl s = a' then (1 : ℤ) else 0)
-        = if D.arcCh pl s = some b then 1 else 0 := by
-    intro pl s b
-    by_cases hc : D.arcCh pl s = some b <;> simp [hc, Finset.sum_ite_eq]
-  have sum_out : ∀ (pl : Fin (paramMap p).nP) (s : Fin (paramMap p).nT) (b : Fin (paramMap p).nA),
-      (∑ a' : Fin (paramMap p).nA, if D.arcCh pl s = some a' ∧ D.loc pl s = b then (1 : ℤ) else 0)
-        = if D.loc pl s = b then
-            (∑ a' : Fin (paramMap p).nA, if D.arcCh pl s = some a' then (1 : ℤ) else 0) else 0 := by
-    intro pl s b
-    by_cases hb : D.loc pl s = b
+  have hy : ∀ k pl a t, (fwd p v).y k pl a t = if D.loc k pl t = a then (1 : ℤ) else 0 := by
+    intro k pl a t; simp only [fwd, dif_pos h, ← hD]
+  have hz : ∀ k pl a a' t, (fwd p v).z k pl a a' t
+      = if D.arcCh k pl t = some a' ∧ D.loc k pl t = a then (1 : ℤ) else 0 := by
+    intro k pl a a' t; simp only [fwd, dif_pos h, ← hD]
+  have sum_in : ∀ (k : Fin (paramMap p).nK) (pl : Fin ((paramMap p).nP k))
+      (s : Fin (paramMap p).nT) (b : Fin (paramMap p).nA),
+      (∑ a' : Fin (paramMap p).nA,
+        if D.arcCh k pl s = some b ∧ D.loc k pl s = a' then (1 : ℤ) else 0)
+        = if D.arcCh k pl s = some b then 1 else 0 := by
+    intro k pl s b
+    by_cases hc : D.arcCh k pl s = some b <;> simp [hc, Finset.sum_ite_eq]
+  have sum_out : ∀ (k : Fin (paramMap p).nK) (pl : Fin ((paramMap p).nP k))
+      (s : Fin (paramMap p).nT) (b : Fin (paramMap p).nA),
+      (∑ a' : Fin (paramMap p).nA,
+        if D.arcCh k pl s = some a' ∧ D.loc k pl s = b then (1 : ℤ) else 0)
+        = if D.loc k pl s = b then
+            (∑ a' : Fin (paramMap p).nA, if D.arcCh k pl s = some a' then (1 : ℤ) else 0)
+          else 0 := by
+    intro k pl s b
+    by_cases hb : D.loc k pl s = b
     · simp only [hb, and_true, if_true]
     · simp [hb]
   refine { hassign := ?_, hcap := ?_, hflow := ?_, hadj := ?_,
            hno_depart_last := ?_, hstay_nn := ?_, hy_bin := ?_, hz_bin := ?_ }
   · -- hassign
-    intro pl t
+    intro k pl t
     simp [hy, Finset.sum_ite_eq]
   · -- hcap
     intro a t
     simp only [hy]
-    have hcnt : (univ.filter (fun pl : Fin (paramMap p).nP => D.loc pl t = a)).card
-        = (v.n a t).toNat := D.hcount a t
-    push_cast
-    rw [Finset.sum_boole, hcnt,
-        show (((v.n a t).toNat : ℝ)) = (v.n a t : ℝ) from by
-          exact_mod_cast Int.toNat_of_nonneg (h.hn_nn a t)]
+    have hstep : ∀ k : Fin (paramMap p).nK,
+        (∑ pl : Fin ((paramMap p).nP k),
+          ((if D.loc k pl t = a then (1 : ℤ) else 0 : ℤ) : ℝ)) = (v.n k a t : ℝ) := by
+      intro k
+      have hcnt : (univ.filter (fun pl : Fin ((paramMap p).nP k) => D.loc k pl t = a)).card
+          = (v.n k a t).toNat := D.hcount k a t
+      push_cast
+      rw [Finset.sum_boole, hcnt]
+      exact_mod_cast Int.toNat_of_nonneg (h.hn_nn k a t)
+    rw [Finset.sum_congr rfl (fun k _ => hstep k)]
     exact h.hcap a t
   · -- hflow
-    intro pl a t ht
+    intro k pl a t ht
     simp only [hy, hz]
     set s : Fin (paramMap p).nT := ⟨t.val - 1, by omega⟩ with hs_def
     have hsval : s.val = t.val - 1 := by rw [hs_def]
     have hlt : s.val + 1 < (paramMap p).nT := by rw [hsval]; omega
     have hst : (⟨s.val + 1, hlt⟩ : Fin (paramMap p).nT) = t := by
       apply Fin.ext; show s.val + 1 = t.val; omega
-    rw [sum_in pl s a, sum_out pl s a]
-    rcases hc : D.arcCh pl s with _ | c
+    rw [sum_in k pl s a, sum_out k pl s a]
+    rcases hc : D.arcCh k pl s with _ | c
     · -- no departing arc: plane stays
-      have hloc : D.loc pl t = D.loc pl s := by
-        rw [← hst]; exact D.hstayloc pl s hlt hc
+      have hloc : D.loc k pl t = D.loc k pl s := by
+        rw [← hst]; exact D.hstayloc k pl s hlt hc
       rw [hloc]; simp
     · -- departs on arc c
-      have hloc : D.loc pl t = c := by
-        rw [← hst]; exact D.hmove pl s hlt c hc
+      have hloc : D.loc k pl t = c := by
+        rw [← hst]; exact D.hmove k pl s hlt c hc
       rw [hloc]
       simp only [Option.some.injEq]
       rw [show (∑ a' : Fin (paramMap p).nA, if c = a' then (1 : ℤ) else 0) = 1 from by
         simp only [Finset.sum_ite_eq, Finset.mem_univ, if_true]]
       ring
   · -- hadj
-    intro pl a a' t
+    intro k pl a a' t
     rw [hz]
     split_ifs with hcond
-    · have hmem : pl ∈ univ.filter (fun q => D.loc q t = a ∧ D.arcCh q t = some a') := by
+    · have hmem : pl ∈ univ.filter (fun q => D.loc k q t = a ∧ D.arcCh k q t = some a') := by
         simp only [Finset.mem_filter, Finset.mem_univ, true_and]
         exact ⟨hcond.2, hcond.1⟩
-      have hcardpos : 0 < (univ.filter (fun q => D.loc q t = a ∧ D.arcCh q t = some a')).card :=
+      have hcardpos :
+          0 < (univ.filter (fun q => D.loc k q t = a ∧ D.arcCh k q t = some a')).card :=
         Finset.card_pos.mpr ⟨pl, hmem⟩
-      rw [D.harc a a' t] at hcardpos
-      have hpos : 0 < v.f a a' t := by omega
-      have hb := h.hadj a a' t
+      rw [D.harc k a a' t] at hcardpos
+      have hpos : 0 < v.f k a a' t := by omega
+      have hb := h.hadj k a a' t
       rcases p.hadj_bin a a' with h0 | h1
       · exfalso; rw [h0, mul_zero] at hb; omega
       · show (1 : ℤ) ≤ p.adj a a'; rw [h1]
     · show (0 : ℤ) ≤ p.adj a a'
       rcases p.hadj_bin a a' with h0 | h1 <;> omega
   · -- hno_depart_last
-    intro pl a a' t hlt
-    simp [hz, D.hlast pl t hlt]
+    intro k pl a a' t hlt
+    simp [hz, D.hlast k pl t hlt]
   · -- hstay_nn
-    intro pl a t
+    intro k pl a t
     simp only [hy, hz]
-    rw [sum_out pl t a]
-    by_cases hla : D.loc pl t = a
+    rw [sum_out k pl t a]
+    by_cases hla : D.loc k pl t = a
     · rw [if_pos hla, if_pos hla]
-      rcases hc : D.arcCh pl t with _ | c <;> simp [Finset.sum_ite_eq]
+      rcases hc : D.arcCh k pl t with _ | c <;> simp [Finset.sum_ite_eq]
     · simp [hla]
   · -- hy_bin
-    intro pl a t
+    intro k pl a t
     rw [hy]; split_ifs <;> simp
   · -- hz_bin
-    intro pl a a' t
+    intro k pl a a' t
     rw [hz]; split_ifs <;> simp
 
 /-- The forward map preserves the objective. -/
@@ -557,81 +575,84 @@ private lemma fwd_obj (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible 
     P13.b.obj (paramMap p) (fwd p v) = P13.a.obj p v := by
   classical
   set D := Classical.choice (build_layers p v h) with hD
-  have hy : ∀ pl a t, (fwd p v).y pl a t = if D.loc pl t = a then (1 : ℤ) else 0 := by
-    intro pl a t; simp only [fwd, dif_pos h, ← hD]
+  have hy : ∀ k pl a t, (fwd p v).y k pl a t = if D.loc k pl t = a then (1 : ℤ) else 0 := by
+    intro k pl a t; simp only [fwd, dif_pos h, ← hD]
   simp only [P13.b.obj, P13.a.obj, hy]
   congr 1
+  apply Finset.sum_congr rfl; intro k _
   rw [Finset.sum_comm]
   conv_lhs => enter [2, a]; rw [Finset.sum_comm]
   apply Finset.sum_congr rfl; intro a _
   apply Finset.sum_congr rfl; intro t _
-  have hcnt : (univ.filter (fun pl : Fin (paramMap p).nP => D.loc pl t = a)).card
-      = (v.n a t).toNat := D.hcount a t
+  have hcnt : (univ.filter (fun pl : Fin ((paramMap p).nP k) => D.loc k pl t = a)).card
+      = (v.n k a t).toNat := D.hcount k a t
   rw [← Finset.mul_sum]
   congr 1
   push_cast
   rw [Finset.sum_boole, hcnt]
-  exact_mod_cast Int.toNat_of_nonneg (h.hn_nn a t)
+  exact_mod_cast Int.toNat_of_nonneg (h.hn_nn k a t)
 
 -- ============================================================================
 -- § Backward Mapping and Feasibility
 -- ============================================================================
 
-/-- Backward variable map: aggregate the per-plane variables. -/
+/-- Backward variable map: aggregate the per-plane variables within each
+class. -/
 private def bwd (p : P13.a.Params) (v : P13.b.Vars (paramMap p)) : P13.a.Vars p where
-  n := fun a t => ∑ pl, v.y pl a t
-  f := fun a a' t => ∑ pl, v.z pl a a' t
+  n := fun k a t => ∑ pl, v.y k pl a t
+  f := fun k a a' t => ∑ pl, v.z k pl a a' t
 
 /-- The backward map sends feasible per-plane solutions to feasible
 aggregate solutions. -/
 private lemma bwd_feas (p : P13.a.Params) (v : P13.b.Vars (paramMap p))
     (hv : P13.b.Feasible (paramMap p) v) : P13.a.Feasible p (bwd p v) where
   hcount := by
-    intro t
-    show (∑ a, ∑ pl, v.y pl a t) = (p.nP : ℤ)
+    intro k t
+    show (∑ a, ∑ pl, v.y k pl a t) = (p.nP k : ℤ)
     rw [Finset.sum_comm]
-    calc ∑ pl, ∑ a, v.y pl a t
-        = ∑ _pl : Fin p.nP, (1 : ℤ) := Finset.sum_congr rfl (fun pl _ => hv.hassign pl t)
-      _ = (p.nP : ℤ) := by simp
+    calc ∑ pl : Fin (p.nP k), ∑ a, v.y k pl a t
+        = ∑ _pl : Fin (p.nP k), (1 : ℤ) := Finset.sum_congr rfl (fun pl _ => hv.hassign k pl t)
+      _ = (p.nP k : ℤ) := by simp
   hcap := by
     intro a t
     simp only [bwd]
     push_cast
     exact hv.hcap a t
   hflow := by
-    intro a t ht
+    intro k a t ht
     simp only [bwd]
     rw [Finset.sum_comm (s := (univ : Finset (Fin p.nA)))
-        (f := fun a' pl => v.z pl a' a ⟨t.val - 1, by show t.val - 1 < p.nT; omega⟩)]
+        (f := fun a' pl => v.z k pl a' a ⟨t.val - 1, by show t.val - 1 < p.nT; omega⟩)]
     rw [Finset.sum_comm (s := (univ : Finset (Fin p.nA)))
-        (f := fun a' pl => v.z pl a a' ⟨t.val - 1, by show t.val - 1 < p.nT; omega⟩)]
+        (f := fun a' pl => v.z k pl a a' ⟨t.val - 1, by show t.val - 1 < p.nT; omega⟩)]
     rw [← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]
-    exact Finset.sum_congr rfl (fun pl _ => hv.hflow pl a t ht)
+    exact Finset.sum_congr rfl (fun pl _ => hv.hflow k pl a t ht)
   hadj := by
-    intro a a' t
+    intro k a a' t
     simp only [bwd]
-    calc ∑ pl, v.z pl a a' t
-        ≤ ∑ _pl : Fin p.nP, p.adj a a' := Finset.sum_le_sum (fun pl _ => hv.hadj pl a a' t)
-      _ = (p.nP : ℤ) * p.adj a a' := by
+    calc ∑ pl : Fin (p.nP k), v.z k pl a a' t
+        ≤ ∑ _pl : Fin (p.nP k), p.adj a a' :=
+          Finset.sum_le_sum (fun pl _ => hv.hadj k pl a a' t)
+      _ = (p.nP k : ℤ) * p.adj a a' := by
             rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
   hno_depart_last := by
-    intro a a' t ht
+    intro k a a' t ht
     simp only [bwd]
-    rw [Finset.sum_congr rfl (fun pl _ => hv.hno_depart_last pl a a' t ht)]
+    rw [Finset.sum_congr rfl (fun pl _ => hv.hno_depart_last k pl a a' t ht)]
     simp
   hstay_nn := by
-    intro a t
+    intro k a t
     simp only [bwd]
     rw [Finset.sum_comm]
-    exact Finset.sum_le_sum (fun pl _ => hv.hstay_nn pl a t)
+    exact Finset.sum_le_sum (fun pl _ => hv.hstay_nn k pl a t)
   hn_nn := by
-    intro a t
+    intro k a t
     simp only [bwd]
-    exact Finset.sum_nonneg (fun pl _ => by rcases hv.hy_bin pl a t with h | h <;> omega)
+    exact Finset.sum_nonneg (fun pl _ => by rcases hv.hy_bin k pl a t with h | h <;> omega)
   hf_nn := by
-    intro a a' t
+    intro k a a' t
     simp only [bwd]
-    exact Finset.sum_nonneg (fun pl _ => by rcases hv.hz_bin pl a a' t with h | h <;> omega)
+    exact Finset.sum_nonneg (fun pl _ => by rcases hv.hz_bin k pl a a' t with h | h <;> omega)
 
 /-- The backward map preserves the objective. -/
 private lemma bwd_obj (p : P13.a.Params) (v : P13.b.Vars (paramMap p)) :
@@ -639,6 +660,7 @@ private lemma bwd_obj (p : P13.a.Params) (v : P13.b.Vars (paramMap p)) :
   symm
   simp only [P13.a.obj, P13.b.obj, bwd]
   congr 1
+  apply Finset.sum_congr rfl; intro k _
   push_cast
   simp_rw [Finset.mul_sum]
   conv_lhs => enter [2, x]; rw [Finset.sum_comm]
@@ -655,35 +677,35 @@ private lemma bwd_fwd (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible 
     bwd p (fwd p v) = v := by
   classical
   set D := Classical.choice (build_layers p v h) with hD
-  have hy : ∀ pl a t, (fwd p v).y pl a t = if D.loc pl t = a then (1 : ℤ) else 0 := by
-    intro pl a t; simp only [fwd, dif_pos h, ← hD]
-  have hz : ∀ pl a a' t, (fwd p v).z pl a a' t
-      = if D.arcCh pl t = some a' ∧ D.loc pl t = a then (1 : ℤ) else 0 := by
-    intro pl a a' t; simp only [fwd, dif_pos h, ← hD]
-  have hn : ∀ a t, (∑ pl, (fwd p v).y pl a t) = v.n a t := by
-    intro a t
+  have hy : ∀ k pl a t, (fwd p v).y k pl a t = if D.loc k pl t = a then (1 : ℤ) else 0 := by
+    intro k pl a t; simp only [fwd, dif_pos h, ← hD]
+  have hz : ∀ k pl a a' t, (fwd p v).z k pl a a' t
+      = if D.arcCh k pl t = some a' ∧ D.loc k pl t = a then (1 : ℤ) else 0 := by
+    intro k pl a a' t; simp only [fwd, dif_pos h, ← hD]
+  have hn : ∀ k a t, (∑ pl, (fwd p v).y k pl a t) = v.n k a t := by
+    intro k a t
     simp only [hy]
-    have hcnt : (univ.filter (fun pl : Fin (paramMap p).nP => D.loc pl t = a)).card
-        = (v.n a t).toNat := D.hcount a t
+    have hcnt : (univ.filter (fun pl : Fin ((paramMap p).nP k) => D.loc k pl t = a)).card
+        = (v.n k a t).toNat := D.hcount k a t
     rw [Finset.sum_boole, hcnt]
-    exact Int.toNat_of_nonneg (h.hn_nn a t)
-  have hf : ∀ a a' t, (∑ pl, (fwd p v).z pl a a' t) = v.f a a' t := by
-    intro a a' t
+    exact Int.toNat_of_nonneg (h.hn_nn k a t)
+  have hf : ∀ k a a' t, (∑ pl, (fwd p v).z k pl a a' t) = v.f k a a' t := by
+    intro k a a' t
     simp only [hz]
-    have hcnt : (univ.filter (fun pl : Fin (paramMap p).nP =>
-        D.arcCh pl t = some a' ∧ D.loc pl t = a)).card = (v.f a a' t).toNat := by
-      rw [show (univ.filter (fun pl : Fin (paramMap p).nP =>
-            D.arcCh pl t = some a' ∧ D.loc pl t = a))
-          = univ.filter (fun pl : Fin (paramMap p).nP =>
-            D.loc pl t = a ∧ D.arcCh pl t = some a') from by
+    have hcnt : (univ.filter (fun pl : Fin ((paramMap p).nP k) =>
+        D.arcCh k pl t = some a' ∧ D.loc k pl t = a)).card = (v.f k a a' t).toNat := by
+      rw [show (univ.filter (fun pl : Fin ((paramMap p).nP k) =>
+            D.arcCh k pl t = some a' ∧ D.loc k pl t = a))
+          = univ.filter (fun pl : Fin ((paramMap p).nP k) =>
+            D.loc k pl t = a ∧ D.arcCh k pl t = some a') from by
         apply Finset.filter_congr; intro pl _; tauto]
-      exact D.harc a a' t
+      exact D.harc k a a' t
     rw [Finset.sum_boole, hcnt]
-    exact Int.toNat_of_nonneg (h.hf_nn a a' t)
+    exact Int.toNat_of_nonneg (h.hf_nn k a a' t)
   cases v
   simp only [bwd, P13.a.Vars.mk.injEq]
-  exact ⟨funext fun a => funext fun t => hn a t,
-         funext fun a => funext fun a' => funext fun t => hf a a' t⟩
+  exact ⟨funext fun k => funext fun a => funext fun t => hn k a t,
+         funext fun k => funext fun a => funext fun a' => funext fun t => hf k a a' t⟩
 
 -- ============================================================================
 -- § Reformulation Structure
@@ -691,8 +713,9 @@ private lemma bwd_fwd (p : P13.a.Params) (v : P13.a.Vars p) (h : P13.a.Feasible 
 
 /-- The per-plane formulation `P13.b` is a reformulation of the aggregate
 formulation `P13.a`: the forward map expands an aggregate solution into a
-per-plane routing via the layered flow decomposition, and the backward map
-aggregates a per-plane solution by summing over planes. -/
+per-plane routing via the layered flow decomposition, one plane class at a
+time, and the backward map aggregates a per-plane solution by summing over
+the planes of each class. -/
 noncomputable def aBReformulation :
     MILPReformulation P13.a.formulation P13.b.formulation where
   paramMap := paramMap

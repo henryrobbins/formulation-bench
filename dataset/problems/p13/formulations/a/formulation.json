@@ -1,10 +1,17 @@
 {
     "valid": true,
     "parameters": {
-        "nP": {
-            "description": "Number of flights",
+        "nK": {
+            "description": "Number of plane classes",
             "type": "integer",
             "shape": []
+        },
+        "nP": {
+            "description": "Number of flights of class $k$",
+            "type": "integer",
+            "shape": [
+                "nK"
+            ]
         },
         "nA": {
             "description": "Number of airspace sectors/locations",
@@ -25,9 +32,10 @@
             ]
         },
         "r": {
-            "description": "Reward for being at location $a$ at time $t$",
+            "description": "Reward for a class $k$ flight being at location $a$ at time $t$",
             "type": "continuous",
             "shape": [
+                "nK",
                 "nA",
                 "nT"
             ]
@@ -57,21 +65,31 @@
             "code": {
                 "python": "assert all(cap[a][t] >= 0 for a in range(nA) for t in range(nT))"
             }
+        },
+        {
+            "description": "Class sizes are non-negative.",
+            "formulation": "nP_k \\geq 0 \\quad \\forall k \\in K",
+            "explicit": false,
+            "code": {
+                "python": "assert all(nP[k] >= 0 for k in range(nK))"
+            }
         }
     ],
     "variables": {
         "n": {
-            "description": "Number of flights at location $a$ at time $t$",
+            "description": "Number of class $k$ flights at location $a$ at time $t$",
             "type": "integer",
             "shape": [
+                "nK",
                 "nA",
                 "nT"
             ]
         },
         "f": {
-            "description": "Number of flights moving from $a$ at time $t$ to $a'$ at time $t+1$",
+            "description": "Number of class $k$ flights moving from $a$ at time $t$ to $a'$ at time $t+1$",
             "type": "integer",
             "shape": [
+                "nK",
                 "nA",
                 "nA",
                 "nT"
@@ -80,75 +98,75 @@
     },
     "constraints": [
         {
-            "description": "All flights are accounted for at every time period.",
-            "formulation": "\\sum_{a \\in A} n_{a,t} = nP \\quad \\forall t \\in T",
+            "description": "All flights of every class are accounted for at every time period.",
+            "formulation": "\\sum_{a \\in A} n_{k,a,t} = nP_k \\quad \\forall k \\in K, t \\in T",
             "explicit": true,
             "code": {
-                "gurobipy": "model.addConstrs(gp.quicksum(n[a, t] for a in range(nA)) == nP for t in range(nT))"
+                "gurobipy": "model.addConstrs(gp.quicksum(n[k, a, t] for a in range(nA)) == nP[k] for k in range(nK) for t in range(nT))"
             }
         },
         {
-            "description": "The number of flights at each location does not exceed the location capacity.",
-            "formulation": "n_{a,t} \\leq \\text{cap}_{a,t} \\quad \\forall a \\in A, t \\in T",
+            "description": "The flights of all classes at a location do not exceed the location capacity.",
+            "formulation": "\\sum_{k \\in K} n_{k,a,t} \\leq \\text{cap}_{a,t} \\quad \\forall a \\in A, t \\in T",
             "explicit": true,
             "code": {
-                "gurobipy": "model.addConstrs(n[a, t] <= cap[a][t] for a in range(nA) for t in range(nT))"
+                "gurobipy": "model.addConstrs(gp.quicksum(n[k, a, t] for k in range(nK)) <= cap[a][t] for a in range(nA) for t in range(nT))"
             }
         },
         {
-            "description": "Flow conservation: flights at location $a$ at time $t$ equal those at $t-1$ plus arrivals minus departures (one-step transitions).",
-            "formulation": "n_{a,t} = n_{a,t-1} + \\sum_{a' \\in A} f_{a',a,t-1} - \\sum_{a' \\in A} f_{a,a',t-1} \\quad \\forall a \\in A, t \\in T, t > 0",
+            "description": "Flow conservation: class $k$ flights at location $a$ at time $t$ equal those at $t-1$ plus arrivals minus departures (one-step transitions).",
+            "formulation": "n_{k,a,t} = n_{k,a,t-1} + \\sum_{a' \\in A} f_{k,a',a,t-1} - \\sum_{a' \\in A} f_{k,a,a',t-1} \\quad \\forall k \\in K, a \\in A, t \\in T, t > 0",
             "explicit": true,
             "code": {
-                "gurobipy": "model.addConstrs(n[a, t] == n[a, t-1] + gp.quicksum(f[a2, a, t-1] for a2 in range(nA)) - gp.quicksum(f[a, a2, t-1] for a2 in range(nA)) for a in range(nA) for t in range(1, nT))"
+                "gurobipy": "model.addConstrs(n[k, a, t] == n[k, a, t-1] + gp.quicksum(f[k, a2, a, t-1] for a2 in range(nA)) - gp.quicksum(f[k, a, a2, t-1] for a2 in range(nA)) for k in range(nK) for a in range(nA) for t in range(1, nT))"
             }
         },
         {
             "description": "Movements are only allowed between adjacent locations.",
-            "formulation": "f_{a,a',t} \\leq nP \\times \\text{adj}_{a,a'} \\quad \\forall a, a' \\in A, t \\in T",
+            "formulation": "f_{k,a,a',t} \\leq nP_k \\times \\text{adj}_{a,a'} \\quad \\forall k \\in K, a, a' \\in A, t \\in T",
             "explicit": true,
             "code": {
-                "gurobipy": "model.addConstrs(f[a, a2, t] <= nP * adj[a][a2] for a in range(nA) for a2 in range(nA) for t in range(nT))"
+                "gurobipy": "model.addConstrs(f[k, a, a2, t] <= nP[k] * adj[a][a2] for k in range(nK) for a in range(nA) for a2 in range(nA) for t in range(nT))"
             }
         },
         {
             "description": "No movements out of the final time period (would arrive outside the horizon).",
-            "formulation": "f_{a,a',nT-1} = 0 \\quad \\forall a, a' \\in A",
+            "formulation": "f_{k,a,a',nT-1} = 0 \\quad \\forall k \\in K, a, a' \\in A",
             "explicit": true,
             "code": {
-                "gurobipy": "model.addConstrs(f[a, a2, nT-1] == 0 for a in range(nA) for a2 in range(nA))"
+                "gurobipy": "model.addConstrs(f[k, a, a2, nT-1] == 0 for k in range(nK) for a in range(nA) for a2 in range(nA))"
             }
         },
         {
             "description": "Aggregate departures at time $t$ do not exceed presence at time $t$ (stay-flow non-negativity).",
-            "formulation": "\\sum_{a' \\in A} f_{a,a',t} \\leq n_{a,t} \\quad \\forall a \\in A, t \\in T",
+            "formulation": "\\sum_{a' \\in A} f_{k,a,a',t} \\leq n_{k,a,t} \\quad \\forall k \\in K, a \\in A, t \\in T",
             "explicit": true,
             "code": {
-                "gurobipy": "model.addConstrs(gp.quicksum(f[a, a2, t] for a2 in range(nA)) <= n[a, t] for a in range(nA) for t in range(nT))"
+                "gurobipy": "model.addConstrs(gp.quicksum(f[k, a, a2, t] for a2 in range(nA)) <= n[k, a, t] for k in range(nK) for a in range(nA) for t in range(nT))"
             }
         },
         {
             "description": "$n$ is non-negative.",
-            "formulation": "n_{a,t} \\geq 0 \\quad \\forall a \\in A, t \\in T",
+            "formulation": "n_{k,a,t} \\geq 0 \\quad \\forall k \\in K, a \\in A, t \\in T",
             "explicit": false,
             "code": {
-                "gurobipy": "model.addConstrs(n[a, t] >= 0 for a in range(nA) for t in range(nT))"
+                "gurobipy": "model.addConstrs(n[k, a, t] >= 0 for k in range(nK) for a in range(nA) for t in range(nT))"
             }
         },
         {
             "description": "$f$ is non-negative.",
-            "formulation": "f_{a,a',t} \\geq 0 \\quad \\forall a, a' \\in A, t \\in T",
+            "formulation": "f_{k,a,a',t} \\geq 0 \\quad \\forall k \\in K, a, a' \\in A, t \\in T",
             "explicit": false,
             "code": {
-                "gurobipy": "model.addConstrs(f[a, a2, t] >= 0 for a in range(nA) for a2 in range(nA) for t in range(nT))"
+                "gurobipy": "model.addConstrs(f[k, a, a2, t] >= 0 for k in range(nK) for a in range(nA) for a2 in range(nA) for t in range(nT))"
             }
         }
     ],
     "objective": {
-        "description": "Maximize total reward for all flights across all locations and time periods.",
-        "formulation": "\\max \\sum_{a \\in A} \\sum_{t \\in T} r_{a,t} \\times n_{a,t}",
+        "description": "Maximize total reward for all flights across all classes, locations, and time periods.",
+        "formulation": "\\max \\sum_{k \\in K} \\sum_{a \\in A} \\sum_{t \\in T} r_{k,a,t} \\times n_{k,a,t}",
         "code": {
-            "gurobipy": "model.setObjective(gp.quicksum(r[a][t] * n[a, t] for a in range(nA) for t in range(nT)), GRB.MAXIMIZE)"
+            "gurobipy": "model.setObjective(gp.quicksum(r[k][a][t] * n[k, a, t] for k in range(nK) for a in range(nA) for t in range(nT)), GRB.MAXIMIZE)"
         }
     },
     "metadata": {
@@ -158,7 +176,7 @@
             "formulation_id": "efficient"
         },
         "notes": [
-            "This is the aggregate (efficient) formulation."
+            "This is the aggregate (efficient) formulation: one flow network per plane class, coupled only through the location capacities."
         ]
     }
 }
