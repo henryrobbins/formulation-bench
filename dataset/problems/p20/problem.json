@@ -96,8 +96,7 @@
         "notes": [
             "We add implicit assumptions that all sets are non-empty and $\\mathrm{dem}_j, \\mathrm{cap}_t, \\mathrm{pc}_k, \\mathrm{tc}_{ijk}, \\mathrm{nutreq}_\\ell, \\mathrm{nutval}_{k\\ell} \\geq 0$.",
             "We assume the directed supply graph has no arcs entering suppliers and no arcs leaving beneficiary camps.",
-            "{cite:t}`ferchtandiker2025` state that transshipment points have limited capacity but do not model it, and let shipments be continuous. We add the throughput capacities $\\mathrm{cap}_t$, shared across commodities, and require shipments to be whole numbers of kg.",
-            "The problem is NP-hard: shipments are integral and the transshipment capacities couple the commodities, so the problem contains integral multi-commodity flow, which is NP-hard even for two commodities {cite:t}`even1976`."
+            "The original problem is not NP-hard: shipments are continuous and the transshipment points have unlimited capacity, so the problem reduces to a linear program and is solvable in polynomial time. We restrict to integral shipments and add throughput capacities (mentioned in the original {cite:t}`ferchtandiker2025` description), which couple the commodities and make the problem NP-hard."
         ]
     }
 }
