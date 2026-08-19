@@ -1,7 +1,7 @@
 # ![FormulationBench](brand/wordmark_light.svg){.only-light}![FormulationBench](brand/wordmark_dark.svg){.only-dark}
 
 :::{note}
-FormulationBench was introduced by *{paper}`FLARE: Verifying MILP Reformulations with LLM-Based Formal Proof Synthesis </>`*
+FormulationBench was introduced by *{paper}`FLARE: Verifying MILP Reformulations with LLM-Based Theorem Proving </>`*
 :::
 
 FormulationBench is a dataset of **20** optimization problems (see {doc}`problems/index`) with **109** MILP formulations. Each formulation includes a description, LaTeX formulation, GurobiPy code, and Lean encoding.
