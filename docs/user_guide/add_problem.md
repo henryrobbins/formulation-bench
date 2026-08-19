@@ -3,7 +3,7 @@
 Before adding a MILP formulation, you must create the optimization problem. This consists of writing a description, defining the necessary input data, and generating/solving a concrete instance of the problem. Afterward, you can add MILP formulations for the problem (see {doc}`add_formulation`).
 
 First, pick the next free identifier `pN` (e.g. `p21`) and create the
-directory `problems/p21/`. Next, populate this directory with all the files required by the dataset schema (see {ref}`problem-directory`). The sections below walk through creating every necessary file. Lastly, append the problem identifier to the `problems` field in `dataset.json`.
+directory `problems/p21/`. Next, populate this directory with all the files required by the dataset schema. The sections below walk through creating every necessary file (also see {ref}`problem-directory`). Lastly, append the problem identifier to the `problems` field in `dataset.json`.
 
 ## Description
 
@@ -26,8 +26,6 @@ The `description.md` file contains a natural-language description of the optimiz
 :class: wrap
 ```
 :::
-
-Find other problem descriptions in {doc}`/problems/index`.
 
 ## JSON File
 

@@ -39,7 +39,7 @@ The parameter generation script `gen_params.py` reads the problem data instance 
 
 Each formulation must have a Lean 4 encoding in `Formulation.lean` following the {ref}`Formulation definition <formulation-definition>`. This file should import `MILPFormulation` from `Common.lean` and define `formulation : MILPFormulation` inside the `PN.x` namespace where `N` is the problem identifier and `x` is the formulation identifier.
 
-The {github}`FLARE monorepo </>` ships with the `milp-formulator` agent which uses the `lean-milp-formulation` agent skill from {mf}`FLARE </skills.html#lean-milp-formulation>` to automatically generate `Formulation.lean`.
+The {github}`GitHub repo </>` ships with the `milp-formulator` agent which uses the `lean-milp-formulation` agent skill from {mf}`FLARE </skills.html#lean-milp-formulation>` to automatically generate `Formulation.lean`.
 
 :::{dropdown} `problems/p1/formulations/b/Formulation.lean`
 :icon: code
@@ -85,7 +85,7 @@ import problems.pN.formulations.y.Formulation
 
 The definition `xYReformulation : MILPReformulation PN.x.formulation PN.y.formulation` should be defined within the `PN` namespace.
 
-The {github}`FLARE monorepo </>` ships with the `milp-reformulation-autoformalizer` agent which uses the `lean-milp-reformulation` agent skill from {mf}`FLARE </skills.html#lean-milp-reformulation>` to automatically generate the Lean proof.
+The {github}`GitHub repo </>` ships with the `milp-reformulation-autoformalizer` agent which uses the `lean-milp-reformulation` agent skill from {mf}`FLARE </skills.html#lean-milp-reformulation>` to automatically generate the Lean proof.
 
 :::{dropdown} `reformulations/p1/a_b/Reformulation.lean`
 :icon: code

@@ -2,7 +2,7 @@
 
 This page documents the directory structure and JSON schemas for the
 FormulationBench dataset. The `formulation-bench` Python package is the
-recommended way to work with the dataset. This schema reference is provided for those modifying or extending the dataset (see {doc}`user_guide/index`).
+recommended way to work with the dataset. This schema reference is provided for those modifying or extending the dataset.
 
 (directory-structure)=
 ## Directory Structure

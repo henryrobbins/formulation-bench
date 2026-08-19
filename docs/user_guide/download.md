@@ -1,8 +1,7 @@
 # Downloading the dataset
 
 The dataset is published as a `dataset.tar.gz` asset attached to each
-tagged release of the {github}`FLARE GitHub repository </releases>`.
-There are three common ways to download it.
+{github}`tagged release </releases>`. There are three common ways to download it.
 
 :::{tip}
 You can browse the dataset contents in {doc}`/problems/index` or {github}`GitHub </tree/main/dataset>` without needing to download the dataset.
@@ -65,7 +64,7 @@ ds = Dataset("formulation-bench/dataset")
 
 ## GitHub website
 
-1. Open the {github}`FLARE releases page </releases>`.
+1. Open the {github}`GitHub Releases</releases>` page.
 2. Pick a release (e.g. `dataset-v0.4.0`).
 3. Under **Assets**, click `dataset.tar.gz`.
 4. Extract it with your archive tool of choice.

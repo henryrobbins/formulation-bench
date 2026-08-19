@@ -93,6 +93,16 @@ div.highlight,
   border-radius: 5px;
 }
 
+/* Pygments styles hardcode their own background on `.highlight`, which would
+ * otherwise override the palette's warm neutral. The dark selectors must be
+ * repeated verbatim: Pygments emits them with higher specificity than a bare
+ * `.highlight`, so a single unqualified rule loses. */
+.highlight,
+body[data-theme="dark"] .highlight,
+body:not([data-theme="light"]) .highlight {
+  background: var(--color-code-background);
+}
+
 .literal-block-wrapper > .code-block-caption {
   background: var(--color-background-secondary);
   border-bottom: 1px solid var(--color-background-border);

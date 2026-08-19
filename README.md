@@ -3,8 +3,6 @@
   <img src="https://raw.githubusercontent.com/henryrobbins/formulation-bench/main/docs/brand/wordmark_light.svg" alt="FormulationBench" width="420">
 </picture>
 
-# formulation-bench
-
 [![PyPI version](https://img.shields.io/pypi/v/formulation-bench)](https://pypi.org/project/formulation-bench/)
 [![CI](https://github.com/henryrobbins/formulation-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/henryrobbins/formulation-bench/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/henryrobbins/formulation-bench/branch/main/graph/badge.svg)](https://codecov.io/gh/henryrobbins/formulation-bench)
