@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/henryrobbins/formulation-bench/main/docs/brand/wordmark_dark.svg">
+  <img src="https://raw.githubusercontent.com/henryrobbins/formulation-bench/main/docs/brand/wordmark_light.svg" alt="FormulationBench" width="420">
+</picture>
+
 # formulation-bench
 
 [![PyPI version](https://img.shields.io/pypi/v/formulation-bench)](https://pypi.org/project/formulation-bench/)

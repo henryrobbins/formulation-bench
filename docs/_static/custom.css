@@ -1,7 +1,178 @@
+/* FormulationBench — Furo customization.
+ *
+ * Furo is customized the supported way: brand/UI colors come from the
+ * `light_css_variables` / `dark_css_variables` dicts in conf.py; this file
+ * only holds rules that are not expressible as theme variables.
+ */
+
+/* ---- Fonts (loaded from Google Fonts; drop the @import and self-host in
+ *      _static/fonts/ if the docs must build offline) ---- */
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Mono:wght@400;500;700&display=swap");
+
 /* Wrap long lines in literal blocks tagged with :class: wrap */
 .highlight-wrap pre,
 div.literal-block-wrapper.wrap pre,
 .wrap pre {
-    white-space: pre-wrap;
-    word-break: break-word;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---- Typography ---- */
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.015em;
+}
+
+/* Page titles echo the monospace wordmark in the logo */
+h1 {
+  font-family: var(--font-stack--monospace);
+  font-size: 2.125rem;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--color-background-border);
+}
+
+article p,
+article li {
+  text-wrap: pretty;
+}
+
+/* Module/class page titles read as code */
+section > h1 > code.literal,
+h1 code.literal {
+  font-size: 0.85em;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-content-foreground);
+}
+
+/* ---- Sidebar ---- */
+.sidebar-brand {
+  padding: 0 0.5rem;
+}
+
+.sidebar-logo {
+  max-width: 12.25rem;
+}
+
+.sidebar-tree .current-page > .reference {
+  box-shadow: inset 2px 0 0 var(--color-brand-primary);
+}
+
+.sidebar-tree .caption {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ---- Right-hand page TOC ---- */
+.toc-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.toc-tree li.scroll-current > .reference {
+  box-shadow: inset 2px 0 0 var(--color-brand-primary);
+  padding-left: 0.6rem;
+}
+
+/* ---- Code ---- */
+div.highlight,
+.literal-block-wrapper {
+  border: 1px solid var(--color-background-border);
+  border-radius: 5px;
+}
+
+.literal-block-wrapper > .code-block-caption {
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-background-border);
+  font-family: var(--font-stack--monospace);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-foreground-muted);
+}
+
+/* ---- API signatures (autodoc / numpydoc) ---- */
+dl.py > dt.sig,
+dl.class > dt.sig,
+dl.function > dt.sig {
+  border-left: 3px solid var(--color-brand-primary);
+  border-radius: 0 5px 5px 0;
+  padding: 0.7rem 1rem 0.7rem 3em;
+}
+
+dl.py dl.py > dt.sig,
+dt.sig.sig-object.py .sig-name + .sig-paren,
+dl.py .py.method > dt.sig,
+dl.py .py.property > dt.sig,
+dl.py .py.attribute > dt.sig {
+  border-left-color: var(--color-api-signature-accent);
+}
+
+dt.sig .sig-name {
+  font-weight: 700;
+}
+
+/* numpydoc section headings (Parameters, Returns, Examples, ...) */
+p.rubric,
+dl.field-list > dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-brand-primary);
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--color-api-section-border);
+  margin-bottom: 0.75rem;
+}
+
+/* Method-level sections sit inside a quieter indented rail */
+dl.py dl.py p.rubric {
+  font-size: 0.7rem;
+  color: var(--color-foreground-secondary);
+  border-bottom: none;
+  letter-spacing: 0.08em;
+}
+
+dl.py dl.py {
+  padding-left: 1rem;
+  border-left: 1px solid var(--color-background-border);
+}
+
+/* Parameter / attribute names */
+dl.py dt strong,
+dd dl.simple > dt strong {
+  font-family: var(--font-stack--monospace);
+  font-size: 0.85em;
+  color: var(--color-content-foreground);
+}
+
+/* Math display blocks scroll rather than overflow the content column */
+div.math {
+  overflow-x: auto;
+}
+
+/* Prev/next links */
+.related-pages a .page-info .context {
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Wordmark standing in for the page title on the landing page. Kept inline so
+ * the trailing headerlink shares its line rather than opening an empty one. */
+h1 > img {
+  width: min(100%, 26rem);
+  vertical-align: middle;
 }

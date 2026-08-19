@@ -1,4 +1,4 @@
-# FormulationBench
+# ![FormulationBench](brand/wordmark_light.svg){.only-light}![FormulationBench](brand/wordmark_dark.svg){.only-dark}
 
 :::{note}
 FormulationBench was introduced by *{paper}`FLARE: Verifying MILP Reformulations with LLM-Based Formal Proof Synthesis </>`*
@@ -11,7 +11,7 @@ The dataset also includes **89** reformulation pairs (63 positive and 26 negativ
 The `formulation-bench` Python package is the ideal interface for working with the dataset. See below for installation instructions, user guides, and the API reference.
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 1
 :caption: Contents
 
 installation
