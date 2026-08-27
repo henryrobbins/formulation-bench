@@ -3,6 +3,7 @@
   <img src="https://raw.githubusercontent.com/henryrobbins/formulation-bench/main/docs/brand/wordmark_light.svg" alt="FormulationBench" width="420">
 </picture>
 
+[![arXiv](https://img.shields.io/badge/arXiv-2608.25220-b31b1b.svg)](https://arxiv.org/abs/2608.25220)
 [![PyPI version](https://img.shields.io/pypi/v/formulation-bench)](https://pypi.org/project/formulation-bench/)
 [![CI](https://github.com/henryrobbins/formulation-bench/actions/workflows/ci.yml/badge.svg)](https://github.com/henryrobbins/formulation-bench/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/henryrobbins/formulation-bench/branch/main/graph/badge.svg)](https://codecov.io/gh/henryrobbins/formulation-bench)
@@ -57,12 +58,14 @@ See `AGENTS.md` for development information.
 FormulationBench was introduced by *[FLARE: Verifying MILP Reformulations with LLM-Based Theorem Proving](https://flare.henryrobbins.com)*. If you use the dataset or the `formulation-bench` package, please cite:
 
 ```bibtex
-@unpublished{robbins2026flare,
-  title = {FLARE: Verifying MILP Reformulations with LLM-Based Theorem Proving},
-  author = {Robbins, Henry and Lawless, Connor and Udell, Madeleine and Vitercik, Ellen},
-  year = 2026,
-  note = {Working paper},
-  url = {https://flare.henryrobbins.com}
+@misc{robbins2026flare,
+  title={{{FLARE}}: Verifying {{MILP}} Reformulations with {{LLM}}-Based Theorem Proving},
+  author={Henry Robbins and Connor Lawless and Madeleine Udell and Ellen Vitercik},
+  year={2026},
+  eprint={2608.25220},
+  archivePrefix={arXiv},
+  primaryClass={cs.AI},
+  url={https://arxiv.org/abs/2608.25220},
 }
 ```
 

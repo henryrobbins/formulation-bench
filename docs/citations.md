@@ -5,12 +5,14 @@
 FormulationBench was introduced by *{paper}`FLARE: Verifying MILP Reformulations with LLM-Based Theorem Proving </>`*. If you use the dataset or the `formulation-bench` package, please cite:
 
 ```bibtex
-@unpublished{robbins2026flare,
-  title = {FLARE: Verifying MILP Reformulations with LLM-Based Theorem Proving},
-  author = {Robbins, Henry and Lawless, Connor and Udell, Madeleine and Vitercik, Ellen},
-  year = 2026,
-  note = {Working paper},
-  url = {https://flare.henryrobbins.com}
+@misc{robbins2026flare,
+  title={{{FLARE}}: Verifying {{MILP}} Reformulations with {{LLM}}-Based Theorem Proving},
+  author={Henry Robbins and Connor Lawless and Madeleine Udell and Ellen Vitercik},
+  year={2026},
+  eprint={2608.25220},
+  archivePrefix={arXiv},
+  primaryClass={cs.AI},
+  url={https://arxiv.org/abs/2608.25220},
 }
 ```
 
